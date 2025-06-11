@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.19;
 
-import {ISliceProductPrice} from "../../utils/Slice/interfaces/utils/ISliceProductPrice.sol";
-import {IProductsModule} from "../../utils/Slice/interfaces/IProductsModule.sol";
+import {ISliceProductPrice} from "../../../utils/Slice/interfaces/utils/ISliceProductPrice.sol";
+import {IProductsModule} from "../../../utils/Slice/interfaces/IProductsModule.sol";
 import {CurrencyParams} from "./structs/CurrencyParams.sol";
 import {ProductDiscounts, DiscountType} from "./structs/ProductDiscounts.sol";
 import {DiscountParams, NFTType} from "./structs/DiscountParams.sol";

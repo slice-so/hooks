@@ -10,8 +10,8 @@ import {
     unsafeDiv,
     wadExp,
     unsafeWadMul
-} from "../../utils/SignedWadMath.sol";
-import {IProductsModule} from "../../utils/Slice/interfaces/IProductsModule.sol";
+} from "../../../utils/SignedWadMath.sol";
+import {IProductsModule} from "../../../utils/Slice/interfaces/IProductsModule.sol";
 import {LogisticProductParams} from "./structs/LogisticProductParams.sol";
 import {LogisticVRGDAParams} from "./structs/LogisticVRGDAParams.sol";
 

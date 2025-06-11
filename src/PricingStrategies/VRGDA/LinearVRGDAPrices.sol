@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {wadLn, unsafeWadDiv, toDaysWadUnsafe} from "../../utils/SignedWadMath.sol";
-import {IProductsModule} from "../../utils/Slice/interfaces/IProductsModule.sol";
+import {wadLn, unsafeWadDiv, toDaysWadUnsafe} from "../../../utils/SignedWadMath.sol";
+import {IProductsModule} from "../../../utils/Slice/interfaces/IProductsModule.sol";
 import {LinearProductParams} from "./structs/LinearProductParams.sol";
 import {LinearVRGDAParams} from "./structs/LinearVRGDAParams.sol";
 

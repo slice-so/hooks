@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {wadExp, wadMul, unsafeWadMul, toWadUnsafe} from "../../utils/SignedWadMath.sol";
-import {ISliceProductPrice} from "../../utils/Slice/interfaces/utils/ISliceProductPrice.sol";
-import {IProductsModule} from "../../utils/Slice/interfaces/IProductsModule.sol";
+import {wadExp, wadMul, unsafeWadMul, toWadUnsafe} from "../../../utils/SignedWadMath.sol";
+import {ISliceProductPrice} from "../../../utils/Slice/interfaces/utils/ISliceProductPrice.sol";
+import {IProductsModule} from "../../../utils/Slice/interfaces/IProductsModule.sol";
 
 /// @title Variable Rate Gradual Dutch Auction - Slice pricing strategy
 /// @author jacopo <jacopo@slice.so>
