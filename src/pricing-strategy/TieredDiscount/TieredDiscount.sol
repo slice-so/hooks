@@ -1,35 +1,30 @@
 // SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.19;
 
-import {ISliceProductPrice} from "../../../utils/Slice/interfaces/utils/ISliceProductPrice.sol";
-import {IProductsModule} from "../../../utils/Slice/interfaces/IProductsModule.sol";
+import {IProductsModule, PricingStrategy} from "@/utils/PricingStrategy.sol";
 import {CurrencyParams} from "./structs/CurrencyParams.sol";
 import {ProductDiscounts, DiscountType} from "./structs/ProductDiscounts.sol";
 import {DiscountParams, NFTType} from "./structs/DiscountParams.sol";
 
 /**
- * @notice  Slice pricing strategy with discounts based on asset ownership
- * @author  Dom-Mac <@zerohex_eth>
- * @author  jacopo <@jj_ranalli>
+ * @notice  Tiered discounts based on asset ownership
+ * @author  Slice <jacopo.eth>
  */
-abstract contract TieredDiscount is ISliceProductPrice {
+abstract contract TieredDiscount is PricingStrategy {
+    /*//////////////////////////////////////////////////////////////
+                                 EVENTS
+    //////////////////////////////////////////////////////////////*/
+
     event ProductPriceSet(uint256 slicerId, uint256 productId, CurrencyParams[] params);
 
     /*//////////////////////////////////////////////////////////////
                                  ERRORS
     //////////////////////////////////////////////////////////////*/
 
-    error NotProductOwner();
     error WrongCurrency();
     error InvalidRelativeDiscount();
     error InvalidMinQuantity();
     error DiscountsNotDescending(DiscountParams nft);
-
-    /*//////////////////////////////////////////////////////////////
-                           IMMUTABLE STORAGE
-    //////////////////////////////////////////////////////////////*/
-
-    address public immutable productsModuleAddress;
 
     /*//////////////////////////////////////////////////////////////
                             MUTABLE STORAGE
@@ -42,23 +37,7 @@ abstract contract TieredDiscount is ISliceProductPrice {
                               CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(address _productsModuleAddress) {
-        productsModuleAddress = _productsModuleAddress;
-    }
-
-    /*//////////////////////////////////////////////////////////////
-                               MODIFIERS
-    //////////////////////////////////////////////////////////////*/
-
-    /**
-     * @notice Check if msg.sender is owner of a product. Used to manage access to `setProductPrice`.
-     */
-    modifier onlyProductOwner(uint256 slicerId, uint256 productId) {
-        if (!IProductsModule(productsModuleAddress).isProductOwner(slicerId, productId, msg.sender)) {
-            revert NotProductOwner();
-        }
-        _;
-    }
+    constructor(IProductsModule _productsModule) PricingStrategy(_productsModule) {}
 
     /*//////////////////////////////////////////////////////////////
                                FUNCTIONS
@@ -80,16 +59,7 @@ abstract contract TieredDiscount is ISliceProductPrice {
     }
 
     /**
-     * @notice Function called by Slice protocol to calculate current product price.
-     *
-     * @param slicerId ID of the slicer being queried
-     * @param productId ID of the product being queried
-     * @param currency Currency chosen for the purchase
-     * @param quantity Number of units purchased
-     * @param buyer Address of the buyer
-     * @param params Additional params used to calculate price
-     *
-     * @return ethPrice and currencyPrice of product.
+     * @notice See {ISliceProductPrice}
      */
     function productPrice(
         uint256 slicerId,
@@ -97,14 +67,14 @@ abstract contract TieredDiscount is ISliceProductPrice {
         address currency,
         uint256 quantity,
         address buyer,
-        bytes memory params
+        bytes memory data
     ) public view override returns (uint256 ethPrice, uint256 currencyPrice) {
         ProductDiscounts memory discountParams = productDiscounts[slicerId][productId][currency];
 
         if (discountParams.basePrice == 0) {
             if (!discountParams.isFree) revert WrongCurrency();
         } else {
-            return _productPrice(slicerId, productId, currency, quantity, buyer, params, discountParams);
+            return _productPrice(slicerId, productId, currency, quantity, buyer, data, discountParams);
         }
     }
 
@@ -120,7 +90,7 @@ abstract contract TieredDiscount is ISliceProductPrice {
         address currency,
         uint256 quantity,
         address buyer,
-        bytes memory params,
+        bytes memory data,
         ProductDiscounts memory discountParams
     ) internal view virtual returns (uint256 ethPrice, uint256 currencyPrice);
 }

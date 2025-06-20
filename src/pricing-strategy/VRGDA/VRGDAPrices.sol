@@ -1,41 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {wadExp, wadMul, unsafeWadMul, toWadUnsafe} from "../../../utils/SignedWadMath.sol";
-import {ISliceProductPrice} from "../../../utils/Slice/interfaces/utils/ISliceProductPrice.sol";
-import {IProductsModule} from "../../../utils/Slice/interfaces/IProductsModule.sol";
+import {wadExp, wadMul, unsafeWadMul, toWadUnsafe} from "@/utils/SignedWadMath.sol";
+import {IProductsModule, PricingStrategy} from "@/utils/PricingStrategy.sol";
 
-/// @title Variable Rate Gradual Dutch Auction - Slice pricing strategy
-/// @author jacopo <jacopo@slice.so>
-/// @notice Price library with configurable params for each Slice product.
-
-abstract contract VRGDAPrices is ISliceProductPrice {
-    /*//////////////////////////////////////////////////////////////
-                                 STORAGE
-    //////////////////////////////////////////////////////////////*/
-
-    address internal immutable _productsModuleAddress;
-
+/**
+ * @title   VRGDAPrices Pricing Strategy
+ * @notice  Variable Rate Gradual Dutch Auction
+ * @author  Slice <jacopo.eth>
+ */
+abstract contract VRGDAPrices is PricingStrategy {
     /*//////////////////////////////////////////////////////////////
                                CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(address productsModuleAddress) {
-        _productsModuleAddress = productsModuleAddress;
-    }
-
-    /*//////////////////////////////////////////////////////////////
-                                MODIFIERS
-    //////////////////////////////////////////////////////////////*/
-
-    /// @notice Check if msg.sender is owner of a product. Used to manage access of `setProductPrice`
-    /// in implementations of this contract.
-    modifier onlyProductOwner(uint256 slicerId, uint256 productId) {
-        require(
-            IProductsModule(_productsModuleAddress).isProductOwner(slicerId, productId, msg.sender), "NOT_PRODUCT_OWNER"
-        );
-        _;
-    }
+    constructor(IProductsModule _productsModule) PricingStrategy(_productsModule) {}
 
     /*//////////////////////////////////////////////////////////////
                               PRICING LOGIC

@@ -2,11 +2,10 @@
 pragma solidity ^0.8.0;
 
 import {wadLn, unsafeWadDiv, toDaysWadUnsafe} from "../../../utils/SignedWadMath.sol";
-import {IProductsModule} from "../../../utils/Slice/interfaces/IProductsModule.sol";
 import {LinearProductParams} from "./structs/LinearProductParams.sol";
 import {LinearVRGDAParams} from "./structs/LinearVRGDAParams.sol";
 
-import {VRGDAPrices} from "./VRGDAPrices.sol";
+import {IProductsModule, VRGDAPrices} from "./VRGDAPrices.sol";
 
 /// @title Linear Variable Rate Gradual Dutch Auction - Slice pricing strategy
 /// @author jacopo <jacopo@slice.so>
@@ -31,7 +30,7 @@ contract LinearVRGDAPrices is VRGDAPrices {
                                CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(address productsModuleAddress) VRGDAPrices(productsModuleAddress) {}
+    constructor(IProductsModule _productsModule) VRGDAPrices(_productsModule) {}
 
     /*//////////////////////////////////////////////////////////////
                             VRGDA PARAMETERS
@@ -59,8 +58,7 @@ contract LinearVRGDAPrices is VRGDAPrices {
 
         /// Get product availability and isInfinite
         /// @dev available units is a uint32
-        (uint256 availableUnits, bool isInfinite) =
-            IProductsModule(_productsModuleAddress).availableUnits(slicerId, productId);
+        (uint256 availableUnits, bool isInfinite) = productsModule.availableUnits(slicerId, productId);
 
         // Product must not have infinite availability
         require(!isInfinite, "NOT_FINITE_AVAILABILITY");
@@ -118,7 +116,7 @@ contract LinearVRGDAPrices is VRGDAPrices {
         require(productParams.startTime != 0, "PRODUCT_UNSET");
 
         // Get available units
-        (uint256 availableUnits,) = IProductsModule(_productsModuleAddress).availableUnits(slicerId, productId);
+        (uint256 availableUnits,) = productsModule.availableUnits(slicerId, productId);
 
         // Calculate sold units from availableUnits
         uint256 soldUnits = productParams.startUnits - availableUnits;

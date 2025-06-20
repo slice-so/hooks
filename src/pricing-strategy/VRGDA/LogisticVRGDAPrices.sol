@@ -11,11 +11,9 @@ import {
     wadExp,
     unsafeWadMul
 } from "../../../utils/SignedWadMath.sol";
-import {IProductsModule} from "../../../utils/Slice/interfaces/IProductsModule.sol";
 import {LogisticProductParams} from "./structs/LogisticProductParams.sol";
 import {LogisticVRGDAParams} from "./structs/LogisticVRGDAParams.sol";
-
-import {VRGDAPrices} from "./VRGDAPrices.sol";
+import {IProductsModule, VRGDAPrices} from "./VRGDAPrices.sol";
 
 /// @title Logistic Variable Rate Gradual Dutch Auction - Slice pricing strategy
 /// @author jacopo <jacopo@slice.so>
@@ -40,7 +38,7 @@ contract LogisticVRGDAPrices is VRGDAPrices {
                                CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(address productsModuleAddress) VRGDAPrices(productsModuleAddress) {}
+    constructor(IProductsModule _productsModule) VRGDAPrices(_productsModule) {}
 
     /*//////////////////////////////////////////////////////////////
                             VRGDA PARAMETERS
@@ -68,8 +66,7 @@ contract LogisticVRGDAPrices is VRGDAPrices {
         require(decayConstant >= type(int184).min, "MIN_DECAY_CONSTANT_EXCEEDED");
 
         // Get product availability and isInfinite
-        (uint256 availableUnits, bool isInfinite) =
-            IProductsModule(_productsModuleAddress).availableUnits(slicerId, productId);
+        (uint256 availableUnits, bool isInfinite) = productsModule.availableUnits(slicerId, productId);
 
         // Product must not have infinite availability
         require(!isInfinite, "NON_FINITE_AVAILABILITY");
@@ -212,7 +209,7 @@ contract LogisticVRGDAPrices is VRGDAPrices {
         require(productParams.startTime != 0, "PRODUCT_UNSET");
 
         // Get available units
-        (uint256 availableUnits,) = IProductsModule(_productsModuleAddress).availableUnits(slicerId, productId);
+        (uint256 availableUnits,) = productsModule.availableUnits(slicerId, productId);
 
         // Set ethPrice or currencyPrice based on chosen currency
         if (currency == address(0)) {

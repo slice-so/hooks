@@ -2,6 +2,7 @@
 pragma solidity ^0.8.19;
 
 import {
+    IProductsModule,
     CurrencyParams,
     DiscountParams,
     ProductDiscounts,
@@ -13,16 +14,16 @@ import {IERC721} from "@openzeppelin/token/ERC721/IERC721.sol";
 import {IERC1155} from "@openzeppelin/token/ERC1155/IERC1155.sol";
 
 /**
- * @title   NFTDiscount - Slice pricing strategy with discounts based on NFT ownership
- * @author  Dom-Mac <@zerohex_eth>
- * @author  jacopo <@jj_ranalli>
+ * @title   NFTDiscount Pricing Strategy
+ * @notice  Discounts based on NFT ownership
+ * @author  Slice <jacopo.eth>
  */
 contract NFTDiscount is TieredDiscount {
     /*//////////////////////////////////////////////////////////////
                               CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(address _productsModuleAddress) TieredDiscount(_productsModuleAddress) {}
+    constructor(IProductsModule _productsModule) TieredDiscount(_productsModule) {}
 
     /*//////////////////////////////////////////////////////////////
                                FUNCTIONS
