@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
 /// @param targetPrice Target price for a product, to be scaled according to sales pace.
 /// @param min minimum price to be paid for a token, scaled by 1e18
-/// @param perTimeUnit The total number of products to target selling every full unit of time.
-struct LinearVRGDAParams {
+/// @param timeScale Time scale controls the steepness of the logistic curve,
+/// which affects how quickly we will reach the curve's asymptote.
+struct LogisticVRGDAParams {
     int128 targetPrice;
     uint128 min;
-    int256 perTimeUnit;
+    int256 timeScale;
 }

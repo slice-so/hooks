@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
-import {BaseScript, SetUpContractsList} from "../utils/ScriptUtils.sol";
 import {console} from "forge-std/console.sol";
 import {VmSafe} from "forge-std/Vm.sol";
+import {BaseScript, SetUpContractsList} from "./ScriptUtils.sol";
 
 contract DeployScript is BaseScript, SetUpContractsList {
     constructor() SetUpContractsList("src") {}

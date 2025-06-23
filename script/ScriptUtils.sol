@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
 import {console} from "forge-std/console.sol";
 import {Script} from "forge-std/Script.sol";
-import {ISliceCore} from "./Slice/interfaces/ISliceCore.sol";
-import {IProductsModule} from "./Slice/interfaces/IProductsModule.sol";
-import {IFundsModule} from "./Slice/interfaces/IFundsModule.sol";
 import {VmSafe} from "forge-std/Vm.sol";
+import {ISliceCore} from "slice/interfaces/ISliceCore.sol";
+import {IProductsModule} from "slice/interfaces/IProductsModule.sol";
+import {IFundsModule} from "slice/interfaces/IFundsModule.sol";
 
 /**
  * Helper contract to enforce correct chain selection in scripts

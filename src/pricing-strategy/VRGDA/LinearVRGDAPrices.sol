@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
-import {wadLn, unsafeWadDiv, toDaysWadUnsafe} from "../../../utils/SignedWadMath.sol";
-import {LinearProductParams} from "./structs/LinearProductParams.sol";
-import {LinearVRGDAParams} from "./structs/LinearVRGDAParams.sol";
-
+import {wadLn, unsafeWadDiv, toDaysWadUnsafe} from "@/utils/math/SignedWadMath.sol";
+import {LinearProductParams} from "./types/LinearProductParams.sol";
+import {LinearVRGDAParams} from "./types/LinearVRGDAParams.sol";
 import {IProductsModule, VRGDAPrices} from "./VRGDAPrices.sol";
 
-/// @title Linear Variable Rate Gradual Dutch Auction - Slice pricing strategy
-/// @author jacopo <jacopo@slice.so>
-/// @notice VRGDA with a linear issuance curve - Price library with different params for each Slice product.
+/// @title   Linear Variable Rate Gradual Dutch Auction - Slice pricing strategy
+/// @notice  VRGDA with a linear issuance curve - Price library with different params for each Slice product.
+/// @author  Slice <jacopo.eth>
 contract LinearVRGDAPrices is VRGDAPrices {
     event ProductPriceSet(
         uint256 slicerId,

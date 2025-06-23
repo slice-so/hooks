@@ -1,17 +1,18 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.20;
 
 import {Test} from "forge-std/Test.sol";
 import {console2} from "forge-std/console2.sol";
 import {MockProductsModule} from "./mocks/MockProductsModule.sol";
 import {
+    IProductsModule,
     NFTDiscount,
     ProductDiscounts,
     DiscountType,
     DiscountParams,
     CurrencyParams,
     NFTType
-} from "../src/TieredDiscount/NFTDiscount/NFTDiscount.sol";
+} from "@/pricing-strategy/TieredDiscount/NFTDiscount/NFTDiscount.sol";
 import {MockERC721} from "./mocks/MockERC721.sol";
 import {MockERC1155} from "./mocks/MockERC1155.sol";
 
@@ -39,7 +40,7 @@ contract NFTDiscountTest is Test {
 
     function setUp() public {
         productsModule = new MockProductsModule();
-        erc721GatedDiscount = new NFTDiscount(address(productsModule));
+        erc721GatedDiscount = new NFTDiscount(IProductsModule(address(productsModule)));
 
         nftOne.mint(buyer);
     }

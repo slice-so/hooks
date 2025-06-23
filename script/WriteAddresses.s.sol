@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity >=0.8;
+pragma solidity ^0.8.20;
 
-import {SetUpContractsList} from "../utils/ScriptUtils.sol";
+import {SetUpContractsList} from "./ScriptUtils.sol";
 
 contract WriteAddressesScript is SetUpContractsList {
     constructor() SetUpContractsList("src") {}

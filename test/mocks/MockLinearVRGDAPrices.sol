@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
-import "../../src/VRGDA/LinearVRGDAPrices.sol";
+import "@/pricing-strategy/VRGDA/LinearVRGDAPrices.sol";
 
 contract MockLinearVRGDAPrices is LinearVRGDAPrices {
-    constructor(address productsModuleAddress) LinearVRGDAPrices(productsModuleAddress) {}
+    constructor(IProductsModule productsModule) LinearVRGDAPrices(productsModule) {}
 }

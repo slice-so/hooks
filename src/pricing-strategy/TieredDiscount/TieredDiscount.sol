@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.20;
 
 import {IProductsModule, PricingStrategy} from "@/utils/PricingStrategy.sol";
-import {CurrencyParams} from "./structs/CurrencyParams.sol";
-import {ProductDiscounts, DiscountType} from "./structs/ProductDiscounts.sol";
-import {DiscountParams, NFTType} from "./structs/DiscountParams.sol";
+import {CurrencyParams} from "./types/CurrencyParams.sol";
+import {ProductDiscounts, DiscountType} from "./types/ProductDiscounts.sol";
+import {DiscountParams, NFTType} from "./types/DiscountParams.sol";
 
 /**
  * @notice  Tiered discounts based on asset ownership

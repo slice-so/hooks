@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.20;
 
+import {IERC721} from "@openzeppelin-5.3.0/token/ERC721/IERC721.sol";
+import {IERC1155} from "@openzeppelin-5.3.0/token/ERC1155/IERC1155.sol";
 import {
     IProductsModule,
     CurrencyParams,
@@ -10,8 +12,6 @@ import {
     TieredDiscount,
     NFTType
 } from "../TieredDiscount.sol";
-import {IERC721} from "@openzeppelin/token/ERC721/IERC721.sol";
-import {IERC1155} from "@openzeppelin/token/ERC1155/IERC1155.sol";
 
 /**
  * @title   NFTDiscount Pricing Strategy

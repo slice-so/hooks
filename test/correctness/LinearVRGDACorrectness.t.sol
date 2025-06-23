@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.20;
 
 import {Test} from "forge-std/Test.sol";
 
-import {wadLn, toWadUnsafe} from "../../utils/SignedWadMath.sol";
+import {wadLn, toWadUnsafe} from "@/utils/math/SignedWadMath.sol";
 
 import "../mocks/MockLinearVRGDAPrices.sol";
 import {MockProductsModule} from "../mocks/MockProductsModule.sol";
+import {IProductsModule} from "@/utils/PricingStrategy.sol";
 
 import {console} from "forge-std/console.sol";
 import {Vm} from "forge-std/Vm.sol";
@@ -28,7 +29,7 @@ contract LinearVRGDACorrectnessTest is Test {
 
     function setUp() public {
         productsModule = new MockProductsModule();
-        vrgda = new MockLinearVRGDAPrices(address(productsModule));
+        vrgda = new MockLinearVRGDAPrices(IProductsModule(address(productsModule)));
 
         LinearVRGDAParams[] memory linearParams = new LinearVRGDAParams[](1);
         linearParams[0] = LinearVRGDAParams(targetPriceConstant, min, perTimeUnit);

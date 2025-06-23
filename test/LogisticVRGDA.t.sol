@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.20;
 
 import {Test} from "forge-std/Test.sol";
-import {unsafeDiv, wadLn, toWadUnsafe, toDaysWadUnsafe, fromDaysWadUnsafe} from "../utils/SignedWadMath.sol";
+import {unsafeDiv, wadLn, toWadUnsafe, toDaysWadUnsafe, fromDaysWadUnsafe} from "@/utils/math/SignedWadMath.sol";
 
 import "./mocks/MockLogisticVRGDAPrices.sol";
 import {MockProductsModule} from "./mocks/MockProductsModule.sol";
@@ -27,7 +27,7 @@ contract LogisticVRGDATest is Test {
 
     function setUp() public {
         productsModule = new MockProductsModule();
-        vrgda = new MockLogisticVRGDAPrices(address(productsModule));
+        vrgda = new MockLogisticVRGDAPrices(IProductsModule(address(productsModule)));
 
         LogisticVRGDAParams[] memory logisticParams = new LogisticVRGDAParams[](1);
         logisticParams[0] = LogisticVRGDAParams(targetPriceConstant, min, timeScale);

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
 contract MockProductsModule {
     function isProductOwner(uint256, uint256, address account) external pure returns (bool isAllowed) {

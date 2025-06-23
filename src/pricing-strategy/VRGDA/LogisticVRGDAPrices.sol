@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
 import {
     wadMul,
@@ -10,14 +10,14 @@ import {
     unsafeDiv,
     wadExp,
     unsafeWadMul
-} from "../../../utils/SignedWadMath.sol";
-import {LogisticProductParams} from "./structs/LogisticProductParams.sol";
-import {LogisticVRGDAParams} from "./structs/LogisticVRGDAParams.sol";
+} from "@/utils/math/SignedWadMath.sol";
+import {LogisticProductParams} from "./types/LogisticProductParams.sol";
+import {LogisticVRGDAParams} from "./types/LogisticVRGDAParams.sol";
 import {IProductsModule, VRGDAPrices} from "./VRGDAPrices.sol";
 
-/// @title Logistic Variable Rate Gradual Dutch Auction - Slice pricing strategy
-/// @author jacopo <jacopo@slice.so>
-/// @notice VRGDA with a logistic issuance curve - Price library with different params for each Slice product.
+/// @title   Logistic Variable Rate Gradual Dutch Auction - Slice pricing strategy
+/// @notice  VRGDA with a logistic issuance curve - Price library with different params for each Slice product.
+/// @author  Slice <jacopo.eth>
 contract LogisticVRGDAPrices is VRGDAPrices {
     event ProductPriceSet(
         uint256 slicerId,
