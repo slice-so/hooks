@@ -18,7 +18,6 @@ remappings = [
 
 [profile.ci]
 fuzz_runs = 10000
-no_match_test = "FFI"
 
 [profile.ffi]
 ffi = true
