@@ -6,7 +6,9 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
@@ -15,6 +17,20 @@ jobs:
 
       - name: Install dependencies
         run: forge soldeer install
+
+      - name: Show Forge version
+        run: forge --version
+
+      - name: Build
+        run: forge build
+        env:
+          FOUNDRY_PROFILE: ci
+
+      - name: Run tests
+        run: forge test --isolate -vvv
+        env:
+          FOUNDRY_PROFILE: ci
+          FORGE_SNAPSHOT_CHECK: true
 
       - name: Check contract sizes
         run: forge build --sizes

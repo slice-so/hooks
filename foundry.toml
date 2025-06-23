@@ -16,7 +16,7 @@ remappings = [
   "@/=src/"
 ]
 
-[profile.intense]
+[profile.ci]
 fuzz_runs = 10000
 no_match_test = "FFI"
 
@@ -25,6 +25,7 @@ ffi = true
 match_test = "FFI"
 no_match_test = "a^"
 fuzz_runs = 1000
+
 
 [rpc_endpoints]
 mainnet = "${RPC_URL_MAINNET}"
