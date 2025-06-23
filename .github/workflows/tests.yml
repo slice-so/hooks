@@ -31,15 +31,3 @@ jobs:
         env:
           FOUNDRY_PROFILE: ci
           FORGE_SNAPSHOT_CHECK: true
-
-      - name: Check contract sizes
-        run: forge build --sizes
-
-      - name: Check gas snapshots
-        run: forge snapshot --check
-
-      - name: Run tests
-        run: forge test -vvv
-        env:
-          # Only fuzz intensely if we're running this action on a push to main or for a PR going into main:
-          FOUNDRY_PROFILE: ${{ (github.ref == 'refs/heads/main' || github.base_ref == 'main') && 'intense' }}
