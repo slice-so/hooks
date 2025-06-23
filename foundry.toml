@@ -7,7 +7,7 @@ dynamic_test_linking = true
 libs = ["dependencies", "../core/src", "../core/dependencies"]
 fs_permissions = [{ access = "read", path = "./src"}, { access= "read", path = "./broadcast/Deploy.s.sol/8453/run-latest.json"}, { access = "read-write", path = "./deployments"}, { access = "read", path = "./out"}]
 remappings = [
-  "slice/=dependencies/slice-0.0.2/",
+  "slice/=dependencies/slice-0.0.3/",
   "forge-std/=dependencies/forge-std-1.9.7/src/",
   "@openzeppelin-upgradeable-5.3.0/=dependencies/@openzeppelin-contracts-upgradeable-5.3.0/",
   "@openzeppelin-5.3.0/=dependencies/@openzeppelin-contracts-5.3.0/",
@@ -40,9 +40,11 @@ base-goerli = {key="${ETHERSCAN_KEY}", chain=84531, url="https://api-goerli.base
 
 [soldeer]
 recursive_deps = true
+remappings_generate = false
+remappings_regenerate = false
 
 [dependencies]
-slice = "0.0.2"
+slice = "0.0.3"
 forge-std = "1.9.7"
 "@openzeppelin-contracts" = "5.3.0"
 "@openzeppelin-contracts-upgradeable" = "5.3.0"

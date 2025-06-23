@@ -1,6 +1,6 @@
-# Slice pricing strategies
+# Slice hooks
 
-This repo contains custom pricing strategies for products sold on [Slice](https://slice.so).
+This repo contains smart contracts for pricing strategies and onchain actions, which can be used on [Slice](https://slice.so) products.
 
 Each strategy inherits the [ISliceProductPrice](/src/Slice/interfaces/utils/ISliceProductPrice.sol) interface and serves two main purposes:
 
@@ -28,7 +28,7 @@ A discount strategy that allows a product owner to set a discount for a product 
 
 ```sh
 cp .env.example .env
-forge install
+forge soldeer install
 ```
 
 You will need a copy of [Foundry](https://github.com/foundry-rs/foundry) installed before proceeding. See the [installation guide](https://github.com/foundry-rs/foundry#installation) for details.
