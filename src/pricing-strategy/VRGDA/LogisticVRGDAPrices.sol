@@ -38,27 +38,24 @@ contract LogisticVRGDAPrices is VRGDAPrices {
                                CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(IProductsModule _productsModule) VRGDAPrices(_productsModule) {}
+    constructor(IProductsModule productsModuleAddress) VRGDAPrices(productsModuleAddress) {}
 
     /*//////////////////////////////////////////////////////////////
-                            VRGDA PARAMETERS
+                             CONFIGURATION
     //////////////////////////////////////////////////////////////*/
 
-    /// @notice Set LinearProductParams for product.
-    /// @param slicerId ID of the slicer to set the price params for.
-    /// @param productId ID of the product to set the price params for.
-    /// @param currencies currencies of the product to set the price params for.
-    /// @param logisticParams see `LogisticVRGDAParams`.
-    /// @param priceDecayPercent The percent price decays per unit of time with no sales, scaled by 1e18.
-    /// which affects how quickly we will reach the curve's asymptote, scaled by 1e18.
-    function setProductPrice(
-        uint256 slicerId,
-        uint256 productId,
-        address[] calldata currencies,
-        LogisticVRGDAParams[] calldata logisticParams,
-        int256 priceDecayPercent
-    ) external onlyProductOwner(slicerId, productId) {
-        require(logisticParams.length == currencies.length, "INVALID_INPUTS");
+    function pricingParamsSchema() external pure returns (string memory) {
+        return
+        "(address currency,int128 targetPrice,uint128 min,int256 timeScale)[] logisticParams,int256 priceDecayPercent";
+    }
+
+    /**
+     * @notice Called by product owner to set base price and discounts for a product.
+     * @dev See {PricingStrategy}
+     */
+    function _setProductPrice(uint256 slicerId, uint256 productId, bytes memory params) internal override {
+        (LogisticVRGDAParams[] memory logisticParams, int256 priceDecayPercent) =
+            abi.decode(params, (LogisticVRGDAParams[], int256));
 
         int256 decayConstant = wadLn(1e18 - priceDecayPercent);
         // The decay constant must be negative for VRGDAs to work.
@@ -66,7 +63,7 @@ contract LogisticVRGDAPrices is VRGDAPrices {
         require(decayConstant >= type(int184).min, "MIN_DECAY_CONSTANT_EXCEEDED");
 
         // Get product availability and isInfinite
-        (uint256 availableUnits, bool isInfinite) = productsModule.availableUnits(slicerId, productId);
+        (uint256 availableUnits, bool isInfinite) = PRODUCTS_MODULE.availableUnits(slicerId, productId);
 
         // Product must not have infinite availability
         require(!isInfinite, "NON_FINITE_AVAILABILITY");
@@ -77,15 +74,13 @@ contract LogisticVRGDAPrices is VRGDAPrices {
         _productParams[slicerId][productId].decayConstant = int184(decayConstant);
 
         // Set currency params
-        for (uint256 i; i < currencies.length;) {
-            _productParams[slicerId][productId].pricingParams[currencies[i]] = logisticParams[i];
+        for (uint256 i; i < logisticParams.length;) {
+            _productParams[slicerId][productId].pricingParams[logisticParams[i].currency] = logisticParams[i];
 
             unchecked {
                 ++i;
             }
         }
-
-        emit ProductPriceSet(slicerId, productId, currencies, logisticParams, priceDecayPercent);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -209,7 +204,7 @@ contract LogisticVRGDAPrices is VRGDAPrices {
         require(productParams.startTime != 0, "PRODUCT_UNSET");
 
         // Get available units
-        (uint256 availableUnits,) = productsModule.availableUnits(slicerId, productId);
+        (uint256 availableUnits,) = PRODUCTS_MODULE.availableUnits(slicerId, productId);
 
         // Set ethPrice or currencyPrice based on chosen currency
         if (currency == address(0)) {

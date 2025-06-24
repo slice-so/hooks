@@ -29,16 +29,14 @@ contract LogisticVRGDATest is Test {
         productsModule = new MockProductsModule();
         vrgda = new MockLogisticVRGDAPrices(IProductsModule(address(productsModule)));
 
-        LogisticVRGDAParams[] memory logisticParams = new LogisticVRGDAParams[](1);
-        logisticParams[0] = LogisticVRGDAParams(targetPriceConstant, min, timeScale);
-        address[] memory ethCurrency = new address[](1);
-        ethCurrency[0] = address(0);
-        address[] memory erc20Currency = new address[](1);
-        erc20Currency[0] = address(20);
+        LogisticVRGDAParams[] memory logisticParams = new LogisticVRGDAParams[](2);
+        logisticParams[0] = LogisticVRGDAParams(address(0), targetPriceConstant, min, timeScale);
+        logisticParams[1] = LogisticVRGDAParams(address(20), targetPriceConstant, min, timeScale);
+
+        bytes memory params = abi.encode(logisticParams, priceDecayPercent);
 
         vm.startPrank(address(0));
-        vrgda.setProductPrice(slicerId, productId, ethCurrency, logisticParams, priceDecayPercent);
-        vrgda.setProductPrice(slicerId, productId, erc20Currency, logisticParams, priceDecayPercent);
+        vrgda.setProductPrice(slicerId, productId, params);
         vm.stopPrank();
     }
 
@@ -166,14 +164,13 @@ contract LogisticVRGDATest is Test {
         // uint256 targetPriceTest = 7.3013e18;
         uint256 productIdTest = 2;
         LogisticVRGDAParams[] memory logisticParams = new LogisticVRGDAParams[](2);
-        logisticParams[0] = LogisticVRGDAParams(targetPriceConstant, min, timeScale);
-        logisticParams[1] = LogisticVRGDAParams(targetPriceConstant, min, timeScale);
-        address[] memory currencies = new address[](2);
-        currencies[0] = address(0);
-        currencies[1] = address(20);
+        logisticParams[0] = LogisticVRGDAParams(address(0), targetPriceConstant, min, timeScale);
+        logisticParams[1] = LogisticVRGDAParams(address(20), targetPriceConstant, min, timeScale);
+
+        bytes memory params = abi.encode(logisticParams, priceDecayPercent);
 
         vm.startPrank(address(0));
-        vrgda.setProductPrice(slicerId, productIdTest, currencies, logisticParams, priceDecayPercent);
+        vrgda.setProductPrice(slicerId, productIdTest, params);
         vm.stopPrank();
 
         vm.warp(block.timestamp + 10 days);

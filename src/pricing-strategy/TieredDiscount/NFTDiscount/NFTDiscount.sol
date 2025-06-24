@@ -5,13 +5,13 @@ import {IERC721} from "@openzeppelin-4.8.0/token/ERC721/IERC721.sol";
 import {IERC1155} from "@openzeppelin-4.8.0/token/ERC1155/IERC1155.sol";
 import {
     IProductsModule,
-    CurrencyParams,
     DiscountParams,
     ProductDiscounts,
     DiscountType,
     TieredDiscount,
     NFTType
 } from "../TieredDiscount.sol";
+import {CurrencyParams} from "../types/CurrencyParams.sol";
 
 /**
  * @title   NFTDiscount Pricing Strategy
@@ -23,7 +23,16 @@ contract NFTDiscount is TieredDiscount {
                               CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(IProductsModule _productsModule) TieredDiscount(_productsModule) {}
+    constructor(IProductsModule productsModuleAddress) TieredDiscount(productsModuleAddress) {}
+
+    /*//////////////////////////////////////////////////////////////
+                             CONFIGURATION
+    //////////////////////////////////////////////////////////////*/
+
+    function pricingParamsSchema() external pure returns (string memory) {
+        return
+        "(address currency,uint240 basePrice,bool isFree,uint8 discountType,(address nft,uint80 discount,uint8 minQuantity,uint8 nftType,uint256 tokenId)[] discounts)[] allCurrencyParams";
+    }
 
     /*//////////////////////////////////////////////////////////////
                                FUNCTIONS
@@ -35,13 +44,11 @@ contract NFTDiscount is TieredDiscount {
      *
      * @param slicerId ID of the slicer to set the price params for.
      * @param productId ID of the product to set the price params for.
-     * @param allCurrencyParams Array of `CurrencyParams` structs
+     * @param params Array of `CurrencyParams` structs
      */
-    function _setProductPrice(uint256 slicerId, uint256 productId, CurrencyParams[] memory allCurrencyParams)
-        internal
-        virtual
-        override
-    {
+    function _setProductPrice(uint256 slicerId, uint256 productId, bytes memory params) internal override {
+        (CurrencyParams[] memory allCurrencyParams) = abi.decode(params, (CurrencyParams[]));
+
         CurrencyParams memory currencyParams;
         DiscountParams[] memory newDiscounts;
         uint256 prevDiscountValue;

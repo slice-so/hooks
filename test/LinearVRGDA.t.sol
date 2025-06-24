@@ -29,16 +29,14 @@ contract LinearVRGDATest is Test {
         productsModule = new MockProductsModule();
         vrgda = new MockLinearVRGDAPrices(IProductsModule(address(productsModule)));
 
-        LinearVRGDAParams[] memory linearParams = new LinearVRGDAParams[](1);
-        linearParams[0] = LinearVRGDAParams(targetPriceConstant, min, perTimeUnit);
-        address[] memory ethCurrency = new address[](1);
-        ethCurrency[0] = address(0);
-        address[] memory erc20Currency = new address[](1);
-        erc20Currency[0] = address(20);
+        LinearVRGDAParams[] memory linearParams = new LinearVRGDAParams[](2);
+        linearParams[0] = LinearVRGDAParams(address(0), targetPriceConstant, min, perTimeUnit);
+        linearParams[1] = LinearVRGDAParams(address(20), targetPriceConstant, min, perTimeUnit);
+
+        bytes memory params = abi.encode(linearParams, priceDecayPercent);
 
         vm.startPrank(address(0));
-        vrgda.setProductPrice(slicerId, productId, ethCurrency, linearParams, priceDecayPercent);
-        vrgda.setProductPrice(slicerId, productId, erc20Currency, linearParams, priceDecayPercent);
+        vrgda.setProductPrice(slicerId, productId, params);
         vm.stopPrank();
     }
 
@@ -128,14 +126,13 @@ contract LinearVRGDATest is Test {
     function testSetMultiplePrices() public {
         uint256 productId_ = 2;
         LinearVRGDAParams[] memory linearParams = new LinearVRGDAParams[](2);
-        linearParams[0] = LinearVRGDAParams(targetPriceConstant, min, perTimeUnit);
-        linearParams[1] = LinearVRGDAParams(targetPriceConstant, min, perTimeUnit);
-        address[] memory currencies = new address[](2);
-        currencies[0] = address(0);
-        currencies[1] = address(20);
+        linearParams[0] = LinearVRGDAParams(address(0), targetPriceConstant, min, perTimeUnit);
+        linearParams[1] = LinearVRGDAParams(address(20), targetPriceConstant, min, perTimeUnit);
+
+        bytes memory params = abi.encode(linearParams, priceDecayPercent);
 
         vm.startPrank(address(0));
-        vrgda.setProductPrice(slicerId, productId_, currencies, linearParams, priceDecayPercent);
+        vrgda.setProductPrice(slicerId, productId_, params);
         vm.stopPrank();
 
         // Our VRGDA targets this number of mints at given time.

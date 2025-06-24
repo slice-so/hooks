@@ -10,14 +10,6 @@ import {IProductsModule, VRGDAPrices} from "./VRGDAPrices.sol";
 /// @notice  VRGDA with a linear issuance curve - Price library with different params for each Slice product.
 /// @author  Slice <jacopo.eth>
 contract LinearVRGDAPrices is VRGDAPrices {
-    event ProductPriceSet(
-        uint256 slicerId,
-        uint256 productId,
-        address[] currencies,
-        LinearVRGDAParams[] linearParams,
-        int256 priceDecayPercent
-    );
-
     /*//////////////////////////////////////////////////////////////
                                 STORAGE
     //////////////////////////////////////////////////////////////*/
@@ -29,26 +21,24 @@ contract LinearVRGDAPrices is VRGDAPrices {
                                CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(IProductsModule _productsModule) VRGDAPrices(_productsModule) {}
+    constructor(IProductsModule productsModuleAddress) VRGDAPrices(productsModuleAddress) {}
 
     /*//////////////////////////////////////////////////////////////
-                            VRGDA PARAMETERS
+                             CONFIGURATION
     //////////////////////////////////////////////////////////////*/
 
-    /// @notice Set LinearProductParams for product.
-    /// @param slicerId ID of the slicer to set the price params for.
-    /// @param productId ID of the product to set the price params for.
-    /// @param currencies currencies of the product to set the price params for.
-    /// @param linearParams see `LinearVRGDAParams`.
-    /// @param priceDecayPercent The percent price decays per unit of time with no sales, scaled by 1e18.
-    function setProductPrice(
-        uint256 slicerId,
-        uint256 productId,
-        address[] calldata currencies,
-        LinearVRGDAParams[] calldata linearParams,
-        int256 priceDecayPercent
-    ) external onlyProductOwner(slicerId, productId) {
-        require(linearParams.length == currencies.length, "INVALID_INPUTS");
+    function pricingParamsSchema() external pure returns (string memory) {
+        return
+        "(address currency,int128 targetPrice,uint128 min,int256 perTimeUnit)[] linearParams,int256 priceDecayPercent";
+    }
+
+    /**
+     * @notice Called by product owner to set base price and discounts for a product.
+     * @dev See {PricingStrategy}
+     */
+    function _setProductPrice(uint256 slicerId, uint256 productId, bytes memory params) internal override {
+        (LinearVRGDAParams[] memory linearParams, int256 priceDecayPercent) =
+            abi.decode(params, (LinearVRGDAParams[], int256));
 
         int256 decayConstant = wadLn(1e18 - priceDecayPercent);
         // The decay constant must be negative for VRGDAs to work.
@@ -57,7 +47,7 @@ contract LinearVRGDAPrices is VRGDAPrices {
 
         /// Get product availability and isInfinite
         /// @dev available units is a uint32
-        (uint256 availableUnits, bool isInfinite) = productsModule.availableUnits(slicerId, productId);
+        (uint256 availableUnits, bool isInfinite) = PRODUCTS_MODULE.availableUnits(slicerId, productId);
 
         // Product must not have infinite availability
         require(!isInfinite, "NOT_FINITE_AVAILABILITY");
@@ -68,37 +58,18 @@ contract LinearVRGDAPrices is VRGDAPrices {
         _productParams[slicerId][productId].decayConstant = int184(decayConstant);
 
         // Set currency params
-        for (uint256 i; i < currencies.length;) {
-            _productParams[slicerId][productId].pricingParams[currencies[i]] = linearParams[i];
+        for (uint256 i; i < linearParams.length;) {
+            _productParams[slicerId][productId].pricingParams[linearParams[i].currency] = linearParams[i];
 
             unchecked {
                 ++i;
             }
         }
-
-        emit ProductPriceSet(slicerId, productId, currencies, linearParams, priceDecayPercent);
-    }
-
-    /*//////////////////////////////////////////////////////////////
-                              PRICING LOGIC
-    //////////////////////////////////////////////////////////////*/
-
-    /// @dev Given a number of products sold, return the target time that number of products should be sold by.
-    /// @param sold A number of products sold, scaled by 1e18, to get the corresponding target sale time for.
-    /// @param timeFactor Time-dependent factor used to calculate target sale time.
-    /// @return The target time the products should be sold by, scaled by 1e18, where the time is
-    /// relative, such that 0 means the products should be sold immediately when the VRGDA begins.
-    function getTargetSaleTime(int256 sold, int256 timeFactor) public pure override returns (int256) {
-        return unsafeWadDiv(sold, timeFactor);
     }
 
     /**
      * @notice Function called by Slice protocol to calculate current product price.
-     * @param slicerId ID of the slicer being queried
-     * @param productId ID of the product being queried
-     * @param currency Currency chosen for the purchase
-     * @param quantity Number of units purchased
-     * @return ethPrice and currencyPrice of product.
+     * @dev See {IPricingStrategy}
      */
     function productPrice(
         uint256 slicerId,
@@ -115,7 +86,7 @@ contract LinearVRGDAPrices is VRGDAPrices {
         require(productParams.startTime != 0, "PRODUCT_UNSET");
 
         // Get available units
-        (uint256 availableUnits,) = productsModule.availableUnits(slicerId, productId);
+        (uint256 availableUnits,) = PRODUCTS_MODULE.availableUnits(slicerId, productId);
 
         // Calculate sold units from availableUnits
         uint256 soldUnits = productParams.startUnits - availableUnits;
@@ -142,5 +113,18 @@ contract LinearVRGDAPrices is VRGDAPrices {
                 quantity
             );
         }
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                               INTERNAL
+    //////////////////////////////////////////////////////////////*/
+
+    /// @dev Given a number of products sold, return the target time that number of products should be sold by.
+    /// @param sold A number of products sold, scaled by 1e18, to get the corresponding target sale time for.
+    /// @param timeFactor Time-dependent factor used to calculate target sale time.
+    /// @return The target time the products should be sold by, scaled by 1e18, where the time is
+    /// relative, such that 0 means the products should be sold immediately when the VRGDA begins.
+    function getTargetSaleTime(int256 sold, int256 timeFactor) public pure override returns (int256) {
+        return unsafeWadDiv(sold, timeFactor);
     }
 }

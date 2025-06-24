@@ -14,7 +14,7 @@ abstract contract VRGDAPrices is PricingStrategy {
                                CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(IProductsModule _productsModule) PricingStrategy(_productsModule) {}
+    constructor(IProductsModule productsModuleAddress) PricingStrategy(productsModuleAddress) {}
 
     /*//////////////////////////////////////////////////////////////
                               PRICING LOGIC
@@ -89,23 +89,4 @@ abstract contract VRGDAPrices is PricingStrategy {
             }
         }
     }
-
-    /**
-     * @notice Function called by Slice protocol to calculate current product price.
-     * @param slicerId ID of the slicer being queried
-     * @param productId ID of the product being queried
-     * @param currency Currency chosen for the purchase
-     * @param quantity Number of units purchased
-     * @param buyer Address of the buyer
-     * @param data Custom data sent along with the purchase transaction by the buyer
-     * @return ethPrice and currencyPrice of product.
-     */
-    function productPrice(
-        uint256 slicerId,
-        uint256 productId,
-        address currency,
-        uint256 quantity,
-        address buyer,
-        bytes memory data
-    ) public view virtual override returns (uint256 ethPrice, uint256 currencyPrice) {}
 }

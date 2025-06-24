@@ -32,12 +32,11 @@ contract LinearVRGDACorrectnessTest is Test {
         vrgda = new MockLinearVRGDAPrices(IProductsModule(address(productsModule)));
 
         LinearVRGDAParams[] memory linearParams = new LinearVRGDAParams[](1);
-        linearParams[0] = LinearVRGDAParams(targetPriceConstant, min, perTimeUnit);
-        address[] memory ethCurrency = new address[](1);
-        ethCurrency[0] = address(0);
+        linearParams[0] = LinearVRGDAParams(address(0), targetPriceConstant, min, perTimeUnit);
 
         vm.prank(address(0));
-        vrgda.setProductPrice(slicerId, productId, ethCurrency, linearParams, priceDecayPercent);
+        bytes memory params = abi.encode(linearParams, priceDecayPercent);
+        vrgda.setProductPrice(slicerId, productId, params);
     }
 
     function testFFICorrectness() public {

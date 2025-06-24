@@ -56,7 +56,7 @@ contract NFTDiscountTest is Test {
         currenciesParams[0] = CurrencyParams(ETH, basePrice, false, DiscountType.Absolute, discounts);
 
         vm.prank(owner);
-        erc721GatedDiscount.setProductPrice(slicerId, productId, currenciesParams);
+        erc721GatedDiscount.setProductPrice(slicerId, productId, abi.encode(currenciesParams));
     }
 
     function testDeploy() public view {
@@ -79,7 +79,7 @@ contract NFTDiscountTest is Test {
         currenciesParams[0] = CurrencyParams(ETH, basePrice, false, DiscountType.Absolute, discounts);
 
         vm.prank(owner);
-        erc721GatedDiscount.setProductPrice(slicerId, productId, currenciesParams);
+        erc721GatedDiscount.setProductPrice(slicerId, productId, abi.encode(currenciesParams));
 
         /// check product price
         (uint256 ethPrice, uint256 currencyPrice) =
@@ -105,7 +105,7 @@ contract NFTDiscountTest is Test {
         currenciesParams[0] = CurrencyParams(USDC, basePrice, false, DiscountType.Absolute, discounts);
 
         vm.prank(owner);
-        erc721GatedDiscount.setProductPrice(slicerId, productId, currenciesParams);
+        erc721GatedDiscount.setProductPrice(slicerId, productId, abi.encode(currenciesParams));
 
         /// check product price
         (uint256 ethPrice, uint256 currencyPrice) =
@@ -131,7 +131,7 @@ contract NFTDiscountTest is Test {
         currenciesParams[0] = CurrencyParams(USDC, basePrice, false, DiscountType.Absolute, discounts);
 
         vm.prank(owner);
-        erc721GatedDiscount.setProductPrice(slicerId, productId, currenciesParams);
+        erc721GatedDiscount.setProductPrice(slicerId, productId, abi.encode(currenciesParams));
 
         /// check product price
         (uint256 ethPrice, uint256 currencyPrice) =
@@ -176,7 +176,7 @@ contract NFTDiscountTest is Test {
         currenciesParams[1] = CurrencyParams(USDC, basePrice, false, DiscountType.Absolute, discountsTwo);
 
         vm.prank(owner);
-        erc721GatedDiscount.setProductPrice(slicerId, productId, currenciesParams);
+        erc721GatedDiscount.setProductPrice(slicerId, productId, abi.encode(currenciesParams));
 
         /// check product price for ETH
         (uint256 ethPrice, uint256 currencyPrice) =
@@ -302,7 +302,7 @@ contract NFTDiscountTest is Test {
         currenciesParams[0] = CurrencyParams(ETH, basePrice, false, DiscountType.Relative, discounts);
 
         vm.prank(owner);
-        erc721GatedDiscount.setProductPrice(slicerId, productId, currenciesParams);
+        erc721GatedDiscount.setProductPrice(slicerId, productId, abi.encode(currenciesParams));
 
         /// check product price
         (uint256 ethPrice, uint256 currencyPrice) =
@@ -328,7 +328,7 @@ contract NFTDiscountTest is Test {
         currenciesParams[0] = CurrencyParams(ETH, basePrice, false, DiscountType.Relative, discounts);
 
         vm.prank(owner);
-        erc721GatedDiscount.setProductPrice(slicerId, productId, currenciesParams);
+        erc721GatedDiscount.setProductPrice(slicerId, productId, abi.encode(currenciesParams));
 
         // buy multiple products
         quantity = 6;

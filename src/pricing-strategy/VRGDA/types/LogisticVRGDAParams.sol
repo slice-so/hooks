@@ -6,6 +6,7 @@ pragma solidity ^0.8.20;
 /// @param timeScale Time scale controls the steepness of the logistic curve,
 /// which affects how quickly we will reach the curve's asymptote.
 struct LogisticVRGDAParams {
+    address currency;
     int128 targetPrice;
     uint128 min;
     int256 timeScale;

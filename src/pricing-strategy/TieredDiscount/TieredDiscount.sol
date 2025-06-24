@@ -2,7 +2,6 @@
 pragma solidity ^0.8.20;
 
 import {IProductsModule, PricingStrategy} from "@/utils/PricingStrategy.sol";
-import {CurrencyParams} from "./types/CurrencyParams.sol";
 import {ProductDiscounts, DiscountType} from "./types/ProductDiscounts.sol";
 import {DiscountParams, NFTType} from "./types/DiscountParams.sol";
 
@@ -11,12 +10,6 @@ import {DiscountParams, NFTType} from "./types/DiscountParams.sol";
  * @author  Slice <jacopo.eth>
  */
 abstract contract TieredDiscount is PricingStrategy {
-    /*//////////////////////////////////////////////////////////////
-                                 EVENTS
-    //////////////////////////////////////////////////////////////*/
-
-    event ProductPriceSet(uint256 slicerId, uint256 productId, CurrencyParams[] params);
-
     /*//////////////////////////////////////////////////////////////
                                  ERRORS
     //////////////////////////////////////////////////////////////*/
@@ -37,26 +30,11 @@ abstract contract TieredDiscount is PricingStrategy {
                               CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(IProductsModule _productsModule) PricingStrategy(_productsModule) {}
+    constructor(IProductsModule productsModuleAddress) PricingStrategy(productsModuleAddress) {}
 
     /*//////////////////////////////////////////////////////////////
                                FUNCTIONS
     //////////////////////////////////////////////////////////////*/
-
-    /**
-     * @notice Called by product owner to set base price and discounts for a product.
-     *
-     * @param slicerId ID of the slicer to set the price params for.
-     * @param productId ID of the product to set the price params for.
-     * @param params Array of `CurrencyParams` structs
-     */
-    function setProductPrice(uint256 slicerId, uint256 productId, CurrencyParams[] memory params)
-        external
-        onlyProductOwner(slicerId, productId)
-    {
-        _setProductPrice(slicerId, productId, params);
-        emit ProductPriceSet(slicerId, productId, params);
-    }
 
     /**
      * @notice See {ISliceProductPrice}
@@ -81,8 +59,6 @@ abstract contract TieredDiscount is PricingStrategy {
     /*//////////////////////////////////////////////////////////////
                                 INTERNAL
     //////////////////////////////////////////////////////////////*/
-
-    function _setProductPrice(uint256 slicerId, uint256 productId, CurrencyParams[] memory params) internal virtual;
 
     function _productPrice(
         uint256 slicerId,
