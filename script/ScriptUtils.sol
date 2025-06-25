@@ -82,7 +82,6 @@ abstract contract SetUpContractsList is Script {
     }
 
     struct ContractDeploymentData {
-        string abi;
         address contractAddress;
         uint256 blockNumber;
         bytes32 transactionHash;
@@ -104,9 +103,54 @@ abstract contract SetUpContractsList is Script {
         _recordContractsOnPath(CONTRACT_PATH);
     }
 
+    function _updateGroupJson(
+        string memory existingAddresses,
+        string memory firstFolder,
+        string memory contractName,
+        string[] memory json
+    ) internal returns (string memory) {
+        string memory groupKey = string.concat(".", firstFolder);
+        string memory result;
+
+        if (vm.keyExistsJson(existingAddresses, groupKey)) {
+            // For each contract in contractNames, if it belongs to this group, add its array
+            for (uint256 i = 0; i < contractNames.length; i++) {
+                (string memory folderName,) = _getFolderName(contractNames[i].path);
+                if (keccak256(bytes(folderName)) == keccak256(bytes(firstFolder))) {
+                    string memory name = contractNames[i].name;
+                    if (keccak256(bytes(name)) == keccak256(bytes(contractName))) {
+                        // Use the new json for the contract being updated
+                        result = vm.serializeString(contractName, name, json);
+                    } else {
+                        string memory contractKey = string.concat(".", firstFolder, ".", name);
+                        if (vm.keyExistsJson(existingAddresses, contractKey)) {
+                            // Use the existing array for other contracts
+                            bytes memory arr = vm.parseJson(existingAddresses, contractKey);
+                            ContractDeploymentData[] memory existingData = abi.decode(arr, (ContractDeploymentData[]));
+
+                            // Convert to string array format (similar to _buildJsonArray logic)
+                            string[] memory arrStrings = new string[](existingData.length);
+                            for (uint256 j = 0; j < existingData.length; j++) {
+                                string memory idx = vm.toString(j);
+                                vm.serializeAddress(idx, "address", existingData[j].contractAddress);
+                                vm.serializeUint(idx, "blockNumber", existingData[j].blockNumber);
+                                arrStrings[j] =
+                                    vm.serializeBytes32(idx, "transactionHash", existingData[j].transactionHash);
+                            }
+                            result = vm.serializeString(contractName, name, arrStrings);
+                        }
+                    }
+                }
+            }
+            return result;
+        } else {
+            // If the group doesn't exist, just create a new entry for contractName
+            return vm.serializeString(contractName, contractName, json);
+        }
+    }
+
     function writeAddressesJson(string memory contractName) public {
         string memory existingAddresses = vm.readFile(ADDRESSES_PATH);
-        string memory newAddresses = "addresses";
 
         Receipt[] memory receipts = _readReceipts(LAST_TX_PATH);
         Tx1559[] memory transactions = _readTx1559s(LAST_TX_PATH);
@@ -127,7 +171,6 @@ abstract contract SetUpContractsList is Script {
             return;
         }
 
-        // TODO: Retrieve abi from contract
         ContractMap memory contractMap;
         for (uint256 i = 0; i < contractNames.length; i++) {
             if (keccak256(bytes(contractNames[i].name)) == keccak256(bytes(contractName))) {
@@ -135,20 +178,37 @@ abstract contract SetUpContractsList is Script {
                 break;
             }
         }
-        string memory abiPath = string.concat("./out/", contractName, ".sol/ProductPriceSet.json");
-        string memory abiValue = vm.readFile(abiPath);
 
-        string memory key = string.concat(".", contractName, ".addresses");
-        string memory addresses;
+        // Get the first-level and last folder name
+        (string memory firstFolder,) = _getFolderName(contractMap.path);
+
+        string[] memory json =
+            _buildJsonArray(existingAddresses, string.concat(".", firstFolder, ".", contractName), transaction, receipt);
+
+        // Copy all existing top-level groups
+        vm.serializeJson("addresses", existingAddresses);
+
+        // Update the specific group with the new contract data
+        string memory updatedGroupJson = _updateGroupJson(existingAddresses, firstFolder, contractName, json);
+
+        // Write the complete JSON with the updated group
+        vm.writeJson(vm.serializeString("addresses", firstFolder, updatedGroupJson), ADDRESSES_PATH);
+    }
+
+    function _buildJsonArray(
+        string memory existingAddresses,
+        string memory key,
+        Tx1559 memory transaction,
+        Receipt memory receipt
+    ) internal returns (string[] memory json) {
         if (vm.keyExistsJson(existingAddresses, key)) {
             // Append new data to existingAddresses
             bytes memory contractAddressesJson = vm.parseJson(existingAddresses, key);
             ContractDeploymentData[] memory existingContractAddresses =
                 abi.decode(contractAddressesJson, (ContractDeploymentData[]));
 
-            string[] memory json = new string[](existingContractAddresses.length + 1);
+            json = new string[](existingContractAddresses.length + 1);
             vm.serializeAddress("0", "address", transaction.contractAddress);
-            vm.serializeString("0", "abiProductPriceSet", abiValue);
             vm.serializeUint("0", "blockNumber", receipt.blockNumber);
             json[0] = vm.serializeBytes32("0", "transactionHash", transaction.hash);
 
@@ -157,24 +217,15 @@ abstract contract SetUpContractsList is Script {
                 string memory index = vm.toString(i + 1);
 
                 vm.serializeAddress(index, "address", existingContractAddress.contractAddress);
-                vm.serializeString(index, "abiProductPriceSet", existingContractAddress.abi);
                 vm.serializeUint(index, "blockNumber", existingContractAddress.blockNumber);
                 json[i + 1] = vm.serializeBytes32(index, "transactionHash", existingContractAddress.transactionHash);
             }
-
-            addresses = vm.serializeString("addresses", "addresses", json);
         } else {
-            string[] memory json = new string[](1);
-            vm.serializeAddress(contractName, "address", transaction.contractAddress);
-            vm.serializeString(contractName, "abiProductPriceSet", abiValue);
-            vm.serializeUint(contractName, "blockNumber", receipt.blockNumber);
-            json[0] = vm.serializeBytes32(contractName, "transactionHash", transaction.hash);
-            addresses = vm.serializeString("addresses", "addresses", json);
+            json = new string[](1);
+            vm.serializeAddress("0", "address", transaction.contractAddress);
+            vm.serializeUint("0", "blockNumber", receipt.blockNumber);
+            json[0] = vm.serializeBytes32("0", "transactionHash", transaction.hash);
         }
-        vm.serializeJson(newAddresses, existingAddresses);
-        newAddresses = vm.serializeString(newAddresses, contractName, addresses);
-
-        vm.writeJson(newAddresses, ADDRESSES_PATH);
     }
 
     function _recordContractsOnPath(string memory path) internal {
@@ -280,27 +331,65 @@ abstract contract SetUpContractsList is Script {
         return true;
     }
 
-    function _getFolderName(string memory path) internal view returns (string memory folderName) {
+    function _getFolderName(string memory path)
+        internal
+        view
+        returns (string memory firstFolderName, string memory lastFolderName)
+    {
         bytes memory pathBytes = bytes(path);
         uint256 lastSlash = 0;
         uint256 prevSlash = 0;
+        uint256 srcIndex = 0;
+        bool foundSrc = false;
+        // Find the index of '/src/' if present
+        for (uint256 i = 0; i < pathBytes.length - 3; i++) {
+            if (
+                pathBytes[i] == 0x2f // '/'
+                    && pathBytes[i + 1] == 0x73 // 's'
+                    && pathBytes[i + 2] == 0x72 // 'r'
+                    && pathBytes[i + 3] == 0x63 // 'c'
+                    && (i + 4 == pathBytes.length || pathBytes[i + 4] == 0x2f) // '/' or end
+            ) {
+                srcIndex = i + 4; // index after '/src/'
+                foundSrc = true;
+                break;
+            }
+        }
+        // Find the first folder after src (or after root if no src)
+        uint256 start = foundSrc ? srcIndex : 0;
+        // skip leading slashes
+        while (start < pathBytes.length && pathBytes[start] == 0x2f) {
+            start++;
+        }
+        uint256 end = start;
+        while (end < pathBytes.length && pathBytes[end] != 0x2f) {
+            end++;
+        }
+        if (end > start) {
+            bytes memory firstFolderBytes = new bytes(end - start);
+            for (uint256 i = 0; i < end - start; i++) {
+                firstFolderBytes[i] = pathBytes[start + i];
+            }
+            firstFolderName = string(firstFolderBytes);
+        } else {
+            firstFolderName = CONTRACT_PATH;
+        }
+        // Now get the last folder as before
         for (uint256 i = 0; i < pathBytes.length; i++) {
             if (pathBytes[i] == "/") {
                 prevSlash = lastSlash;
                 lastSlash = i;
             }
         }
-        // If only one slash, return the first folder after src
-        if (lastSlash == 0) return CONTRACT_PATH;
-        // Find the folder name (between prevSlash and lastSlash)
-        uint256 start = prevSlash == 0 ? 0 : prevSlash + 1;
-        uint256 len = lastSlash - start;
-        if (len == 0) return CONTRACT_PATH;
-        bytes memory folderBytes = new bytes(len);
-        for (uint256 i = 0; i < len; i++) {
-            folderBytes[i] = pathBytes[start + i];
+        if (lastSlash == 0) return (firstFolderName, CONTRACT_PATH);
+        uint256 lastStart = prevSlash == 0 ? 0 : prevSlash + 1;
+        uint256 lastLen = lastSlash - lastStart;
+        if (lastLen == 0) return (firstFolderName, CONTRACT_PATH);
+        bytes memory lastFolderBytes = new bytes(lastLen);
+        for (uint256 i = 0; i < lastLen; i++) {
+            lastFolderBytes[i] = pathBytes[lastStart + i];
         }
-        folderName = string(folderBytes);
+        lastFolderName = string(lastFolderBytes);
     }
 
     // modified from `vm.readTx1559s` to read directly from broadcast artifact

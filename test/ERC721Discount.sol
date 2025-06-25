@@ -12,7 +12,7 @@ import {
     DiscountParams,
     CurrencyParams,
     NFTType
-} from "@/pricing-strategy/TieredDiscount/NFTDiscount/NFTDiscount.sol";
+} from "@/pricing-strategies/TieredDiscount/NFTDiscount/NFTDiscount.sol";
 import {MockERC721} from "./mocks/MockERC721.sol";
 import {MockERC1155} from "./mocks/MockERC1155.sol";
 

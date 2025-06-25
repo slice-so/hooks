@@ -32,3 +32,10 @@ forge soldeer install
 ```
 
 You will need a copy of [Foundry](https://github.com/foundry-rs/foundry) installed before proceeding. See the [installation guide](https://github.com/foundry-rs/foundry#installation) for details.
+
+<!-- 
+TODO:
+- add onchain actions from old repo to hooks repo
+- document all contracts well with comments  
+- Finalize readme with detailed info on how to quickly get started writing slice hooks
+ -->

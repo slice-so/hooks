@@ -19,14 +19,6 @@ import {IProductsModule, VRGDAPrices} from "./VRGDAPrices.sol";
 /// @notice  VRGDA with a logistic issuance curve - Price library with different params for each Slice product.
 /// @author  Slice <jacopo.eth>
 contract LogisticVRGDAPrices is VRGDAPrices {
-    event ProductPriceSet(
-        uint256 slicerId,
-        uint256 productId,
-        address[] currencies,
-        LogisticVRGDAParams[] logisticParams,
-        int256 priceDecayPercent
-    );
-
     /*//////////////////////////////////////////////////////////////
                                 STORAGE
     //////////////////////////////////////////////////////////////*/
@@ -80,6 +72,53 @@ contract LogisticVRGDAPrices is VRGDAPrices {
             unchecked {
                 ++i;
             }
+        }
+    }
+
+    /**
+     * @notice Function called by Slice protocol to calculate current product price.
+     * @dev See {IPricingStrategy}
+     */
+    function productPrice(
+        uint256 slicerId,
+        uint256 productId,
+        address currency,
+        uint256 quantity,
+        address,
+        bytes memory
+    ) public view override returns (uint256 ethPrice, uint256 currencyPrice) {
+        // Add reference for product and pricing params
+        LogisticProductParams storage productParams = _productParams[slicerId][productId];
+        LogisticVRGDAParams memory pricingParams = productParams.pricingParams[currency];
+
+        require(productParams.startTime != 0, "PRODUCT_UNSET");
+
+        // Get available units
+        (uint256 availableUnits,) = PRODUCTS_MODULE.availableUnits(slicerId, productId);
+
+        // Set ethPrice or currencyPrice based on chosen currency
+        if (currency == address(0)) {
+            ethPrice = getAdjustedVRGDALogisticPrice(
+                pricingParams.targetPrice,
+                productParams.decayConstant,
+                toDaysWadUnsafe(block.timestamp - productParams.startTime),
+                toWadUnsafe(productParams.startUnits + 1),
+                productParams.startUnits - availableUnits,
+                pricingParams.timeScale,
+                pricingParams.min,
+                quantity
+            );
+        } else {
+            currencyPrice = getAdjustedVRGDALogisticPrice(
+                pricingParams.targetPrice,
+                productParams.decayConstant,
+                toDaysWadUnsafe(block.timestamp - productParams.startTime),
+                toWadUnsafe(productParams.startUnits + 1),
+                productParams.startUnits - availableUnits,
+                pricingParams.timeScale,
+                pricingParams.min,
+                quantity
+            );
         }
     }
 
@@ -178,57 +217,6 @@ contract LogisticVRGDAPrices is VRGDAPrices {
     function getTargetSaleTime(int256 saleFactor, int256 timeFactor) public pure override returns (int256) {
         unchecked {
             return -unsafeWadDiv(wadLn(saleFactor - 1e18), timeFactor);
-        }
-    }
-
-    /**
-     * @notice Function called by Slice protocol to calculate current product price.
-     * @param slicerId ID of the slicer being queried
-     * @param productId ID of the product being queried
-     * @param currency Currency chosen for the purchase
-     * @param quantity Number of units purchased
-     * @return ethPrice and currencyPrice of product.
-     */
-    function productPrice(
-        uint256 slicerId,
-        uint256 productId,
-        address currency,
-        uint256 quantity,
-        address,
-        bytes memory
-    ) public view override returns (uint256 ethPrice, uint256 currencyPrice) {
-        // Add reference for product and pricing params
-        LogisticProductParams storage productParams = _productParams[slicerId][productId];
-        LogisticVRGDAParams memory pricingParams = productParams.pricingParams[currency];
-
-        require(productParams.startTime != 0, "PRODUCT_UNSET");
-
-        // Get available units
-        (uint256 availableUnits,) = PRODUCTS_MODULE.availableUnits(slicerId, productId);
-
-        // Set ethPrice or currencyPrice based on chosen currency
-        if (currency == address(0)) {
-            ethPrice = getAdjustedVRGDALogisticPrice(
-                pricingParams.targetPrice,
-                productParams.decayConstant,
-                toDaysWadUnsafe(block.timestamp - productParams.startTime),
-                toWadUnsafe(productParams.startUnits + 1),
-                productParams.startUnits - availableUnits,
-                pricingParams.timeScale,
-                pricingParams.min,
-                quantity
-            );
-        } else {
-            currencyPrice = getAdjustedVRGDALogisticPrice(
-                pricingParams.targetPrice,
-                productParams.decayConstant,
-                toDaysWadUnsafe(block.timestamp - productParams.startTime),
-                toWadUnsafe(productParams.startUnits + 1),
-                productParams.startUnits - availableUnits,
-                pricingParams.timeScale,
-                pricingParams.min,
-                quantity
-            );
         }
     }
 }
