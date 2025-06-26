@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {HookTest} from "@test/utils/HookTest.sol";
+import {PricingStrategyTest} from "@test/utils/PricingStrategyTest.sol";
 import {console2} from "forge-std/console2.sol";
 import {
     IProductsModule,
@@ -25,7 +25,7 @@ uint80 constant fixedDiscountOne = 100;
 uint80 constant fixedDiscountTwo = 200;
 uint80 constant percentDiscount = 1000; // 10%
 
-contract NFTDiscountTest is HookTest {
+contract NFTDiscountTest is PricingStrategyTest {
     NFTDiscount erc721GatedDiscount;
     MockERC721 nftOne = new MockERC721();
     MockERC721 nftTwo = new MockERC721();
@@ -38,6 +38,7 @@ contract NFTDiscountTest is HookTest {
 
     function setUp() public {
         erc721GatedDiscount = new NFTDiscount(PRODUCTS_MODULE);
+        _setHook(address(erc721GatedDiscount));
 
         nftOne.mint(buyer);
     }

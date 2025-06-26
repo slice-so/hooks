@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 import {console2} from "forge-std/console2.sol";
-import {HookTest} from "@test/utils/HookTest.sol";
+import {PricingStrategyTest} from "@test/utils/PricingStrategyTest.sol";
 import {wadLn, toWadUnsafe, toDaysWadUnsafe, fromDaysWadUnsafe} from "@/utils/math/SignedWadMath.sol";
 
 import "./mocks/MockLinearVRGDAPrices.sol";
@@ -19,11 +19,12 @@ uint128 constant min = 1e18;
 int256 constant priceDecayPercent = 0.31e18;
 int256 constant perTimeUnit = 2e18;
 
-contract LinearVRGDATest is HookTest {
+contract LinearVRGDATest is PricingStrategyTest {
     MockLinearVRGDAPrices vrgda;
 
     function setUp() public {
         vrgda = new MockLinearVRGDAPrices(PRODUCTS_MODULE);
+        _setHook(address(vrgda));
 
         LinearVRGDAParams[] memory linearParams = new LinearVRGDAParams[](2);
         linearParams[0] = LinearVRGDAParams(address(0), targetPriceConstant, min, perTimeUnit);
