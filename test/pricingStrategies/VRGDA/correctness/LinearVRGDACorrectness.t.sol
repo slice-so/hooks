@@ -1,18 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {Test} from "forge-std/Test.sol";
-
-import {wadLn, toWadUnsafe} from "@/utils/math/SignedWadMath.sol";
-
-import "../mocks/MockLinearVRGDAPrices.sol";
-import {MockProductsModule} from "../mocks/MockProductsModule.sol";
-import {IProductsModule} from "@/utils/PricingStrategy.sol";
-
 import {console} from "forge-std/console.sol";
 import {Vm} from "forge-std/Vm.sol";
+import {HookTest} from "@test/utils/HookTest.sol";
+import {wadLn, toWadUnsafe} from "@/utils/math/SignedWadMath.sol";
+import {IProductsModule} from "@/utils/PricingStrategy.sol";
+import {MockLinearVRGDAPrices, LinearVRGDAParams} from "../mocks/MockLinearVRGDAPrices.sol";
 
-contract LinearVRGDACorrectnessTest is Test {
+contract LinearVRGDACorrectnessTest is HookTest {
     // Sample parameters for differential fuzzing campaign.
     uint256 constant maxTimeframe = 356 days * 10;
     uint256 constant maxSellable = 10000;
@@ -25,11 +21,9 @@ contract LinearVRGDACorrectnessTest is Test {
     int256 constant perTimeUnit = 2e18;
 
     MockLinearVRGDAPrices vrgda;
-    MockProductsModule productsModule;
 
     function setUp() public {
-        productsModule = new MockProductsModule();
-        vrgda = new MockLinearVRGDAPrices(IProductsModule(address(productsModule)));
+        vrgda = new MockLinearVRGDAPrices(PRODUCTS_MODULE);
 
         LinearVRGDAParams[] memory linearParams = new LinearVRGDAParams[](1);
         linearParams[0] = LinearVRGDAParams(address(0), targetPriceConstant, min, perTimeUnit);

@@ -1,13 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {Test} from "forge-std/Test.sol";
 import {console2} from "forge-std/console2.sol";
-
+import {HookTest} from "@test/utils/HookTest.sol";
 import {wadLn, toWadUnsafe, toDaysWadUnsafe, fromDaysWadUnsafe} from "@/utils/math/SignedWadMath.sol";
 
 import "./mocks/MockLinearVRGDAPrices.sol";
-import {MockProductsModule} from "./mocks/MockProductsModule.sol";
 import {IProductsModule} from "@/utils/PricingStrategy.sol";
 
 uint256 constant ONE_THOUSAND_YEARS = 356 days * 1000;
@@ -21,13 +19,11 @@ uint128 constant min = 1e18;
 int256 constant priceDecayPercent = 0.31e18;
 int256 constant perTimeUnit = 2e18;
 
-contract LinearVRGDATest is Test {
+contract LinearVRGDATest is HookTest {
     MockLinearVRGDAPrices vrgda;
-    MockProductsModule productsModule;
 
     function setUp() public {
-        productsModule = new MockProductsModule();
-        vrgda = new MockLinearVRGDAPrices(IProductsModule(address(productsModule)));
+        vrgda = new MockLinearVRGDAPrices(PRODUCTS_MODULE);
 
         LinearVRGDAParams[] memory linearParams = new LinearVRGDAParams[](2);
         linearParams[0] = LinearVRGDAParams(address(0), targetPriceConstant, min, perTimeUnit);
