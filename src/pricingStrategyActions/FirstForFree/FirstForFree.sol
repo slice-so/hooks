@@ -65,11 +65,11 @@ contract FirstForFree is PricingStrategyAction {
 
         return (0, usdcPrices[slicerId][productId].usdcPrice * quantity);
     }
+
     /**
      * @inheritdoc OnchainAction
      * @notice Mint `quantity` NFTs to `account` on purchase. Keeps track of total purchases.
      */
-
     function _onProductPurchase(
         uint256 slicerId,
         uint256 productId,

@@ -2,9 +2,12 @@
 pragma solidity ^0.8.20;
 
 import {wadLn, unsafeWadDiv, toDaysWadUnsafe} from "@/utils/math/SignedWadMath.sol";
-import {LinearProductParams} from "./types/LinearProductParams.sol";
-import {LinearVRGDAParams} from "./types/LinearVRGDAParams.sol";
-import {IProductsModule, VRGDAPrices} from "./VRGDAPrices.sol";
+import {
+    IProductsModule, IProductPricingStrategy, IPricingStrategy, PricingStrategy
+} from "@/utils/PricingStrategy.sol";
+import {LinearProductParams} from "../types/LinearProductParams.sol";
+import {LinearVRGDAParams} from "../types/LinearVRGDAParams.sol";
+import {VRGDAPrices} from "../VRGDAPrices.sol";
 
 /// @title   Linear Variable Rate Gradual Dutch Auction - Slice pricing strategy
 /// @notice  VRGDA with a linear issuance curve - Price library with different params for each Slice product.
@@ -27,14 +30,9 @@ contract LinearVRGDAPrices is VRGDAPrices {
         CONFIGURATION
     //////////////////////////////////////////////////////////////*/
 
-    function pricingParamsSchema() external pure returns (string memory) {
-        return
-        "(address currency,int128 targetPrice,uint128 min,int256 perTimeUnit)[] linearParams,int256 priceDecayPercent";
-    }
-
     /**
-     * @notice Called by product owner to set base price and discounts for a product.
-     * @dev See {PricingStrategy}
+     * @inheritdoc PricingStrategy
+     * @notice Set LinearVRGDAParams for a product.
      */
     function _setProductPrice(uint256 slicerId, uint256 productId, bytes memory params) internal override {
         (LinearVRGDAParams[] memory linearParams, int256 priceDecayPercent) =
@@ -68,8 +66,7 @@ contract LinearVRGDAPrices is VRGDAPrices {
     }
 
     /**
-     * @notice Function called by Slice protocol to calculate current product price.
-     * @dev See {IPricingStrategy}
+     * @inheritdoc IProductPricingStrategy
      */
     function productPrice(
         uint256 slicerId,
@@ -113,6 +110,14 @@ contract LinearVRGDAPrices is VRGDAPrices {
                 quantity
             );
         }
+    }
+
+    /**
+     * @inheritdoc IPricingStrategy
+     */
+    function pricingParamsSchema() external pure returns (string memory) {
+        return
+        "(address currency,int128 targetPrice,uint128 min,int256 perTimeUnit)[] linearParams,int256 priceDecayPercent";
     }
 
     /*//////////////////////////////////////////////////////////////

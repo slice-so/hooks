@@ -3,14 +3,8 @@ pragma solidity ^0.8.20;
 
 import {IERC721} from "@openzeppelin-5.3.0/token/ERC721/IERC721.sol";
 import {IERC1155} from "@openzeppelin-5.3.0/token/ERC1155/IERC1155.sol";
-import {
-    IProductsModule,
-    DiscountParams,
-    ProductDiscounts,
-    DiscountType,
-    TieredDiscount,
-    NFTType
-} from "../TieredDiscount.sol";
+import {IProductsModule, IPricingStrategy, PricingStrategy} from "@/utils/PricingStrategy.sol";
+import {DiscountParams, ProductDiscounts, DiscountType, TieredDiscount, NFTType} from "../TieredDiscount.sol";
 import {CurrencyParams} from "../types/CurrencyParams.sol";
 
 /**
@@ -29,22 +23,10 @@ contract NFTDiscount is TieredDiscount {
         CONFIGURATION
     //////////////////////////////////////////////////////////////*/
 
-    function pricingParamsSchema() external pure returns (string memory) {
-        return
-        "(address currency,uint240 basePrice,bool isFree,uint8 discountType,(address nft,uint80 discount,uint8 minQuantity,uint8 nftType,uint256 tokenId)[] discounts)[] allCurrencyParams";
-    }
-
-    /*//////////////////////////////////////////////////////////////
-        FUNCTIONS
-    //////////////////////////////////////////////////////////////*/
-
     /**
+     * @inheritdoc PricingStrategy
      * @notice Set base price and NFT discounts for a product.
      * @dev Discounts must be sorted in descending order
-     *
-     * @param slicerId ID of the slicer to set the price params for.
-     * @param productId ID of the product to set the price params for.
-     * @param params Array of `CurrencyParams` structs
      */
     function _setProductPrice(uint256 slicerId, uint256 productId, bytes memory params) internal override {
         (CurrencyParams[] memory allCurrencyParams) = abi.decode(params, (CurrencyParams[]));
@@ -120,15 +102,16 @@ contract NFTDiscount is TieredDiscount {
     }
 
     /**
-     * @notice Function called by Slice protocol to calculate current product price.
-     *         Base price is returned if user does not have a discount.
-     *
-     * @param currency Currency chosen for the purchase
-     * @param quantity Number of units purchased
-     * @param buyer Address of the buyer
-     * @param discountParams `ProductDiscounts` struct
-     *
-     * @return ethPrice and currencyPrice of product.
+     * @inheritdoc IPricingStrategy
+     */
+    function pricingParamsSchema() external pure returns (string memory) {
+        return
+        "(address currency,uint240 basePrice,bool isFree,uint8 discountType,(address nft,uint80 discount,uint8 minQuantity,uint8 nftType,uint256 tokenId)[] discounts)[] allCurrencyParams";
+    }
+
+    /**
+     * @inheritdoc TieredDiscount
+     * @notice Base price is returned if user does not have a discount.
      */
     function _productPrice(
         uint256,

@@ -7,7 +7,7 @@ import {IERC1155} from "@openzeppelin-5.3.0/interfaces/IERC1155.sol";
 
 /**
  * @title Base Girls Scout - Slice onchain action
- * @notice Mints Base Girls Scout NFTs to the buyer.
+ * @notice Product onchain action that mints Base Girls Scout NFTs to the buyer on every purchase.
  * @author Slice <jacopo.eth>
  */
 contract BaseGirlsScout_SliceHook is ProductOnchainAction, Ownable {

@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {IProductsModule, PricingStrategy} from "@/utils/PricingStrategy.sol";
+import {IProductsModule, IProductPricingStrategy, PricingStrategy} from "@/utils/PricingStrategy.sol";
 import {ProductDiscounts, DiscountType} from "./types/ProductDiscounts.sol";
 import {DiscountParams, NFTType} from "./types/DiscountParams.sol";
 
 /**
+ * @title   TieredDiscount
  * @notice  Tiered discounts based on asset ownership
  * @author  Slice <jacopo.eth>
  */
@@ -37,7 +38,7 @@ abstract contract TieredDiscount is PricingStrategy {
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @notice See {ISliceProductPrice}
+     * @inheritdoc IProductPricingStrategy
      */
     function productPrice(
         uint256 slicerId,
@@ -60,6 +61,19 @@ abstract contract TieredDiscount is PricingStrategy {
         INTERNAL
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @notice Logic for calculating product price. To be implemented by child contracts.
+     *
+     * @param slicerId ID of the slicer to set the price params for.
+     * @param productId ID of the product to set the price params for.
+     * @param currency Currency chosen for the purchase
+     * @param quantity Number of units purchased
+     * @param buyer Address of the buyer.
+     * @param data Data passed to the productPrice function.
+     * @param discountParams `ProductDiscounts` struct.
+     *
+     * @return ethPrice and currencyPrice of product.
+     */
     function _productPrice(
         uint256 slicerId,
         uint256 productId,

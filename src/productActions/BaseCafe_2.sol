@@ -5,6 +5,7 @@ import {IProductsModule, ProductOnchainAction} from "@/utils/ProductOnchainActio
 
 /**
  * @title Base Cafe - Slice onchain action
+ * @notice Product onchain action that mints an NFT to the buyer on every purchase.
  * @author Slice <jacopo.eth>
  */
 contract BaseCafe is ProductOnchainAction {
