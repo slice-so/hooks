@@ -21,7 +21,7 @@ contract DeployScript is BaseScript, SetUpContractsList {
         string memory prompt = "\nPricing strategies available to deploy:\n";
         string memory lastFolder = "";
         for (uint256 i = 0; i < contractNames.length; i++) {
-            string memory folder = _getFolderName(contractNames[i].path);
+            (, string memory folder) = _getFolderName(contractNames[i].path);
             if (i == 0 || keccak256(bytes(folder)) != keccak256(bytes(lastFolder))) {
                 prompt = string.concat(prompt, "\n");
                 prompt = string.concat(prompt, folder, "\n");

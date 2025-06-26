@@ -13,6 +13,13 @@ checksum = "9bd3feb8a6ac529ecf2ab1927bf482bfee9abc2568533b155e567715b83ba94e"
 integrity = "16aa3677eec13cfddee8ee412031773a45525d4780b741eab29c746b545afc77"
 
 [[dependencies]]
+name = "erc721a"
+version = "4.3.0"
+url = "https://soldeer-revisions.s3.amazonaws.com/erc721a/4_3_0_14-03-2024_06:28:52_erc721a.zip"
+checksum = "95826815148f5281311395186258940cc01f18d5d95975050a2c5f0f835d476d"
+integrity = "43c1eb15351e04592630e7200eb7a8eca32aedc86be492d4f0c1825065cd70eb"
+
+[[dependencies]]
 name = "forge-std"
 version = "1.9.7"
 url = "https://soldeer-revisions.s3.amazonaws.com/forge-std/1_9_7_28-04-2025_15:55:08_forge-std-1.9.zip"
