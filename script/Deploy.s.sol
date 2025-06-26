@@ -18,14 +18,14 @@ contract DeployScript is BaseScript, SetUpContractsList {
     }
 
     function _promptContractName() internal returns (string memory contractName) {
-        string memory prompt = "\nPricing strategies available to deploy:\n";
-        string memory lastFolder = "";
+        string memory prompt = "\nContracts available to deploy:\n";
+        string memory lastTopFolder = "";
         for (uint256 i = 0; i < contractNames.length; i++) {
-            (, string memory folder) = _getFolderName(contractNames[i].path);
-            if (i == 0 || keccak256(bytes(folder)) != keccak256(bytes(lastFolder))) {
-                prompt = string.concat(prompt, "\n");
-                prompt = string.concat(prompt, folder, "\n");
-                lastFolder = folder;
+            (string memory topFolderName,) = _getFolderName(contractNames[i].path);
+            // Print top-level folder if changed
+            if (i == 0 || keccak256(bytes(topFolderName)) != keccak256(bytes(lastTopFolder))) {
+                prompt = string.concat(prompt, "\n", topFolderName, "\n");
+                lastTopFolder = topFolderName;
             }
             prompt = string.concat(prompt, "    ", vm.toString(contractNames[i].id), ") ", contractNames[i].name, "\n");
         }

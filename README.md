@@ -35,11 +35,10 @@ You will need a copy of [Foundry](https://github.com/foundry-rs/foundry) install
 
 <!-- 
 TODO:
-- remove contracts under /utils folders from parsed contracts in deploy script 
+- fix licenses
+- document all contracts well with comments  
 - add IERC165 supportInterface to all slice hooks interfaces 
 - add base tests that apply by default to all strategies, products and 
-- fix licenses
 
-- document all contracts well with comments  
 - Finalize readme with detailed info on how to quickly get started writing slice hooks
  -->

@@ -228,11 +228,72 @@ abstract contract SetUpContractsList is Script {
         }
     }
 
+    // Helper to check if a path is or is under a 'utils' folder
+    function _isExcludedPath(string memory path) internal pure returns (bool) {
+        bytes memory pathBytes = bytes(path);
+        bytes memory utilsBytes = bytes("/utils");
+        for (uint256 i = 0; i + utilsBytes.length <= pathBytes.length; i++) {
+            bool matchFound = true;
+            for (uint256 j = 0; j < utilsBytes.length; j++) {
+                if (pathBytes[i + j] != utilsBytes[j]) {
+                    matchFound = false;
+                    break;
+                }
+            }
+            if (matchFound) {
+                uint256 afterIdx = i + utilsBytes.length;
+                if (afterIdx == pathBytes.length || pathBytes[afterIdx] == 0x2f) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    // Helper to get the last segment of a path (folder or file name)
+    function _getLastPathSegment(string memory path) internal pure returns (string memory) {
+        bytes memory pathBytes = bytes(path);
+        uint256 lastSlash = 0;
+        for (uint256 i = 0; i < pathBytes.length; i++) {
+            if (pathBytes[i] == 0x2f) {
+                // '/'
+                lastSlash = i + 1;
+            }
+        }
+        if (lastSlash >= pathBytes.length) return "";
+        bytes memory segment = new bytes(pathBytes.length - lastSlash);
+        for (uint256 i = 0; i < segment.length; i++) {
+            segment[i] = pathBytes[lastSlash + i];
+        }
+        return string(segment);
+    }
+
     function _recordContractsOnPath(string memory path) internal {
+        // Exclude any path that is or is under a 'utils' folder
+        if (_isExcludedPath(path)) {
+            return;
+        }
         VmSafe.DirEntry[] memory files = vm.readDir(path);
+        bool isTopLevel = keccak256(bytes(path)) == keccak256(bytes(CONTRACT_PATH));
         for (uint256 i = 0; i < files.length; i++) {
             VmSafe.DirEntry memory file = files[i];
+            // Exclude any file or directory under a 'utils' folder
+            if (_isExcludedPath(file.path)) {
+                continue;
+            }
             if (file.isDir) {
+                if (isTopLevel) {
+                    string memory folderName = _getLastPathSegment(file.path);
+                    // Only include specific top-level folders
+                    if (
+                        keccak256(bytes(folderName)) != keccak256(bytes("internal"))
+                            && keccak256(bytes(folderName)) != keccak256(bytes("actions"))
+                            && keccak256(bytes(folderName)) != keccak256(bytes("pricingStrategies"))
+                            && keccak256(bytes(folderName)) != keccak256(bytes("pricingStrategyActions"))
+                    ) {
+                        continue;
+                    }
+                }
                 _recordContractsOnPath(file.path);
             } else if (_endsWith(file.path, ".sol")) {
                 string memory content = vm.readFile(file.path);

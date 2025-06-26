@@ -9,8 +9,4 @@ contract WriteAddressesScript is SetUpContractsList {
     function run(string memory contractName) external {
         writeAddressesJson(contractName);
     }
-
-    function run() external {
-        writeAddressesJson("NFTDiscount");
-    }
 }
