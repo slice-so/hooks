@@ -21,20 +21,20 @@ import {ITokenERC1155} from "./utils/ITokenERC1155.sol";
  */
 contract FirstForFree is PricingStrategyAction {
     /*//////////////////////////////////////////////////////////////
-                            MUTABLE STORAGE
+        MUTABLE STORAGE
     //////////////////////////////////////////////////////////////*/
 
     mapping(uint256 slicerId => mapping(uint256 productId => ProductParams price)) public usdcPrices;
     mapping(address buyer => mapping(uint256 slicerId => uint256 purchases)) public purchases;
 
     /*//////////////////////////////////////////////////////////////
-                              CONSTRUCTOR
+        CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
     constructor(IProductsModule productsModuleAddress) PricingStrategyAction(productsModuleAddress) {}
 
     /*//////////////////////////////////////////////////////////////
-                            CONFIGURATION
+        CONFIGURATION
     //////////////////////////////////////////////////////////////*/
 
     /**
@@ -127,7 +127,7 @@ contract FirstForFree is PricingStrategyAction {
     }
 
     /*//////////////////////////////////////////////////////////////
-                            INTERNAL FUNCTIONS
+        INTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
     function _isEligible(address buyer, TokenCondition[] memory eligibleTokens)

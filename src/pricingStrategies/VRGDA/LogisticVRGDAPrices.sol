@@ -20,20 +20,20 @@ import {IProductsModule, VRGDAPrices} from "./VRGDAPrices.sol";
 /// @author  Slice <jacopo.eth>
 contract LogisticVRGDAPrices is VRGDAPrices {
     /*//////////////////////////////////////////////////////////////
-                                STORAGE
+        STORAGE
     //////////////////////////////////////////////////////////////*/
 
     // Mapping from slicerId to productId to LogisticProductParams
     mapping(uint256 => mapping(uint256 => LogisticProductParams)) private _productParams;
 
     /*//////////////////////////////////////////////////////////////
-                               CONSTRUCTOR
+        CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
     constructor(IProductsModule productsModuleAddress) VRGDAPrices(productsModuleAddress) {}
 
     /*//////////////////////////////////////////////////////////////
-                             CONFIGURATION
+        CONFIGURATION
     //////////////////////////////////////////////////////////////*/
 
     function pricingParamsSchema() external pure returns (string memory) {
@@ -123,7 +123,7 @@ contract LogisticVRGDAPrices is VRGDAPrices {
     }
 
     /*//////////////////////////////////////////////////////////////
-                              PRICING LOGIC
+        PRICING LOGIC
     //////////////////////////////////////////////////////////////*/
 
     /// @notice Same as `getVRGDAPrice` but which additionally accepts `logisticLimit` and

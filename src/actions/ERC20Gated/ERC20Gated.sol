@@ -12,19 +12,19 @@ import {IProductsModule, OnchainAction, IOnchainAction} from "@/utils/OnchainAct
  */
 contract ERC20Gated is OnchainAction {
     /*//////////////////////////////////////////////////////////////
-                            MUTABLE STORAGE
+        MUTABLE STORAGE
     //////////////////////////////////////////////////////////////*/
 
     mapping(uint256 slicerId => mapping(uint256 productId => ERC20Gate[] gates)) public tokenGates;
 
     /*//////////////////////////////////////////////////////////////
-                            CONSTRUCTOR
+        CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
     constructor(IProductsModule productsModuleAddress) OnchainAction(productsModuleAddress) {}
 
     /*//////////////////////////////////////////////////////////////
-                            CONFIGURATION
+        CONFIGURATION
     //////////////////////////////////////////////////////////////*/
 
     /**

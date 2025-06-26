@@ -14,19 +14,19 @@ import {TokenType, NFTGate, NFTGates} from "./types/NFTGate.sol";
  */
 contract NFTGated is OnchainAction {
     /*//////////////////////////////////////////////////////////////
-                            MUTABLE STORAGE
+        MUTABLE STORAGE
     //////////////////////////////////////////////////////////////*/
 
     mapping(uint256 slicerId => mapping(uint256 productId => NFTGates gates)) public nftGates;
 
     /*//////////////////////////////////////////////////////////////
-                            CONSTRUCTOR
+        CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
     constructor(IProductsModule productsModuleAddress) OnchainAction(productsModuleAddress) {}
 
     /*//////////////////////////////////////////////////////////////
-                            CONFIGURATION
+        CONFIGURATION
     //////////////////////////////////////////////////////////////*/
 
     /**

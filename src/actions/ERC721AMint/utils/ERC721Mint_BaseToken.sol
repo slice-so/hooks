@@ -12,14 +12,14 @@ uint256 constant MAX_ROYALTY = 10_000;
  */
 contract ERC721Mint_BaseToken is ERC721A, IERC2981 {
     /*//////////////////////////////////////////////////////////////
-                                 ERRORS
+        ERRORS
     //////////////////////////////////////////////////////////////*/
 
     error NotMinter();
     error MaxSupplyExceeded();
 
     /*//////////////////////////////////////////////////////////////
-                                STORAGE
+        STORAGE
     //////////////////////////////////////////////////////////////*/
 
     address public immutable minter;
@@ -31,7 +31,7 @@ contract ERC721Mint_BaseToken is ERC721A, IERC2981 {
     string public tokenURI_;
 
     /*//////////////////////////////////////////////////////////////
-                              CONSTRUCTOR
+        CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
     constructor(
@@ -53,7 +53,7 @@ contract ERC721Mint_BaseToken is ERC721A, IERC2981 {
     }
 
     /*//////////////////////////////////////////////////////////////
-                            ACTION FUNCTIONS
+        ACTION FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
     function mint(address to, uint256 amount) public {
@@ -80,7 +80,7 @@ contract ERC721Mint_BaseToken is ERC721A, IERC2981 {
     }
 
     /*//////////////////////////////////////////////////////////////
-                            ERC721A FUNCTIONS
+        ERC721A FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
     /**
@@ -128,7 +128,7 @@ contract ERC721Mint_BaseToken is ERC721A, IERC2981 {
     }
 
     /*//////////////////////////////////////////////////////////////
-                            INTERNAL FUNCTIONS
+        INTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
     function _setMaxSupply(uint256 maxSupply_) internal {

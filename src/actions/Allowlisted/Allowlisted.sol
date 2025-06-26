@@ -12,19 +12,19 @@ import {IProductsModule, OnchainAction, IOnchainAction} from "@/utils/OnchainAct
  */
 contract Allowlisted is OnchainAction {
     /*//////////////////////////////////////////////////////////////
-                            MUTABLE STORAGE
+        MUTABLE STORAGE
     //////////////////////////////////////////////////////////////*/
 
     mapping(uint256 slicerId => mapping(uint256 productId => bytes32 merkleRoot)) public merkleRoots;
 
     /*//////////////////////////////////////////////////////////////
-                            CONSTRUCTOR
+        CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
     constructor(IProductsModule productsModuleAddress) OnchainAction(productsModuleAddress) {}
 
     /*//////////////////////////////////////////////////////////////
-                            CONFIGURATION
+        CONFIGURATION
     //////////////////////////////////////////////////////////////*/
 
     /**

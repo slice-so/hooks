@@ -11,20 +11,20 @@ import {IProductsModule, VRGDAPrices} from "./VRGDAPrices.sol";
 /// @author  Slice <jacopo.eth>
 contract LinearVRGDAPrices is VRGDAPrices {
     /*//////////////////////////////////////////////////////////////
-                                STORAGE
+        STORAGE
     //////////////////////////////////////////////////////////////*/
 
     // Mapping from slicerId to productId to ProductParams
     mapping(uint256 => mapping(uint256 => LinearProductParams)) private _productParams;
 
     /*//////////////////////////////////////////////////////////////
-                               CONSTRUCTOR
+        CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
     constructor(IProductsModule productsModuleAddress) VRGDAPrices(productsModuleAddress) {}
 
     /*//////////////////////////////////////////////////////////////
-                             CONFIGURATION
+        CONFIGURATION
     //////////////////////////////////////////////////////////////*/
 
     function pricingParamsSchema() external pure returns (string memory) {
@@ -116,7 +116,7 @@ contract LinearVRGDAPrices is VRGDAPrices {
     }
 
     /*//////////////////////////////////////////////////////////////
-                               INTERNAL
+        INTERNAL
     //////////////////////////////////////////////////////////////*/
 
     /// @dev Given a number of products sold, return the target time that number of products should be sold by.

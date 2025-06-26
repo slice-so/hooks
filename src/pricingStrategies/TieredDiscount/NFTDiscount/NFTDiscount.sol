@@ -20,13 +20,13 @@ import {CurrencyParams} from "../types/CurrencyParams.sol";
  */
 contract NFTDiscount is TieredDiscount {
     /*//////////////////////////////////////////////////////////////
-                              CONSTRUCTOR
+        CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
     constructor(IProductsModule productsModuleAddress) TieredDiscount(productsModuleAddress) {}
 
     /*//////////////////////////////////////////////////////////////
-                             CONFIGURATION
+        CONFIGURATION
     //////////////////////////////////////////////////////////////*/
 
     function pricingParamsSchema() external pure returns (string memory) {
@@ -35,7 +35,7 @@ contract NFTDiscount is TieredDiscount {
     }
 
     /*//////////////////////////////////////////////////////////////
-                               FUNCTIONS
+        FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
     /**
@@ -153,7 +153,7 @@ contract NFTDiscount is TieredDiscount {
     }
 
     /*//////////////////////////////////////////////////////////////
-                                INTERNAL
+        INTERNAL
     //////////////////////////////////////////////////////////////*/
 
     /**

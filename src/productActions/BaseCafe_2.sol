@@ -9,14 +9,14 @@ import {IProductsModule, ProductOnchainAction} from "@/utils/ProductOnchainActio
  */
 contract BaseCafe is ProductOnchainAction {
     /*//////////////////////////////////////////////////////////////
-                           IMMUTABLE STORAGE
+        IMMUTABLE STORAGE
     //////////////////////////////////////////////////////////////*/
 
     ITokenERC1155 public constant MINT_NFT_COLLECTION = ITokenERC1155(0x8485A580A9975deF42F8C7c5C63E9a0FF058561D);
     uint256 public constant MINT_NFT_TOKEN_ID = 9;
 
     /*//////////////////////////////////////////////////////////////
-                              CONSTRUCTOR
+        CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
     constructor(IProductsModule productsModuleAddress, uint256 slicerId)
@@ -24,7 +24,7 @@ contract BaseCafe is ProductOnchainAction {
     {}
 
     /*//////////////////////////////////////////////////////////////
-                               FUNCTIONS
+        FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
     /**

@@ -9,21 +9,21 @@ import {ERC20} from "@openzeppelin-5.3.0/token/ERC20/ERC20.sol";
  */
 contract ERC20Mint_BaseToken is ERC20 {
     /*//////////////////////////////////////////////////////////////
-                                ERRORS
+        ERRORS
     //////////////////////////////////////////////////////////////*/
 
     error NotMinter();
     error MaxSupplyExceeded();
 
     /*//////////////////////////////////////////////////////////////
-                                STORAGE
+        STORAGE
     //////////////////////////////////////////////////////////////*/
 
     address public immutable minter;
     uint256 public maxSupply;
 
     /*//////////////////////////////////////////////////////////////
-                              CONSTRUCTOR
+        CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
     constructor(string memory name_, string memory symbol_, uint256 maxSupply_) ERC20(name_, symbol_) {
@@ -32,7 +32,7 @@ contract ERC20Mint_BaseToken is ERC20 {
     }
 
     /*//////////////////////////////////////////////////////////////
-                               FUNCTIONS
+        FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
     function mint(address to, uint256 amount) public {
@@ -49,7 +49,7 @@ contract ERC20Mint_BaseToken is ERC20 {
     }
 
     /*//////////////////////////////////////////////////////////////
-                            INTERNAL FUNCTIONS
+        INTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
     function _setMaxSupply(uint256 maxSupply_) internal {

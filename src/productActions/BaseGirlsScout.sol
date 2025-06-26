@@ -12,20 +12,20 @@ import {IERC1155} from "@openzeppelin-5.3.0/interfaces/IERC1155.sol";
  */
 contract BaseGirlsScout_SliceHook is ProductOnchainAction, Ownable {
     /*//////////////////////////////////////////////////////////////
-                           IMMUTABLE STORAGE
+        IMMUTABLE STORAGE
     //////////////////////////////////////////////////////////////*/
 
     ITokenERC1155 public MINT_NFT_COLLECTION = ITokenERC1155(0x7A110890DF5D95CefdB0151143E595b755B7c9b7);
     uint256 public MINT_NFT_TOKEN_ID = 1;
 
     /*//////////////////////////////////////////////////////////////
-                                STORAGE
+        STORAGE
     //////////////////////////////////////////////////////////////*/
 
     mapping(uint256 slicerId => bool allowed) public allowedSlicerIds;
 
     /*//////////////////////////////////////////////////////////////
-                              CONSTRUCTOR
+        CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
     constructor(IProductsModule productsModuleAddress, uint256 slicerId)
@@ -37,7 +37,7 @@ contract BaseGirlsScout_SliceHook is ProductOnchainAction, Ownable {
     }
 
     /*//////////////////////////////////////////////////////////////
-                               FUNCTIONS
+        FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
     /**
@@ -52,7 +52,7 @@ contract BaseGirlsScout_SliceHook is ProductOnchainAction, Ownable {
     }
 
     /*//////////////////////////////////////////////////////////////
-                               FUNCTIONS
+        FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
     /**

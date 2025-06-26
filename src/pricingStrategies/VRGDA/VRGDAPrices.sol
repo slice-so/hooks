@@ -11,13 +11,13 @@ import {IProductsModule, PricingStrategy} from "@/utils/PricingStrategy.sol";
  */
 abstract contract VRGDAPrices is PricingStrategy {
     /*//////////////////////////////////////////////////////////////
-                               CONSTRUCTOR
+        CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
     constructor(IProductsModule productsModuleAddress) PricingStrategy(productsModuleAddress) {}
 
     /*//////////////////////////////////////////////////////////////
-                              PRICING LOGIC
+        PRICING LOGIC
     //////////////////////////////////////////////////////////////*/
 
     /// @notice Calculate the price of a product according to the VRGDA formula.

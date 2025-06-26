@@ -11,7 +11,7 @@ import {DiscountParams, NFTType} from "./types/DiscountParams.sol";
  */
 abstract contract TieredDiscount is PricingStrategy {
     /*//////////////////////////////////////////////////////////////
-                                 ERRORS
+        ERRORS
     //////////////////////////////////////////////////////////////*/
 
     error WrongCurrency();
@@ -20,20 +20,20 @@ abstract contract TieredDiscount is PricingStrategy {
     error DiscountsNotDescending(DiscountParams nft);
 
     /*//////////////////////////////////////////////////////////////
-                            MUTABLE STORAGE
+        MUTABLE STORAGE
     //////////////////////////////////////////////////////////////*/
 
     mapping(uint256 slicerId => mapping(uint256 productId => mapping(address currency => ProductDiscounts))) public
         productDiscounts;
 
     /*//////////////////////////////////////////////////////////////
-                              CONSTRUCTOR
+        CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
     constructor(IProductsModule productsModuleAddress) PricingStrategy(productsModuleAddress) {}
 
     /*//////////////////////////////////////////////////////////////
-                               FUNCTIONS
+        FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
     /**
@@ -57,7 +57,7 @@ abstract contract TieredDiscount is PricingStrategy {
     }
 
     /*//////////////////////////////////////////////////////////////
-                                INTERNAL
+        INTERNAL
     //////////////////////////////////////////////////////////////*/
 
     function _productPrice(
