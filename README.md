@@ -35,8 +35,6 @@ You will need a copy of [Foundry](https://github.com/foundry-rs/foundry) install
 
 <!-- 
 TODO:
-- add IERC165 supportInterface to all slice hooks interfaces 
-- fix licenses
 - document all contracts well with comments  
 - add base tests that apply by default to all strategies, products and 
 
