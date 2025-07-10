@@ -115,7 +115,7 @@ contract LinearVRGDAPrices is VRGDAPrices {
     /**
      * @inheritdoc IPricingStrategy
      */
-    function pricingParamsSchema() external pure returns (string memory) {
+    function productParamsSchema() external pure returns (string memory) {
         return
         "(address currency,int128 targetPrice,uint128 min,int256 perTimeUnit)[] linearParams,int256 priceDecayPercent";
     }

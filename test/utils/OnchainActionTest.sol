@@ -11,6 +11,7 @@ abstract contract OnchainActionTest is ProductOnchainActionTest {
 
     // TODO:
     function testActionParamsSchema() public {
-        // assertEq(IPricingStrategy(hook).pricingParamsSchema(), "");
+        string memory schema = IOnchainAction(hook).actionParamsSchema();
+        assertTrue(bytes(schema).length > 0);
     }
 }

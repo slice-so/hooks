@@ -15,8 +15,20 @@ abstract contract HookTest is Test {
     }
 
     function testHookInitialized() public view {
-        assertTrue(hook != address(0));
+        assertTrue(hook != address(0), "Hook address is not set with `_setHook`");
     }
+
+    // TODO: parse the schema and generate the params
+    // function generateParamsFromSchema(string memory schema) public pure returns (bytes memory) {
+    // string[] memory params = vm.split(schema, ",");
+
+    // example schema: "(address currency,int128 targetPrice,uint128 min,int256 perTimeUnit)[] linearParams,int256 priceDecayPercent";
+
+    // for (uint256 i = 0; i < params.length; i++) {
+    // string[] memory keyValue = vm.split(params[i], " ");
+    // ...
+    // }
+    // }
 }
 
 contract MockProductsModule {
