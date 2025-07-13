@@ -7,7 +7,7 @@ dynamic_test_linking = true
 libs = ["dependencies", "../core/src", "../core/dependencies"]
 fs_permissions = [{ access = "read", path = "./src"}, { access= "read", path = "./broadcast/Deploy.s.sol/8453/run-latest.json"}, { access = "read-write", path = "./deployments"}, { access = "read", path = "./out"}]
 remappings = [
-  "slice/=dependencies/slice-0.0.3/",
+  "slice/=dependencies/slice-0.0.4/",
   "@openzeppelin-5.3.0/=dependencies/@openzeppelin-contracts-5.3.0/",
   "@openzeppelin-4.8.0/=dependencies/@openzeppelin-contracts-4.8.0/",
   "@erc721a/=dependencies/erc721a-4.3.0/contracts/",
