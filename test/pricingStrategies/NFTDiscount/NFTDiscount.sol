@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {PricingStrategyTest} from "@test/utils/PricingStrategyTest.sol";
+import {RegistryPricingStrategyTest} from "@test/utils/RegistryPricingStrategyTest.sol";
 import {console2} from "forge-std/console2.sol";
 import {
     IProductsModule,
@@ -25,7 +25,7 @@ uint80 constant fixedDiscountOne = 100;
 uint80 constant fixedDiscountTwo = 200;
 uint80 constant percentDiscount = 1000; // 10%
 
-contract NFTDiscountTest is PricingStrategyTest {
+contract NFTDiscountTest is RegistryPricingStrategyTest {
     NFTDiscount erc721GatedDiscount;
     MockERC721 nftOne = new MockERC721();
     MockERC721 nftTwo = new MockERC721();
@@ -54,7 +54,7 @@ contract NFTDiscountTest is PricingStrategyTest {
         currenciesParams[0] = CurrencyParams(ETH, basePrice, false, DiscountType.Absolute, discounts);
 
         vm.prank(owner);
-        erc721GatedDiscount.setProductPrice(slicerId, productId, abi.encode(currenciesParams));
+        erc721GatedDiscount.configureProduct(slicerId, productId, abi.encode(currenciesParams));
     }
 
     function testDeploy() public view {
@@ -77,7 +77,7 @@ contract NFTDiscountTest is PricingStrategyTest {
         currenciesParams[0] = CurrencyParams(ETH, basePrice, false, DiscountType.Absolute, discounts);
 
         vm.prank(owner);
-        erc721GatedDiscount.setProductPrice(slicerId, productId, abi.encode(currenciesParams));
+        erc721GatedDiscount.configureProduct(slicerId, productId, abi.encode(currenciesParams));
 
         /// check product price
         (uint256 ethPrice, uint256 currencyPrice) =
@@ -103,7 +103,7 @@ contract NFTDiscountTest is PricingStrategyTest {
         currenciesParams[0] = CurrencyParams(USDC, basePrice, false, DiscountType.Absolute, discounts);
 
         vm.prank(owner);
-        erc721GatedDiscount.setProductPrice(slicerId, productId, abi.encode(currenciesParams));
+        erc721GatedDiscount.configureProduct(slicerId, productId, abi.encode(currenciesParams));
 
         /// check product price
         (uint256 ethPrice, uint256 currencyPrice) =
@@ -129,7 +129,7 @@ contract NFTDiscountTest is PricingStrategyTest {
         currenciesParams[0] = CurrencyParams(USDC, basePrice, false, DiscountType.Absolute, discounts);
 
         vm.prank(owner);
-        erc721GatedDiscount.setProductPrice(slicerId, productId, abi.encode(currenciesParams));
+        erc721GatedDiscount.configureProduct(slicerId, productId, abi.encode(currenciesParams));
 
         /// check product price
         (uint256 ethPrice, uint256 currencyPrice) =
@@ -174,7 +174,7 @@ contract NFTDiscountTest is PricingStrategyTest {
         currenciesParams[1] = CurrencyParams(USDC, basePrice, false, DiscountType.Absolute, discountsTwo);
 
         vm.prank(owner);
-        erc721GatedDiscount.setProductPrice(slicerId, productId, abi.encode(currenciesParams));
+        erc721GatedDiscount.configureProduct(slicerId, productId, abi.encode(currenciesParams));
 
         /// check product price for ETH
         (uint256 ethPrice, uint256 currencyPrice) =
@@ -300,7 +300,7 @@ contract NFTDiscountTest is PricingStrategyTest {
         currenciesParams[0] = CurrencyParams(ETH, basePrice, false, DiscountType.Relative, discounts);
 
         vm.prank(owner);
-        erc721GatedDiscount.setProductPrice(slicerId, productId, abi.encode(currenciesParams));
+        erc721GatedDiscount.configureProduct(slicerId, productId, abi.encode(currenciesParams));
 
         /// check product price
         (uint256 ethPrice, uint256 currencyPrice) =
@@ -326,7 +326,7 @@ contract NFTDiscountTest is PricingStrategyTest {
         currenciesParams[0] = CurrencyParams(ETH, basePrice, false, DiscountType.Relative, discounts);
 
         vm.prank(owner);
-        erc721GatedDiscount.setProductPrice(slicerId, productId, abi.encode(currenciesParams));
+        erc721GatedDiscount.configureProduct(slicerId, productId, abi.encode(currenciesParams));
 
         // buy multiple products
         quantity = 6;

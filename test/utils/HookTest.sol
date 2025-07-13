@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 import {Test} from "forge-std/Test.sol";
-import {IProductsModule} from "@/utils/PricingStrategy.sol";
+import {IProductsModule} from "@/utils/OnchainAction.sol";
 
 abstract contract HookTest is Test {
     MockProductsModule public mockProductsModule = new MockProductsModule();
@@ -14,7 +14,7 @@ abstract contract HookTest is Test {
         hook = _hookAddress;
     }
 
-    function testHookInitialized() public view {
+    function testSetup_HookInitialized() public view {
         assertTrue(hook != address(0), "Hook address is not set with `_setHook`");
     }
 

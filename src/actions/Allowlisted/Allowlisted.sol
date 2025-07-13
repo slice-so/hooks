@@ -2,15 +2,20 @@
 pragma solidity ^0.8.20;
 
 import {MerkleProof} from "@openzeppelin-5.3.0/utils/cryptography/MerkleProof.sol";
-import {IProductsModule, OnchainAction, IOnchainAction} from "@/utils/OnchainAction.sol";
+import {
+    IProductsModule,
+    RegistryOnchainAction,
+    HookRegistry,
+    IOnchainAction,
+    IHookRegistry
+} from "@/utils/RegistryOnchainAction.sol";
 
 /**
  * @title   Allowlisted
- * @notice  Action with allowlist requirement.
- * @dev     Implements allowlist functionality to products.
+ * @notice  Onchain action registry for allowlist requirement.
  * @author  Slice <jacopo.eth>
  */
-contract Allowlisted is OnchainAction {
+contract Allowlisted is RegistryOnchainAction {
     /*//////////////////////////////////////////////////////////////
         MUTABLE STORAGE
     //////////////////////////////////////////////////////////////*/
@@ -21,14 +26,14 @@ contract Allowlisted is OnchainAction {
         CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(IProductsModule productsModuleAddress) OnchainAction(productsModuleAddress) {}
+    constructor(IProductsModule productsModuleAddress) RegistryOnchainAction(productsModuleAddress) {}
 
     /*//////////////////////////////////////////////////////////////
         CONFIGURATION
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @inheritdoc OnchainAction
+     * @inheritdoc IOnchainAction
      * @dev Checks if the account is in the allowlist.
      */
     function isPurchaseAllowed(
@@ -51,18 +56,18 @@ contract Allowlisted is OnchainAction {
     }
 
     /**
-     * @inheritdoc OnchainAction
+     * @inheritdoc HookRegistry
      * @dev Sets the Merkle root for the allowlist.
      */
-    function _setProductAction(uint256 slicerId, uint256 productId, bytes memory params) internal override {
+    function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) internal override {
         (bytes32 merkleRoot) = abi.decode(params, (bytes32));
         merkleRoots[slicerId][productId] = merkleRoot;
     }
 
     /**
-     * @inheritdoc IOnchainAction
+     * @inheritdoc IHookRegistry
      */
-    function actionParamsSchema() external pure returns (string memory) {
+    function paramsSchema() external pure override returns (string memory) {
         return "bytes32 merkleRoot";
     }
 }

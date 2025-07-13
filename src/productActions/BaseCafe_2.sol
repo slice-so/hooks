@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {IProductsModule, ProductOnchainAction} from "@/utils/ProductOnchainAction.sol";
+import {IProductsModule, OnchainAction} from "@/utils/OnchainAction.sol";
 
 /**
- * @title Base Cafe - Slice onchain action
- * @notice Product onchain action that mints an NFT to the buyer on every purchase.
+ * @title BaseCafe
+ * @notice Onchain action that mints an NFT to the buyer on every purchase.
  * @author Slice <jacopo.eth>
  */
-contract BaseCafe is ProductOnchainAction {
+contract BaseCafe is OnchainAction {
     /*//////////////////////////////////////////////////////////////
         IMMUTABLE STORAGE
     //////////////////////////////////////////////////////////////*/
@@ -21,7 +21,7 @@ contract BaseCafe is ProductOnchainAction {
     //////////////////////////////////////////////////////////////*/
 
     constructor(IProductsModule productsModuleAddress, uint256 slicerId)
-        ProductOnchainAction(productsModuleAddress, slicerId)
+        OnchainAction(productsModuleAddress, slicerId)
     {}
 
     /*//////////////////////////////////////////////////////////////
@@ -29,7 +29,7 @@ contract BaseCafe is ProductOnchainAction {
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @inheritdoc ProductOnchainAction
+     * @inheritdoc OnchainAction
      * @notice Mint `quantity` NFTs to `account` on purchase
      */
     function _onProductPurchase(uint256, uint256, address buyer, uint256 quantity, bytes memory, bytes memory)

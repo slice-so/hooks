@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {IProductsModule, IProductPricingStrategy, PricingStrategy} from "@/utils/PricingStrategy.sol";
+import {RegistryPricingStrategy, IPricingStrategy, IProductsModule} from "@/utils/RegistryPricingStrategy.sol";
 import {ProductDiscounts, DiscountType} from "./types/ProductDiscounts.sol";
 import {DiscountParams, NFTType} from "./types/DiscountParams.sol";
 
@@ -10,7 +10,7 @@ import {DiscountParams, NFTType} from "./types/DiscountParams.sol";
  * @notice  Tiered discounts based on asset ownership
  * @author  Slice <jacopo.eth>
  */
-abstract contract TieredDiscount is PricingStrategy {
+abstract contract TieredDiscount is RegistryPricingStrategy {
     /*//////////////////////////////////////////////////////////////
         ERRORS
     //////////////////////////////////////////////////////////////*/
@@ -31,14 +31,14 @@ abstract contract TieredDiscount is PricingStrategy {
         CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(IProductsModule productsModuleAddress) PricingStrategy(productsModuleAddress) {}
+    constructor(IProductsModule productsModuleAddress) RegistryPricingStrategy(productsModuleAddress) {}
 
     /*//////////////////////////////////////////////////////////////
         FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @inheritdoc IProductPricingStrategy
+     * @inheritdoc IPricingStrategy
      */
     function productPrice(
         uint256 slicerId,

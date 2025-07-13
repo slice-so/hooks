@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {IProductsModule, ProductOnchainAction} from "@/utils/ProductOnchainAction.sol";
+import {IProductsModule, OnchainAction} from "@/utils/OnchainAction.sol";
 import {Ownable} from "@openzeppelin-5.3.0/access/Ownable.sol";
 import {IERC1155} from "@openzeppelin-5.3.0/interfaces/IERC1155.sol";
 
 /**
- * @title Base Girls Scout - Slice onchain action
- * @notice Product onchain action that mints Base Girls Scout NFTs to the buyer on every purchase.
+ * @title BaseGirlsScout
+ * @notice Onchain action that mints Base Girls Scout NFTs to the buyer on every purchase.
  * @author Slice <jacopo.eth>
  */
-contract BaseGirlsScout_SliceHook is ProductOnchainAction, Ownable {
+contract BaseGirlsScout is OnchainAction, Ownable {
     /*//////////////////////////////////////////////////////////////
         IMMUTABLE STORAGE
     //////////////////////////////////////////////////////////////*/
@@ -29,7 +29,7 @@ contract BaseGirlsScout_SliceHook is ProductOnchainAction, Ownable {
     //////////////////////////////////////////////////////////////*/
 
     constructor(IProductsModule productsModuleAddress, uint256 slicerId)
-        ProductOnchainAction(productsModuleAddress, slicerId)
+        OnchainAction(productsModuleAddress, slicerId)
         Ownable(msg.sender)
     {
         allowedSlicerIds[2217] = true;
@@ -41,7 +41,7 @@ contract BaseGirlsScout_SliceHook is ProductOnchainAction, Ownable {
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @inheritdoc ProductOnchainAction
+     * @inheritdoc OnchainAction
      * @notice Mint `quantity` NFTs to `account` on purchase
      */
     function _onProductPurchase(uint256, uint256, address buyer, uint256 quantity, bytes memory, bytes memory)

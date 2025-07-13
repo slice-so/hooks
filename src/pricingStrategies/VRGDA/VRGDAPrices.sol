@@ -2,19 +2,19 @@
 pragma solidity ^0.8.20;
 
 import {wadExp, wadMul, unsafeWadMul, toWadUnsafe} from "@/utils/math/SignedWadMath.sol";
-import {IProductsModule, PricingStrategy} from "@/utils/PricingStrategy.sol";
+import {IProductsModule, RegistryPricingStrategy} from "@/utils/RegistryPricingStrategy.sol";
 
 /**
- * @title   VRGDAPrices Pricing Strategy
+ * @title   VRGDAPrices
  * @notice  Variable Rate Gradual Dutch Auction
  * @author  Slice <jacopo.eth>
  */
-abstract contract VRGDAPrices is PricingStrategy {
+abstract contract VRGDAPrices is RegistryPricingStrategy {
     /*//////////////////////////////////////////////////////////////
         CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(IProductsModule productsModuleAddress) PricingStrategy(productsModuleAddress) {}
+    constructor(IProductsModule productsModuleAddress) RegistryPricingStrategy(productsModuleAddress) {}
 
     /*//////////////////////////////////////////////////////////////
         PRICING LOGIC

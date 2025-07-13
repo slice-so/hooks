@@ -3,13 +3,13 @@ pragma solidity ^0.8.20;
 
 import {IERC721} from "@openzeppelin-5.3.0/token/ERC721/IERC721.sol";
 import {IERC1155} from "@openzeppelin-5.3.0/token/ERC1155/IERC1155.sol";
-import {IProductsModule, IPricingStrategy, PricingStrategy} from "@/utils/PricingStrategy.sol";
+import {HookRegistry, IHookRegistry, IProductsModule} from "@/utils/RegistryPricingStrategy.sol";
 import {DiscountParams, ProductDiscounts, DiscountType, TieredDiscount, NFTType} from "../TieredDiscount.sol";
 import {CurrencyParams} from "../types/CurrencyParams.sol";
 
 /**
- * @title   NFTDiscount Pricing Strategy
- * @notice  Discounts based on NFT ownership
+ * @title   NFTDiscount
+ * @notice  Pricing strategy registry for discounts based on NFT ownership
  * @author  Slice <jacopo.eth>
  */
 contract NFTDiscount is TieredDiscount {
@@ -24,11 +24,11 @@ contract NFTDiscount is TieredDiscount {
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @inheritdoc PricingStrategy
+     * @inheritdoc HookRegistry
      * @notice Set base price and NFT discounts for a product.
      * @dev Discounts must be sorted in descending order
      */
-    function _setProductPrice(uint256 slicerId, uint256 productId, bytes memory params) internal override {
+    function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) internal override {
         (CurrencyParams[] memory allCurrencyParams) = abi.decode(params, (CurrencyParams[]));
 
         CurrencyParams memory currencyParams;
@@ -102,9 +102,9 @@ contract NFTDiscount is TieredDiscount {
     }
 
     /**
-     * @inheritdoc IPricingStrategy
+     * @inheritdoc IHookRegistry
      */
-    function pricingParamsSchema() external pure returns (string memory) {
+    function paramsSchema() external pure override returns (string memory) {
         return
         "(address currency,uint240 basePrice,bool isFree,uint8 discountType,(address nft,uint80 discount,uint8 minQuantity,uint8 nftType,uint256 tokenId)[] discounts)[] allCurrencyParams";
     }

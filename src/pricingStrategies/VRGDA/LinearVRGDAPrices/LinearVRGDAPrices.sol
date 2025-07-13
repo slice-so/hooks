@@ -1,15 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import {HookRegistry, IPricingStrategy, IHookRegistry, IProductsModule} from "@/utils/RegistryPricingStrategy.sol";
 import {wadLn, unsafeWadDiv, toDaysWadUnsafe} from "@/utils/math/SignedWadMath.sol";
-import {
-    IProductsModule, IProductPricingStrategy, IPricingStrategy, PricingStrategy
-} from "@/utils/PricingStrategy.sol";
 import {LinearProductParams} from "../types/LinearProductParams.sol";
 import {LinearVRGDAParams} from "../types/LinearVRGDAParams.sol";
 import {VRGDAPrices} from "../VRGDAPrices.sol";
 
-/// @title   Linear Variable Rate Gradual Dutch Auction - Slice pricing strategy
+/// @title   LinearVRGDAPrices
 /// @notice  VRGDA with a linear issuance curve - Price library with different params for each Slice product.
 /// @author  Slice <jacopo.eth>
 contract LinearVRGDAPrices is VRGDAPrices {
@@ -31,10 +29,10 @@ contract LinearVRGDAPrices is VRGDAPrices {
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @inheritdoc PricingStrategy
+     * @inheritdoc HookRegistry
      * @notice Set LinearVRGDAParams for a product.
      */
-    function _setProductPrice(uint256 slicerId, uint256 productId, bytes memory params) internal override {
+    function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) internal override {
         (LinearVRGDAParams[] memory linearParams, int256 priceDecayPercent) =
             abi.decode(params, (LinearVRGDAParams[], int256));
 
@@ -66,7 +64,7 @@ contract LinearVRGDAPrices is VRGDAPrices {
     }
 
     /**
-     * @inheritdoc IProductPricingStrategy
+     * @inheritdoc IPricingStrategy
      */
     function productPrice(
         uint256 slicerId,
@@ -113,9 +111,9 @@ contract LinearVRGDAPrices is VRGDAPrices {
     }
 
     /**
-     * @inheritdoc IPricingStrategy
+     * @inheritdoc IHookRegistry
      */
-    function productParamsSchema() external pure returns (string memory) {
+    function paramsSchema() external pure override returns (string memory) {
         return
         "(address currency,int128 targetPrice,uint128 min,int256 perTimeUnit)[] linearParams,int256 priceDecayPercent";
     }

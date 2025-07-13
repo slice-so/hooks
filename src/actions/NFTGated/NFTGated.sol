@@ -3,16 +3,21 @@ pragma solidity ^0.8.20;
 
 import {IERC721} from "@openzeppelin-5.3.0/interfaces/IERC721.sol";
 import {IERC1155} from "@openzeppelin-5.3.0/interfaces/IERC1155.sol";
-import {IProductsModule, OnchainAction, IOnchainAction} from "@/utils/OnchainAction.sol";
+import {
+    IProductsModule,
+    RegistryOnchainAction,
+    HookRegistry,
+    IOnchainAction,
+    IHookRegistry
+} from "@/utils/RegistryOnchainAction.sol";
 import {TokenType, NFTGate, NFTGates} from "./types/NFTGate.sol";
 
 /**
  * @title   NFTGated
- * @notice  Action with NFT gate requirement.
- * @dev     Implements NFT gate functionality to products.
+ * @notice  Onchain action registry for NFT gating.
  * @author  Slice <jacopo.eth>
  */
-contract NFTGated is OnchainAction {
+contract NFTGated is RegistryOnchainAction {
     /*//////////////////////////////////////////////////////////////
         MUTABLE STORAGE
     //////////////////////////////////////////////////////////////*/
@@ -23,14 +28,14 @@ contract NFTGated is OnchainAction {
         CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(IProductsModule productsModuleAddress) OnchainAction(productsModuleAddress) {}
+    constructor(IProductsModule productsModuleAddress) RegistryOnchainAction(productsModuleAddress) {}
 
     /*//////////////////////////////////////////////////////////////
         CONFIGURATION
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @inheritdoc OnchainAction
+     * @inheritdoc IOnchainAction
      * @dev Checks if `account` owns the required amount of NFT tokens.
      */
     function isPurchaseAllowed(
@@ -64,10 +69,10 @@ contract NFTGated is OnchainAction {
     }
 
     /**
-     * @inheritdoc OnchainAction
-     * @dev Sets the NFT gates for a product.
+     * @inheritdoc HookRegistry
+     * @dev Set the NFT gates for a product.
      */
-    function _setProductAction(uint256 slicerId, uint256 productId, bytes memory params) internal override {
+    function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) internal override {
         (NFTGates memory nftGates_) = abi.decode(params, (NFTGates));
 
         nftGates[slicerId][productId].minOwned = nftGates_.minOwned;
@@ -77,9 +82,9 @@ contract NFTGated is OnchainAction {
     }
 
     /**
-     * @inheritdoc IOnchainAction
+     * @inheritdoc IHookRegistry
      */
-    function actionParamsSchema() external pure returns (string memory) {
+    function paramsSchema() external pure override returns (string memory) {
         return "(address nft,uint8 tokenType,uint80 id,uint8 minQuantity)[] nftGates,uint256 minOwned";
     }
 }

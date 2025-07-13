@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import {HookRegistry, IPricingStrategy, IHookRegistry, IProductsModule} from "@/utils/RegistryPricingStrategy.sol";
 import {
     wadMul,
     toWadUnsafe,
@@ -11,14 +12,11 @@ import {
     wadExp,
     unsafeWadMul
 } from "@/utils/math/SignedWadMath.sol";
-import {
-    IProductsModule, IProductPricingStrategy, IPricingStrategy, PricingStrategy
-} from "@/utils/PricingStrategy.sol";
 import {LogisticProductParams} from "../types/LogisticProductParams.sol";
 import {LogisticVRGDAParams} from "../types/LogisticVRGDAParams.sol";
 import {IProductsModule, VRGDAPrices} from "../VRGDAPrices.sol";
 
-/// @title   Logistic Variable Rate Gradual Dutch Auction - Slice pricing strategy
+/// @title   LogisticVRGDAPrices
 /// @notice  VRGDA with a logistic issuance curve - Price library with different params for each Slice product.
 /// @author  Slice <jacopo.eth>
 contract LogisticVRGDAPrices is VRGDAPrices {
@@ -40,10 +38,10 @@ contract LogisticVRGDAPrices is VRGDAPrices {
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @inheritdoc PricingStrategy
+     * @inheritdoc HookRegistry
      * @notice Set LogisticVRGDAParams for a product.
      */
-    function _setProductPrice(uint256 slicerId, uint256 productId, bytes memory params) internal override {
+    function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) internal override {
         (LogisticVRGDAParams[] memory logisticParams, int256 priceDecayPercent) =
             abi.decode(params, (LogisticVRGDAParams[], int256));
 
@@ -74,7 +72,7 @@ contract LogisticVRGDAPrices is VRGDAPrices {
     }
 
     /**
-     * @inheritdoc IProductPricingStrategy
+     * @inheritdoc IPricingStrategy
      */
     function productPrice(
         uint256 slicerId,
@@ -120,9 +118,9 @@ contract LogisticVRGDAPrices is VRGDAPrices {
     }
 
     /**
-     * @inheritdoc IPricingStrategy
+     * @inheritdoc IHookRegistry
      */
-    function pricingParamsSchema() external pure returns (string memory) {
+    function paramsSchema() external pure override returns (string memory) {
         return
         "(address currency,int128 targetPrice,uint128 min,int256 timeScale)[] logisticParams,int256 priceDecayPercent";
     }

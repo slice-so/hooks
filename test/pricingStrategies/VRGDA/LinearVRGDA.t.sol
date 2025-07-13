@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {console2} from "forge-std/console2.sol";
-import {PricingStrategyTest} from "@test/utils/PricingStrategyTest.sol";
+import {RegistryPricingStrategyTest} from "@test/utils/RegistryPricingStrategyTest.sol";
 import {wadLn, toWadUnsafe, toDaysWadUnsafe, fromDaysWadUnsafe} from "@/utils/math/SignedWadMath.sol";
 
 import "./mocks/MockLinearVRGDAPrices.sol";
@@ -19,7 +18,7 @@ uint128 constant min = 1e18;
 int256 constant priceDecayPercent = 0.31e18;
 int256 constant perTimeUnit = 2e18;
 
-contract LinearVRGDATest is PricingStrategyTest {
+contract LinearVRGDATest is RegistryPricingStrategyTest {
     MockLinearVRGDAPrices vrgda;
 
     function setUp() public {
@@ -33,7 +32,7 @@ contract LinearVRGDATest is PricingStrategyTest {
         bytes memory params = abi.encode(linearParams, priceDecayPercent);
 
         vm.startPrank(address(0));
-        vrgda.setProductPrice(slicerId, productId, params);
+        vrgda.configureProduct(slicerId, productId, params);
         vm.stopPrank();
     }
 
@@ -129,7 +128,7 @@ contract LinearVRGDATest is PricingStrategyTest {
         bytes memory params = abi.encode(linearParams, priceDecayPercent);
 
         vm.startPrank(address(0));
-        vrgda.setProductPrice(slicerId, productId_, params);
+        vrgda.configureProduct(slicerId, productId_, params);
         vm.stopPrank();
 
         // Our VRGDA targets this number of mints at given time.

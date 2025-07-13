@@ -2,15 +2,20 @@
 pragma solidity ^0.8.20;
 
 import {ERC20Gate} from "./types/ERC20Gate.sol";
-import {IProductsModule, OnchainAction, IOnchainAction} from "@/utils/OnchainAction.sol";
+import {
+    IProductsModule,
+    RegistryOnchainAction,
+    HookRegistry,
+    IOnchainAction,
+    IHookRegistry
+} from "@/utils/RegistryOnchainAction.sol";
 
 /**
  * @title   ERC20Gated
- * @notice  Action with ERC20 gate requirement.
- * @dev     Implements ERC20 gate functionality to products.
+ * @notice  Onchain action registry for ERC20 gating.
  * @author  Slice <jacopo.eth>
  */
-contract ERC20Gated is OnchainAction {
+contract ERC20Gated is RegistryOnchainAction {
     /*//////////////////////////////////////////////////////////////
         MUTABLE STORAGE
     //////////////////////////////////////////////////////////////*/
@@ -21,14 +26,14 @@ contract ERC20Gated is OnchainAction {
         CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(IProductsModule productsModuleAddress) OnchainAction(productsModuleAddress) {}
+    constructor(IProductsModule productsModuleAddress) RegistryOnchainAction(productsModuleAddress) {}
 
     /*//////////////////////////////////////////////////////////////
         CONFIGURATION
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @inheritdoc OnchainAction
+     * @inheritdoc IOnchainAction
      * @dev Checks if `account` owns the required amount of all ERC20 tokens.
      */
     function isPurchaseAllowed(
@@ -53,10 +58,10 @@ contract ERC20Gated is OnchainAction {
     }
 
     /**
-     * @inheritdoc OnchainAction
+     * @inheritdoc HookRegistry
      * @dev Sets the ERC20 gates for a product.
      */
-    function _setProductAction(uint256 slicerId, uint256 productId, bytes memory params) internal override {
+    function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) internal override {
         (ERC20Gate[] memory gates) = abi.decode(params, (ERC20Gate[]));
 
         for (uint256 i = 0; i < gates.length; i++) {
@@ -65,9 +70,9 @@ contract ERC20Gated is OnchainAction {
     }
 
     /**
-     * @inheritdoc IOnchainAction
+     * @inheritdoc IHookRegistry
      */
-    function actionParamsSchema() external pure returns (string memory) {
+    function paramsSchema() external pure override returns (string memory) {
         return "(address erc20,uint256 amount)[] erc20Gates";
     }
 }

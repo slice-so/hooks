@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {IProductsModule, OnchainAction, IOnchainAction} from "@/utils/OnchainAction.sol";
+import {IProductsModule, RegistryOnchainAction, HookRegistry, IHookRegistry} from "@/utils/RegistryOnchainAction.sol";
 import {MAX_ROYALTY, ERC721Mint_BaseToken} from "./utils/ERC721Mint_BaseToken.sol";
 import {ERC721Data} from "./types/ERC721Data.sol";
 
 /**
- * @title ERC721Mint
- * @notice Mints ERC721 tokens for each unit purchased.
- * @dev If `revertOnMaxSupplyReached` is set to true, reverts when max supply is exceeded.
+ * @title   ERC721Mint
+ * @notice  Onchain action registry for minting ERC721 tokens on every purchase.
+ * @dev     If `revertOnMaxSupplyReached` is set to true, reverts when max supply is exceeded.
  * @author  Slice <jacopo.eth>
  */
-contract ERC721Mint is OnchainAction {
+contract ERC721Mint is RegistryOnchainAction {
     /*//////////////////////////////////////////////////////////////
         ERRORS
     //////////////////////////////////////////////////////////////*/
@@ -29,15 +29,15 @@ contract ERC721Mint is OnchainAction {
         CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(IProductsModule productsModuleAddress) OnchainAction(productsModuleAddress) {}
+    constructor(IProductsModule productsModuleAddress) RegistryOnchainAction(productsModuleAddress) {}
 
     /*//////////////////////////////////////////////////////////////
         CONFIGURATION
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @inheritdoc OnchainAction
-     * @notice Mints tokens to the buyer.
+     * @inheritdoc RegistryOnchainAction
+     * @notice Mint tokens to the buyer.
      * @dev If `revertOnMaxSupplyReached` is set to true, reverts when max supply is exceeded.
      */
     function _onProductPurchase(
@@ -59,10 +59,10 @@ contract ERC721Mint is OnchainAction {
     }
 
     /**
-     * @inheritdoc OnchainAction
-     * @dev Sets the ERC721 data for a product.
+     * @inheritdoc HookRegistry
+     * @dev Set the ERC721 data for a product.
      */
-    function _setProductAction(uint256 slicerId, uint256 productId, bytes memory params) internal override {
+    function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) internal override {
         (
             string memory name_,
             string memory symbol_,
@@ -90,9 +90,9 @@ contract ERC721Mint is OnchainAction {
     }
 
     /**
-     * @inheritdoc IOnchainAction
+     * @inheritdoc IHookRegistry
      */
-    function actionParamsSchema() external pure returns (string memory) {
+    function paramsSchema() external pure override returns (string memory) {
         return
         "string name,string symbol,address royaltyReceiver,uint256 royaltyFraction,string baseURI,string tokenURI,bool revertOnMaxSupplyReached,uint256 maxSupply";
     }

@@ -3,12 +3,12 @@ pragma solidity ^0.8.20;
 
 import {console} from "forge-std/console.sol";
 import {Vm} from "forge-std/Vm.sol";
-import {PricingStrategyTest} from "@test/utils/PricingStrategyTest.sol";
+import {RegistryPricingStrategyTest} from "@test/utils/RegistryPricingStrategyTest.sol";
 import {wadLn, toWadUnsafe} from "@/utils/math/SignedWadMath.sol";
 import {IProductsModule} from "@/utils/PricingStrategy.sol";
 import {MockLinearVRGDAPrices, LinearVRGDAParams} from "../mocks/MockLinearVRGDAPrices.sol";
 
-contract LinearVRGDACorrectnessTest is PricingStrategyTest {
+contract LinearVRGDACorrectnessTest is RegistryPricingStrategyTest {
     // Sample parameters for differential fuzzing campaign.
     uint256 constant maxTimeframe = 356 days * 10;
     uint256 constant maxSellable = 10000;
@@ -31,7 +31,7 @@ contract LinearVRGDACorrectnessTest is PricingStrategyTest {
 
         vm.prank(address(0));
         bytes memory params = abi.encode(linearParams, priceDecayPercent);
-        vrgda.setProductPrice(slicerId, productId, params);
+        vrgda.configureProduct(slicerId, productId, params);
     }
 
     function testFFICorrectness() public {

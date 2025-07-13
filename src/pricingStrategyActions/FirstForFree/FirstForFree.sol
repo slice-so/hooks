@@ -5,11 +5,13 @@ import {IERC721} from "@openzeppelin-5.3.0/interfaces/IERC721.sol";
 import {IERC1155} from "@openzeppelin-5.3.0/interfaces/IERC1155.sol";
 import {IOnchainAction} from "@/interfaces/IOnchainAction.sol";
 import {
-    IProductPricingStrategy,
-    IProductsModule,
-    PricingStrategyAction,
-    OnchainAction
-} from "@/utils/PricingStrategyAction.sol";
+    IPricingStrategy,
+    RegistryOnchainAction,
+    RegistryPricingStrategyAction,
+    HookRegistry,
+    IHookRegistry,
+    IProductsModule
+} from "@/utils/RegistryPricingStrategyAction.sol";
 import {ProductParams, TokenCondition} from "./types/ProductParams.sol";
 import {TokenType} from "./types/TokenCondition.sol";
 import {ITokenERC1155} from "./utils/ITokenERC1155.sol";
@@ -19,7 +21,7 @@ import {ITokenERC1155} from "./utils/ITokenERC1155.sol";
  * @notice  Discounts the first purchase of a product for free, based on conditions.
  * @author  Slice <jacopo.eth>
  */
-contract FirstForFree is PricingStrategyAction {
+contract FirstForFree is RegistryPricingStrategyAction {
     /*//////////////////////////////////////////////////////////////
         MUTABLE STORAGE
     //////////////////////////////////////////////////////////////*/
@@ -31,14 +33,14 @@ contract FirstForFree is PricingStrategyAction {
         CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(IProductsModule productsModuleAddress) PricingStrategyAction(productsModuleAddress) {}
+    constructor(IProductsModule productsModuleAddress) RegistryPricingStrategyAction(productsModuleAddress) {}
 
     /*//////////////////////////////////////////////////////////////
         CONFIGURATION
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @inheritdoc IProductPricingStrategy
+     * @inheritdoc IPricingStrategy
      * @notice Applies discount only for first N purchases on a slicer.
      */
     function productPrice(uint256 slicerId, uint256 productId, address, uint256 quantity, address buyer, bytes memory)
@@ -67,7 +69,7 @@ contract FirstForFree is PricingStrategyAction {
     }
 
     /**
-     * @inheritdoc OnchainAction
+     * @inheritdoc RegistryOnchainAction
      * @notice Mint `quantity` NFTs to `account` on purchase. Keeps track of total purchases.
      */
     function _onProductPurchase(
@@ -87,10 +89,10 @@ contract FirstForFree is PricingStrategyAction {
     }
 
     /**
-     * @inheritdoc OnchainAction
+     * @inheritdoc HookRegistry
      * @notice Sets the product parameters.
      */
-    function _setProductAction(uint256 slicerId, uint256 productId, bytes memory params) internal override {
+    function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) internal override {
         (
             uint256 usdcPrice,
             TokenCondition[] memory eligibleTokens,
@@ -119,9 +121,9 @@ contract FirstForFree is PricingStrategyAction {
     }
 
     /**
-     * @inheritdoc IOnchainAction
+     * @inheritdoc IHookRegistry
      */
-    function actionParamsSchema() external pure returns (string memory) {
+    function paramsSchema() external pure override returns (string memory) {
         return
         "uint256 usdcPrice,(address tokenAddress,uint8 tokenType,uint88 tokenId,uint8 minQuantity)[] eligibleTokens,address mintToken,uint88 mintTokenId,uint8 freeUnits";
     }
