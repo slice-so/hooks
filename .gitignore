@@ -3,9 +3,9 @@ broadcast/
 cache/
 out/
 .env
-
 __pycache__
-
 
 # Soldeer
 /dependencies
+remappings.txt
+src/**/internal/
