@@ -1,41 +1,77 @@
-# Slice hooks
+# Slice Hooks
 
-This repo contains smart contracts for pricing strategies and onchain actions, which can be used on [Slice](https://slice.so) products.
+Smart contracts for creating custom pricing strategies and onchain actions for [Slice](https://slice.so) products. Hooks enable dynamic pricing, purchase restrictions, rewards, and other custom behaviors when products are bought.
 
-Each strategy inherits the [ISliceProductPrice](/src/Slice/interfaces/utils/ISliceProductPrice.sol) interface and serves two main purposes:
+## Repository Structure
 
-- Allow a product owner to set price params for a product via `setProductPrice`;
-- Return product price via `productPrice`;
-
-## Strategies
-
-### VRGDA
-
-Variable Rate Gradual Dutch Auctions. Read the [whitepaper here](https://www.paradigm.xyz/2022/08/vrgda).
-
-Slice-specific implementations modified from https://github.com/transmissions11/VRGDAs:
-
-- [Linear VRGDA](/src/VRGDA/LinearVRGDAPrices.sol)
-- [Logistic VRGDA](/src/VRGDA/LogisticVRGDAPrices.sol)
-
-### ERC721 Gated Discount
-
-A discount strategy that allows a product owner to set a discount for a product if the buyer owns a specific ERC721 token.
-
-- [ERC721 Gated Discount](/src/ERC721GatedDiscount/ERC721GatedDiscount.sol)
-
-## Contributing
-
-```sh
-cp .env.example .env
-forge soldeer install
+```
+src/
+├── hooks/              # Reusable hooks with registry support
+│   ├── actions/        # Onchain actions (gating, rewards, etc.)
+│   ├── pricing/        # Pricing strategies (NFT discounts, VRGDA, etc.)
+│   └── pricingActions/ # Combined pricing + action hooks
+├── examples/           # Product-specific reference implementations
+├── interfaces/         # Core hook interfaces
+└── utils/              # Base contracts and utilities
 ```
 
-You will need a copy of [Foundry](https://github.com/foundry-rs/foundry) installed before proceeding. See the [installation guide](https://github.com/foundry-rs/foundry#installation) for details.
+## Core Concepts
 
-<!-- 
-TODO:
-- add base tests that apply by default to all strategies, products and 
+Slice hooks are built around three main interfaces:
 
-- Finalize readme with detailed info on how to quickly get started writing slice hooks
- -->
+- **[`IOnchainAction`](./src/interfaces/IOnchainAction.sol)**: Execute custom logic during purchases (eligibility checks, rewards, etc.)
+- **[`IPricingStrategy`](./src/interfaces/IPricingStrategy.sol)**: Calculate dynamic prices for products
+- **[`IHookRegistry`](./src/interfaces/IHookRegistry.sol)**: Enable reusable hooks across multiple products with frontend integration
+
+## Hook Types
+
+### Registry Hooks (Reusable)
+
+Deploy once, use across multiple products with frontend integration:
+
+- **[Actions](./src/hooks/actions/)**: See available onchain actions and implementation guide
+- **[Pricing](./src/hooks/pricing/)**: See available pricing strategies and implementation guide  
+- **[Pricing Actions](./src/hooks/pricingActions/)**: See combined pricing + action hooks
+
+### Product-Specific Hooks
+
+Tailored implementations for individual products:
+
+- **[Examples](./src/examples/)**: See real-world implementations and creation guide
+
+## Base Contracts
+
+###  Registry (Reusable):
+
+- **`RegistryOnchainAction`**: Base for reusable onchain actions
+- **`RegistryPricingStrategy`**: Base for reusable pricing strategies  
+- **`RegistryPricingStrategyAction`**: Base for combined pricing + action hooks
+
+### Product-Specific
+
+- **`OnchainAction`**: Base for simple onchain actions
+- **`PricingStrategy`**: Base for simple pricing strategies
+- **`PricingStrategyAction`**: Base for combined hooks
+
+## Quick Start
+
+**For reusable actions**: See detailed guides in [`/src/hooks/actions`](./src/hooks/actions)
+**For reusable pricing strategies**: See detailed guides in [`/src/hooks/pricing`](./src/hooks/pricing)
+**For reusable pricing strategy actions**: See detailed guides in [`/src/hooks/pricingActions`](./src/hooks/pricingActions)
+**For product-specific hooks**: See implementation examples in [`/src/examples/`](./src/examples/)
+
+## Development
+
+```bash
+forge soldeer install       # Install dependencies
+forge test                  # Run tests
+forge build                 # Build
+```
+
+Requires [Foundry](https://book.getfoundry.sh/getting-started/installation).
+
+## Integration
+
+Registry hooks automatically integrate with Slice frontends through the `IHookRegistry` interface.
+
+Product-specific can be attached via the `custom` pricing strategy / onchain action, by passing the deployment address.
