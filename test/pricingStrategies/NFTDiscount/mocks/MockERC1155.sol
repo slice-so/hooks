@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {ERC1155} from "@openzeppelin-5.3.0/token/ERC1155/ERC1155.sol";
+import {ERC1155} from "@openzeppelin-4.8.0/token/ERC1155/ERC1155.sol";
 
 contract MockERC1155 is ERC1155 {
     uint256 public constant tokenId = 1;

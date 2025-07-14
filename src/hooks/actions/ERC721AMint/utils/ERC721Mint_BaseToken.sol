@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 import {ERC721A} from "@erc721a/ERC721A.sol";
-import {IERC2981, IERC165} from "@openzeppelin-5.3.0/interfaces/IERC2981.sol";
+import {IERC2981, IERC165} from "@openzeppelin-4.8.0/interfaces/IERC2981.sol";
 
 uint256 constant MAX_ROYALTY = 10_000;
 

@@ -1,9 +1,9 @@
 [[dependencies]]
 name = "@openzeppelin-contracts"
-version = "5.3.0"
-url = "https://soldeer-revisions.s3.amazonaws.com/@openzeppelin-contracts/5_3_0_10-04-2025_10:51:50_contracts.zip"
-checksum = "fa2bc3db351137c4d5eb32b738a814a541b78e87fbcbfeca825e189c4c787153"
-integrity = "d69addf252dfe0688dcd893a7821cbee2421f8ce53d95ca0845a59530043cfd1"
+version = "4.8.0"
+url = "https://soldeer-revisions.s3.amazonaws.com/@openzeppelin-contracts/4_8_0_22-01-2024_13:13:40_contracts.zip"
+checksum = "932598a6426b76e315bb9fac536011eb21a76984015efe9e8167c4fc9d7e32a3"
+integrity = "954367e8adec93f80c6e795012955706347cdb0359360e7c835e4dd29e5a9c2f"
 
 [[dependencies]]
 name = "erc721a"

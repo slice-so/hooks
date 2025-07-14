@@ -2,8 +2,8 @@
 pragma solidity ^0.8.20;
 
 import {IProductsModule, OnchainAction} from "@/utils/OnchainAction.sol";
-import {Ownable} from "@openzeppelin-5.3.0/access/Ownable.sol";
-import {IERC1155} from "@openzeppelin-5.3.0/interfaces/IERC1155.sol";
+import {Ownable} from "@openzeppelin-4.8.0/access/Ownable.sol";
+import {IERC1155} from "@openzeppelin-4.8.0/interfaces/IERC1155.sol";
 
 /**
  * @title BaseGirlsScout
@@ -30,7 +30,7 @@ contract BaseGirlsScout is OnchainAction, Ownable {
 
     constructor(IProductsModule productsModuleAddress, uint256 slicerId)
         OnchainAction(productsModuleAddress, slicerId)
-        Ownable(msg.sender)
+        Ownable()
     {
         allowedSlicerIds[2217] = true;
         allowedSlicerIds[2218] = true;

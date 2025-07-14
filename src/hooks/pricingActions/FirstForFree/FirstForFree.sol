@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {IERC721} from "@openzeppelin-5.3.0/interfaces/IERC721.sol";
-import {IERC1155} from "@openzeppelin-5.3.0/interfaces/IERC1155.sol";
+import {IERC721} from "@openzeppelin-4.8.0/interfaces/IERC721.sol";
+import {IERC1155} from "@openzeppelin-4.8.0/interfaces/IERC1155.sol";
 import {IOnchainAction} from "@/interfaces/IOnchainAction.sol";
 import {
     IPricingStrategy,

@@ -75,3 +75,16 @@ Requires [Foundry](https://book.getfoundry.sh/getting-started/installation).
 Registry hooks automatically integrate with Slice frontends through the `IHookRegistry` interface.
 
 Product-specific can be attached via the `custom` pricing strategy / onchain action, by passing the deployment address.
+
+## Testing
+
+## Contributing
+
+
+<!-- TODO:
+- update openzeppelin dependency to latest (after core is upgraded to latest)
+
+- add testing and contributing guidelines this readme
+- finalize tests
+
+ -->
