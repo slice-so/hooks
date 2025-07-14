@@ -55,10 +55,10 @@ Tailored implementations for individual products:
 
 ## Quick Start
 
-**For reusable actions**: See detailed guides in [`/src/hooks/actions`](./src/hooks/actions)
-**For reusable pricing strategies**: See detailed guides in [`/src/hooks/pricing`](./src/hooks/pricing)
-**For reusable pricing strategy actions**: See detailed guides in [`/src/hooks/pricingActions`](./src/hooks/pricingActions)
-**For product-specific hooks**: See implementation examples in [`/src/examples/`](./src/examples/)
+- **For reusable actions**: See detailed guides in [`/src/hooks/actions`](./src/hooks/actions)
+- **For reusable pricing strategies**: See detailed guides in [`/src/hooks/pricing`](./src/hooks/pricing)
+- **For reusable pricing strategy actions**: See detailed guides in [`/src/hooks/pricingActions`](./src/hooks/pricingActions)
+- **For product-specific hooks**: See implementation examples in [`/src/examples/`](./src/examples/)
 
 ## Development
 
