@@ -285,12 +285,7 @@ abstract contract SetUpContractsList is Script {
                 if (isTopLevel) {
                     string memory folderName = _getLastPathSegment(file.path);
                     // Only include specific top-level folders
-                    if (
-                        keccak256(bytes(folderName)) != keccak256(bytes("internal"))
-                            && keccak256(bytes(folderName)) != keccak256(bytes("actions"))
-                            && keccak256(bytes(folderName)) != keccak256(bytes("pricingStrategies"))
-                            && keccak256(bytes(folderName)) != keccak256(bytes("pricingStrategyActions"))
-                    ) {
+                    if (keccak256(bytes(folderName)) != keccak256(bytes("hooks"))) {
                         continue;
                     }
                 }
@@ -416,25 +411,78 @@ abstract contract SetUpContractsList is Script {
                 break;
             }
         }
-        // Find the first folder after src (or after root if no src)
-        uint256 start = foundSrc ? srcIndex : 0;
-        // skip leading slashes
-        while (start < pathBytes.length && pathBytes[start] == 0x2f) {
-            start++;
-        }
-        uint256 end = start;
-        while (end < pathBytes.length && pathBytes[end] != 0x2f) {
-            end++;
-        }
-        if (end > start) {
-            bytes memory firstFolderBytes = new bytes(end - start);
-            for (uint256 i = 0; i < end - start; i++) {
-                firstFolderBytes[i] = pathBytes[start + i];
+        
+        // For hooks subdirectories, use the subdirectory name as the category
+        if (foundSrc) {
+            // Look for "hooks/" after src
+            uint256 hooksStart = srcIndex;
+            while (hooksStart < pathBytes.length && pathBytes[hooksStart] == 0x2f) {
+                hooksStart++;
             }
-            firstFolderName = string(firstFolderBytes);
+            
+            // Check if path starts with "hooks/"
+            bytes memory hooksBytes = bytes("hooks");
+            bool isHooksPath = true;
+            if (hooksStart + hooksBytes.length < pathBytes.length) {
+                for (uint256 i = 0; i < hooksBytes.length; i++) {
+                    if (pathBytes[hooksStart + i] != hooksBytes[i]) {
+                        isHooksPath = false;
+                        break;
+                    }
+                }
+                // Check for trailing slash after "hooks"
+                if (isHooksPath && pathBytes[hooksStart + hooksBytes.length] != 0x2f) {
+                    isHooksPath = false;
+                }
+            } else {
+                isHooksPath = false;
+            }
+            
+            if (isHooksPath) {
+                // Find the subdirectory after "hooks/"
+                uint256 subStart = hooksStart + hooksBytes.length + 1; // +1 for the slash
+                while (subStart < pathBytes.length && pathBytes[subStart] == 0x2f) {
+                    subStart++;
+                }
+                uint256 subEnd = subStart;
+                while (subEnd < pathBytes.length && pathBytes[subEnd] != 0x2f) {
+                    subEnd++;
+                }
+                
+                if (subEnd > subStart) {
+                    bytes memory subFolderBytes = new bytes(subEnd - subStart);
+                    for (uint256 i = 0; i < subEnd - subStart; i++) {
+                        subFolderBytes[i] = pathBytes[subStart + i];
+                    }
+                    firstFolderName = string(subFolderBytes);
+                } else {
+                    firstFolderName = "hooks";
+                }
+            } else {
+                // Find the first folder after src (or after root if no src)
+                uint256 start = foundSrc ? srcIndex : 0;
+                // skip leading slashes
+                while (start < pathBytes.length && pathBytes[start] == 0x2f) {
+                    start++;
+                }
+                uint256 end = start;
+                while (end < pathBytes.length && pathBytes[end] != 0x2f) {
+                    end++;
+                }
+                if (end > start) {
+                    bytes memory firstFolderBytes = new bytes(end - start);
+                    for (uint256 i = 0; i < end - start; i++) {
+                        firstFolderBytes[i] = pathBytes[start + i];
+                    }
+                    firstFolderName = string(firstFolderBytes);
+                } else {
+                    firstFolderName = CONTRACT_PATH;
+                }
+            }
         } else {
             firstFolderName = CONTRACT_PATH;
         }
+        
         // Now get the last folder as before
         for (uint256 i = 0; i < pathBytes.length; i++) {
             if (pathBytes[i] == "/") {
