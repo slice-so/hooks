@@ -31,7 +31,7 @@ contract LinearVRGDATest is RegistryPricingStrategyTest {
 
         bytes memory params = abi.encode(linearParams, priceDecayPercent);
 
-        vm.startPrank(address(0));
+        vm.startPrank(productOwner);
         vrgda.configureProduct(slicerId, productId, params);
         vm.stopPrank();
     }
@@ -127,7 +127,7 @@ contract LinearVRGDATest is RegistryPricingStrategyTest {
 
         bytes memory params = abi.encode(linearParams, priceDecayPercent);
 
-        vm.startPrank(address(0));
+        vm.startPrank(productOwner);
         vrgda.configureProduct(slicerId, productId_, params);
         vm.stopPrank();
 

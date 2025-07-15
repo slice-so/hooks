@@ -20,6 +20,13 @@ checksum = "8d9e0a885fa8ee6429a4d344aeb6799119f6a94c7c4fe6f188df79b0dce294ba"
 integrity = "9e60fdba82bc374df80db7f2951faff6467b9091873004a3d314cf0c084b3c7d"
 
 [[dependencies]]
+name = "murky"
+version = "0.1.0"
+url = "https://soldeer-revisions.s3.amazonaws.com/murky/0_1_0_27-02-2025_09:52:15_murky.zip"
+checksum = "44716641e084b50af27de35f0676706c7cd42b22b39a12f7136fda4156023a15"
+integrity = "a41bd6903adfe80291f7b20c0317368e517db10c302e82aa7dc53776f17811cd"
+
+[[dependencies]]
 name = "slice"
 version = "0.0.4"
 url = "https://soldeer-revisions.s3.amazonaws.com/slice/0_0_4_14-07-2025_00:59:56_src.zip"

@@ -12,15 +12,13 @@ import {
     CurrencyParams,
     NFTType
 } from "@/hooks/pricing/TieredDiscount/NFTDiscount/NFTDiscount.sol";
-import {MockERC721} from "./mocks/MockERC721.sol";
-import {MockERC1155} from "./mocks/MockERC1155.sol";
+import {MockERC721} from "@test/utils/mocks/MockERC721.sol";
+import {MockERC1155} from "@test/utils/mocks/MockERC1155.sol";
 
 address constant ETH = address(0);
 address constant USDC = address(1);
 uint256 constant slicerId = 0;
 uint256 constant productId = 1;
-address constant owner = address(0);
-address constant buyer = address(10);
 uint80 constant fixedDiscountOne = 100;
 uint80 constant fixedDiscountTwo = 200;
 uint80 constant percentDiscount = 1000; // 10%
@@ -53,15 +51,11 @@ contract NFTDiscountTest is RegistryPricingStrategyTest {
         CurrencyParams[] memory currenciesParams = new CurrencyParams[](1);
         currenciesParams[0] = CurrencyParams(ETH, basePrice, false, DiscountType.Absolute, discounts);
 
-        vm.prank(owner);
+        vm.prank(productOwner);
         erc721GatedDiscount.configureProduct(slicerId, productId, abi.encode(currenciesParams));
     }
 
-    function testDeploy() public view {
-        assertTrue(address(erc721GatedDiscount) != address(0));
-    }
-
-    function testSetProductPrice__ETH() public {
+    function testConfigureProduct__ETH() public {
         DiscountParams[] memory discounts = new DiscountParams[](1);
 
         /// set product price with additional custom inputs
@@ -76,7 +70,7 @@ contract NFTDiscountTest is RegistryPricingStrategyTest {
         CurrencyParams[] memory currenciesParams = new CurrencyParams[](1);
         currenciesParams[0] = CurrencyParams(ETH, basePrice, false, DiscountType.Absolute, discounts);
 
-        vm.prank(owner);
+        vm.prank(productOwner);
         erc721GatedDiscount.configureProduct(slicerId, productId, abi.encode(currenciesParams));
 
         /// check product price
@@ -87,7 +81,7 @@ contract NFTDiscountTest is RegistryPricingStrategyTest {
         assertTrue(currencyPrice == 0);
     }
 
-    function testSetProductPrice__ERC20() public {
+    function testConfigureProduct__ERC20() public {
         DiscountParams[] memory discounts = new DiscountParams[](1);
 
         /// set product price with additional custom inputs
@@ -102,7 +96,7 @@ contract NFTDiscountTest is RegistryPricingStrategyTest {
         CurrencyParams[] memory currenciesParams = new CurrencyParams[](1);
         currenciesParams[0] = CurrencyParams(USDC, basePrice, false, DiscountType.Absolute, discounts);
 
-        vm.prank(owner);
+        vm.prank(productOwner);
         erc721GatedDiscount.configureProduct(slicerId, productId, abi.encode(currenciesParams));
 
         /// check product price
@@ -113,7 +107,7 @@ contract NFTDiscountTest is RegistryPricingStrategyTest {
         assertTrue(ethPrice == 0);
     }
 
-    function testSetProductPrice__ERC1155() public {
+    function testConfigureProduct__ERC1155() public {
         DiscountParams[] memory discounts = new DiscountParams[](1);
 
         /// set product price with additional custom inputs
@@ -128,7 +122,7 @@ contract NFTDiscountTest is RegistryPricingStrategyTest {
         CurrencyParams[] memory currenciesParams = new CurrencyParams[](1);
         currenciesParams[0] = CurrencyParams(USDC, basePrice, false, DiscountType.Absolute, discounts);
 
-        vm.prank(owner);
+        vm.prank(productOwner);
         erc721GatedDiscount.configureProduct(slicerId, productId, abi.encode(currenciesParams));
 
         /// check product price
@@ -146,7 +140,7 @@ contract NFTDiscountTest is RegistryPricingStrategyTest {
         assertTrue(ethPrice == 0);
     }
 
-    function testSetProductPrice__MultipleCurrencies() public {
+    function testConfigureProduct__MultipleCurrencies() public {
         DiscountParams[] memory discountsOne = new DiscountParams[](1);
         DiscountParams[] memory discountsTwo = new DiscountParams[](1);
         CurrencyParams[] memory currenciesParams = new CurrencyParams[](2);
@@ -173,7 +167,7 @@ contract NFTDiscountTest is RegistryPricingStrategyTest {
 
         currenciesParams[1] = CurrencyParams(USDC, basePrice, false, DiscountType.Absolute, discountsTwo);
 
-        vm.prank(owner);
+        vm.prank(productOwner);
         erc721GatedDiscount.configureProduct(slicerId, productId, abi.encode(currenciesParams));
 
         /// check product price for ETH
@@ -299,7 +293,7 @@ contract NFTDiscountTest is RegistryPricingStrategyTest {
         /// set product price with percentage discount
         currenciesParams[0] = CurrencyParams(ETH, basePrice, false, DiscountType.Relative, discounts);
 
-        vm.prank(owner);
+        vm.prank(productOwner);
         erc721GatedDiscount.configureProduct(slicerId, productId, abi.encode(currenciesParams));
 
         /// check product price
@@ -325,7 +319,7 @@ contract NFTDiscountTest is RegistryPricingStrategyTest {
         /// set product price with percentage discount
         currenciesParams[0] = CurrencyParams(ETH, basePrice, false, DiscountType.Relative, discounts);
 
-        vm.prank(owner);
+        vm.prank(productOwner);
         erc721GatedDiscount.configureProduct(slicerId, productId, abi.encode(currenciesParams));
 
         // buy multiple products
@@ -339,7 +333,7 @@ contract NFTDiscountTest is RegistryPricingStrategyTest {
         assertTrue(currencyPrice == 0);
     }
 
-    function testSetProductPrice__Edit_Add() public {
+    function testConfigureProduct__Edit_Add() public {
         DiscountParams[] memory discounts = new DiscountParams[](1);
 
         discounts[0] = DiscountParams({
@@ -391,7 +385,7 @@ contract NFTDiscountTest is RegistryPricingStrategyTest {
         assertTrue(secondCurrencyPrice == 0);
     }
 
-    function testSetProductPrice__Edit_Remove() public {
+    function testConfigureProduct__Edit_Remove() public {
         DiscountParams[] memory discounts = new DiscountParams[](2);
 
         // mint NFT 2
