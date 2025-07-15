@@ -54,13 +54,13 @@ contract NFTGatedTest is RegistryOnchainActionTest {
         assertTrue(nftGated.isPurchaseAllowed(slicerId, productIds[2], buyer, 0, "", ""));
         assertTrue(nftGated.isPurchaseAllowed(slicerId, productIds[3], buyer, 0, "", ""));
 
-        // buyer 2 should be able to purchase all products except product 2 and 4
+        // buyer2 should be able to purchase all products except product 2 and 4
         assertTrue(nftGated.isPurchaseAllowed(slicerId, productIds[0], buyer2, 0, "", ""));
         assertFalse(nftGated.isPurchaseAllowed(slicerId, productIds[1], buyer2, 0, "", ""));
         assertTrue(nftGated.isPurchaseAllowed(slicerId, productIds[2], buyer2, 0, "", ""));
         assertFalse(nftGated.isPurchaseAllowed(slicerId, productIds[3], buyer2, 0, "", ""));
 
-        // buyer 3 should be able to purchase all products except product 1 and 4
+        // buyer3 should be able to purchase all products except product 1 and 4
         assertFalse(nftGated.isPurchaseAllowed(slicerId, productIds[0], buyer3, 0, "", ""));
         assertTrue(nftGated.isPurchaseAllowed(slicerId, productIds[1], buyer3, 0, "", ""));
         assertTrue(nftGated.isPurchaseAllowed(slicerId, productIds[2], buyer3, 0, "", ""));

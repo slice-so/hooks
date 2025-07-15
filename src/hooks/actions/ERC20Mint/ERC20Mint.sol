@@ -22,7 +22,6 @@ contract ERC20Mint is RegistryOnchainAction {
         ERRORS
     //////////////////////////////////////////////////////////////*/
 
-    error MaxSupplyExceeded();
     error InvalidTokensPerUnit();
 
     /*//////////////////////////////////////////////////////////////
@@ -83,8 +82,8 @@ contract ERC20Mint is RegistryOnchainAction {
         (bool success,) =
             address(tokenData_.token).call(abi.encodeWithSelector(tokenData_.token.mint.selector, buyer, tokensToMint));
 
-        if (tokenData_.revertOnMaxSupplyReached) {
-            if (!success) revert MaxSupplyExceeded();
+        if (success) {
+            // Do nothing, just silence the warning
         }
     }
 
