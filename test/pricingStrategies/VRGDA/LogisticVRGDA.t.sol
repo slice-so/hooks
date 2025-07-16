@@ -33,7 +33,7 @@ contract LogisticVRGDATest is RegistryPricingStrategyTest {
 
         bytes memory params = abi.encode(logisticParams, priceDecayPercent);
 
-        vm.startPrank(address(0));
+        vm.startPrank(productOwner);
         vrgda.configureProduct(slicerId, productId, params);
         vm.stopPrank();
     }
@@ -167,7 +167,7 @@ contract LogisticVRGDATest is RegistryPricingStrategyTest {
 
         bytes memory params = abi.encode(logisticParams, priceDecayPercent);
 
-        vm.startPrank(address(0));
+        vm.startPrank(productOwner);
         vrgda.configureProduct(slicerId, productIdTest, params);
         vm.stopPrank();
 

@@ -29,7 +29,7 @@ contract LinearVRGDACorrectnessTest is RegistryPricingStrategyTest {
         LinearVRGDAParams[] memory linearParams = new LinearVRGDAParams[](1);
         linearParams[0] = LinearVRGDAParams(address(0), targetPriceConstant, min, perTimeUnit);
 
-        vm.prank(address(0));
+        vm.prank(productOwner);
         bytes memory params = abi.encode(linearParams, priceDecayPercent);
         vrgda.configureProduct(slicerId, productId, params);
     }
