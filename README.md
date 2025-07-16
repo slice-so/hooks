@@ -1,4 +1,4 @@
-# Slice Hooks
+# ▼ Slice Hooks
 
 Smart contracts for creating custom pricing strategies and onchain actions for [Slice](https://slice.so) products. 
 
