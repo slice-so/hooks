@@ -1,5 +1,29 @@
 {
-  "actions": {},
-  "pricing": {},
-  "pricingActions": {}
+  "actions": {
+    "Allowlisted": [
+      {
+        "address": "0x2C200B02dC80fD3355eE50232fF795111e48F86E",
+        "blockNumber": 33461146,
+        "transactionHash": "0xbd164ba876ae612749895972c4d4ee50f10993790aa642ed02e0a46c4ddfb10f"
+      }
+    ]
+  },
+  "pricing": {
+    "NFTDiscount": [
+      {
+        "address": "0x306aD63c2f4D07c9BFC6F09DA8bC726cd3Ff4C92",
+        "blockNumber": 33461167,
+        "transactionHash": "0xcc4f5eaa27e6e5dd06fbfb26e832a45e0a104e1ab533ea67a1f14699fc088426"
+      }
+    ]
+  },
+  "pricingActions": {
+    "FirstForFree": [
+      {
+        "address": "0xECa75B5519ab1F60Bb047F49D80A9137ccEC3C4e",
+        "blockNumber": 33461563,
+        "transactionHash": "0x829d28f33f015856504b4cfeb03305ba44e88548cf3372f7211ef3cfeede6902"
+      }
+    ]
+  }
 }
