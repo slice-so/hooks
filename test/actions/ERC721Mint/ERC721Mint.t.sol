@@ -2,9 +2,9 @@
 pragma solidity ^0.8.20;
 
 import {RegistryOnchainAction, RegistryOnchainActionTest} from "@test/utils/RegistryOnchainActionTest.sol";
-import {ERC721Mint} from "@/hooks/actions/ERC721AMint/ERC721Mint.sol";
-import {ERC721Data} from "@/hooks/actions/ERC721AMint/types/ERC721Data.sol";
-import {ERC721Mint_BaseToken, MAX_ROYALTY} from "@/hooks/actions/ERC721AMint/utils/ERC721Mint_BaseToken.sol";
+import {ERC721Mint} from "@/hooks/actions/ERC721Mint/ERC721Mint.sol";
+import {ERC721Data} from "@/hooks/actions/ERC721Mint/types/ERC721Data.sol";
+import {ERC721Mint_BaseToken, MAX_ROYALTY} from "@/hooks/actions/ERC721Mint/utils/ERC721Mint_BaseToken.sol";
 
 import {console2} from "forge-std/console2.sol";
 
