@@ -106,7 +106,7 @@ contract NFTDiscount is TieredDiscount {
      */
     function paramsSchema() external pure override returns (string memory) {
         return
-        "(address currency,uint240 basePrice,bool isFree,uint8 discountType,(address nft,uint80 discount,uint8 minQuantity,uint8 nftType,uint256 tokenId)[] discounts)[] allCurrencyParams";
+        "(address currency,uint240 basePrice,bool isFree,uint8 discountType,(address nft,uint80 discount,uint8 minQuantity,uint8 nftType,uint256 tokenId)[]discounts)[] allCurrencyParams";
     }
 
     /**

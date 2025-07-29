@@ -136,6 +136,7 @@ abstract contract SetUpContractsList is Script {
                                 string memory idx = vm.toString(j);
                                 vm.serializeAddress(idx, "address", existingData[j].contractAddress);
                                 vm.serializeUint(idx, "blockNumber", existingData[j].blockNumber);
+                                vm.serializeString(idx, "paramsSchema", existingData[j].paramsSchema);
                                 arrStrings[j] =
                                     vm.serializeBytes32(idx, "transactionHash", existingData[j].transactionHash);
                             }
