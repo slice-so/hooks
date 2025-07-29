@@ -2,27 +2,78 @@
   "actions": {
     "Allowlisted": [
       {
-        "address": "0x2C200B02dC80fD3355eE50232fF795111e48F86E",
-        "blockNumber": 33461146,
-        "transactionHash": "0xbd164ba876ae612749895972c4d4ee50f10993790aa642ed02e0a46c4ddfb10f"
+        "address": "0x157428DD791E03c20880D22C3dA2B66A36B5cF26",
+        "blockNumber": 33510607,
+        "paramsSchema": "(address nft,uint8 tokenType,uint80 id,uint8 minQuantity)[] nftGates,uint256 minOwned",
+        "transactionHash": "0x6af9ac700f1c9a38de57fa4bc13262162d9b674649fd417ccd50237b6cfbc178"
+      }
+    ],
+    "ERC20Gated": [
+      {
+        "address": "0x1Fe39fC12b4A320fBff17950392DdaE202DbAaC8",
+        "blockNumber": 33511005,
+        "paramsSchema": "(address nft,uint8 tokenType,uint80 id,uint8 minQuantity)[] nftGates,uint256 minOwned",
+        "transactionHash": "0x89cebfea9fdbba38c945368d9cd3decd83d35f43ff6f8f4ad9a8c1854b5a00db"
+      }
+    ],
+    "ERC20Mint": [
+      {
+        "address": "0x776bc0e11FCfB0fE22987a7E45f9C2e1cF81aDFd",
+        "blockNumber": 33511032,
+        "paramsSchema": "(address nft,uint8 tokenType,uint80 id,uint8 minQuantity)[] nftGates,uint256 minOwned",
+        "transactionHash": "0x19614e531b98c4f691054614cdc804f668efafc1254dbb91f7c4a7ad230131b8"
+      }
+    ],
+    "ERC721Mint": [
+      {
+        "address": "0x2b6488115FAa50142E140172CbCd60e6370675F7",
+        "blockNumber": 33511082,
+        "paramsSchema": "(address nft,uint8 tokenType,uint80 id,uint8 minQuantity)[] nftGates,uint256 minOwned",
+        "transactionHash": "0x4981b3b67c0b8abe6a942b3ca86643f2b1dfdbcce59d6c819ad20a82814956e0"
+      }
+    ],
+    "NFTGated": [
+      {
+        "address": "0x6256e02F3A2aa4aD8B1234Fe027AaaAF44D7B8A2",
+        "blockNumber": 33511120,
+        "paramsSchema": "(address nft,uint8 tokenType,uint80 id,uint8 minQuantity)[] nftGates,uint256 minOwned",
+        "transactionHash": "0x0e20ee6ea9eae15bff648936dcefaf23a2b5f2a6c86547f2f4f8c50280803dc0"
       }
     ]
   },
   "pricing": {
     "NFTDiscount": [
       {
-        "address": "0x306aD63c2f4D07c9BFC6F09DA8bC726cd3Ff4C92",
-        "blockNumber": 33461167,
-        "transactionHash": "0xcc4f5eaa27e6e5dd06fbfb26e832a45e0a104e1ab533ea67a1f14699fc088426"
+        "address": "0xEaa74b2527a0693Fa49d6D0aC211E4cc777679a6",
+        "blockNumber": 33511167,
+        "paramsSchema": "uint256 usdcPrice,address token,uint88 tokenId,uint8 tokenType",
+        "transactionHash": "0x91a5b485b3258a012d782c2ebc3577da81ec7fb4b3eca09af47e609009fea4dd"
+      }
+    ],
+    "LinearVRGDAPrices": [
+      {
+        "address": "0xEC68E30182F4298b7032400B7ce809da613e4449",
+        "blockNumber": 33511188,
+        "paramsSchema": "uint256 usdcPrice,address token,uint88 tokenId,uint8 tokenType",
+        "transactionHash": "0xf2667ce20d07561e59c8d3e3de135bbd895c5b08bb57fe487c6c8197c91a0d73"
+      }
+    ],
+    "LogisticVRGDAPrices": [
+      {
+        "address": "0x2b02cC8528EF18abf8185543CEC29A94F0542c8F",
+        "blockNumber": 33511209,
+        "paramsSchema": "uint256 usdcPrice,address token,uint88 tokenId,uint8 tokenType",
+        "transactionHash": "0x2b27380661a38b54dbccf634305622296034ddfccf5865a07fbfb7810ea41025"
       }
     ]
   },
   "pricingActions": {
     "FirstForFree": [
       {
-        "address": "0xECa75B5519ab1F60Bb047F49D80A9137ccEC3C4e",
-        "blockNumber": 33461563,
-        "transactionHash": "0x829d28f33f015856504b4cfeb03305ba44e88548cf3372f7211ef3cfeede6902"
+        "address": "0x2C18D37b8229233F672bF406bCe8799BCfD43B5A",
+        "blockNumber": 33510960,
+        "paramsSchema": "uint256 usdcPrice,(address tokenAddress,uint8 tokenType,uint88 tokenId,uint8 minQuantity)[] eligibleTokens,address mintToken,uint88 mintTokenId,uint8 freeUnits",
+        "transactionHash": "0x8bd0b9de8edd704899210f8450096adf7f4f853030a7ba0a2f64494bc1ba726e"
       }
     ]
   }
