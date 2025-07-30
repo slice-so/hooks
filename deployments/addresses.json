@@ -10,18 +10,18 @@
     ],
     "ERC20Gated": [
       {
-        "address": "0x1Fe39fC12b4A320fBff17950392DdaE202DbAaC8",
-        "blockNumber": 33511005,
+        "address": "0x26A1C86B555013995Fc72864D261fDe984752E7c",
+        "blockNumber": 33558792,
         "paramsSchema": "(address erc20,uint256 amount)[] erc20Gates",
-        "transactionHash": "0x89cebfea9fdbba38c945368d9cd3decd83d35f43ff6f8f4ad9a8c1854b5a00db"
+        "transactionHash": "0x3a7c01ede05a34280073479d5cdf1f35e41d9f08c36a71f358b9c503ccc54526"
       }
     ],
     "ERC20Mint": [
       {
-        "address": "0x776bc0e11FCfB0fE22987a7E45f9C2e1cF81aDFd",
-        "blockNumber": 33511032,
-        "paramsSchema": "string name,string symbol,uint256 premintAmount,address premintReceiver,uint256 maxSupply,uint256 tokensPerUnit",
-        "transactionHash": "0x19614e531b98c4f691054614cdc804f668efafc1254dbb91f7c4a7ad230131b8"
+        "address": "0x67f9799FaC1D53C63217BEE47f553150F5BB0836",
+        "blockNumber": 33520592,
+        "paramsSchema": "string name,string symbol,uint256 premintAmount,address premintReceiver,bool revertOnMaxSupplyReached,uint256 maxSupply,uint256 tokensPerUnit",
+        "transactionHash": "0xfcd7e8fe47aa509afa0acdef86b741656c2602626f3258f8a83b359c665d6b04"
       }
     ],
     "ERC721Mint": [
@@ -34,10 +34,10 @@
     ],
     "NFTGated": [
       {
-        "address": "0xDf0ed657bdf9e8475D2Ec36F801Bf2cDaacd9188",
-        "blockNumber": 33511957,
+        "address": "0x85019550ff9b0109089391B7BE2653B95949Fc25",
+        "blockNumber": 33558820,
         "paramsSchema": "(address nft,uint8 tokenType,uint80 id,uint8 minQuantity)[] nftGates,uint256 minOwned",
-        "transactionHash": "0xaa9c235611578cc635e7bc072a8de65e99a56c391c5b76939604856957c59cd1"
+        "transactionHash": "0x6894af0785c5044c1c9a3735c97206bbde9a3002696b121d7fbff92cdaf978f2"
       }
     ]
   },

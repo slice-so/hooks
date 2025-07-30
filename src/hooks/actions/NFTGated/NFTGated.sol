@@ -75,6 +75,8 @@ contract NFTGated is RegistryOnchainAction {
     function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) internal override {
         (NFTGates memory nftGates_) = abi.decode(params, (NFTGates));
 
+        delete nftGates[slicerId][productId].gates;
+
         nftGates[slicerId][productId].minOwned = nftGates_.minOwned;
         for (uint256 i = 0; i < nftGates_.gates.length; i++) {
             nftGates[slicerId][productId].gates.push(nftGates_.gates[i]);

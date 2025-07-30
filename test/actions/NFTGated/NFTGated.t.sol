@@ -2,7 +2,8 @@
 pragma solidity ^0.8.20;
 
 import {RegistryOnchainActionTest} from "@test/utils/RegistryOnchainActionTest.sol";
-import {NFTGated, NFTGates, NFTGate, TokenType} from "@/hooks/actions/NFTGated/NFTGated.sol";
+import {MockNFTGated} from "./mocks/MockNFTGated.sol";
+import {NFTGates, NFTGate, TokenType} from "@/hooks/actions/NFTGated/NFTGated.sol";
 import {MockERC721} from "@test/utils/mocks/MockERC721.sol";
 import {MockERC1155} from "@test/utils/mocks/MockERC1155.sol";
 
@@ -11,14 +12,14 @@ import {console2} from "forge-std/console2.sol";
 uint256 constant slicerId = 0;
 
 contract NFTGatedTest is RegistryOnchainActionTest {
-    NFTGated nftGated;
+    MockNFTGated nftGated;
     MockERC721 nft721 = new MockERC721();
     MockERC1155 nft1155 = new MockERC1155();
 
     uint256[] productIds = [1, 2, 3, 4];
 
     function setUp() public {
-        nftGated = new NFTGated(PRODUCTS_MODULE);
+        nftGated = new MockNFTGated(PRODUCTS_MODULE);
         _setHook(address(nftGated));
     }
 
@@ -30,6 +31,23 @@ contract NFTGatedTest is RegistryOnchainActionTest {
             nftGated.configureProduct(slicerId, productIds[i], abi.encode(nftGates[i]));
             assertEq(nftGated.nftGates(slicerId, productIds[i]), nftGates[i].minOwned);
         }
+        vm.stopPrank();
+    }
+
+    function testReconfigureProduct() public {
+        NFTGates[] memory nftGates = generateNFTGates();
+
+        vm.startPrank(productOwner);
+
+        nftGated.configureProduct(slicerId, productIds[2], abi.encode(nftGates[2]));
+        assertEq(nftGated.gates(slicerId, productIds[2])[0].nft, address(nft721));
+        assertEq(nftGated.gates(slicerId, productIds[2])[1].nft, address(nft1155));
+        assertEq(nftGated.gates(slicerId, productIds[2]).length, 2);
+
+        nftGated.configureProduct(slicerId, productIds[2], abi.encode(nftGates[1]));
+        assertEq(nftGated.gates(slicerId, productIds[2])[0].nft, address(nft1155));
+        assertEq(nftGated.gates(slicerId, productIds[2]).length, 1);
+
         vm.stopPrank();
     }
 
