@@ -334,15 +334,7 @@ contract NFTDiscountTest is RegistryPricingStrategyTest {
         assertEq(secondEthPrice, quantity * (baseEthPrice - (baseEthPrice * percentDiscountOne) / 1e4));
         assertEq(secondCurrencyPrice, 0);
 
-        discountParams = new DiscountParams[](1);
-
-        discountParams[0] = DiscountParams({
-            nft: address(nftTwo),
-            discount: percentDiscountTwo,
-            minQuantity: minNftQuantity,
-            nftType: NFTType.ERC721,
-            tokenId: 0
-        });
+        discountParams = new DiscountParams[](0);
 
         vm.prank(productOwner);
         erc721GatedDiscount.configureProduct(slicerId, productId, abi.encode(discountParams));
@@ -351,7 +343,7 @@ contract NFTDiscountTest is RegistryPricingStrategyTest {
         (uint256 ethPrice, uint256 currencyPrice) =
             erc721GatedDiscount.productPrice(slicerId, productId, ETH, quantity, buyer, "");
 
-        assertEq(ethPrice, quantity * (baseEthPrice - (baseEthPrice * percentDiscountTwo) / 1e4));
+        assertEq(ethPrice, quantity * baseEthPrice);
         assertEq(currencyPrice, 0);
     }
 }

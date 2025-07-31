@@ -33,55 +33,31 @@ contract NFTDiscount is TieredDiscount {
 
         DiscountParams[] storage productDiscount = discounts[slicerId][productId];
 
+        delete discounts[slicerId][productId];
+
         uint256 prevDiscountValue;
-        uint256 prevDiscountsLength;
-        uint256 currDiscountsLength;
-        uint256 maxLength;
-        uint256 minLength;
+        DiscountParams memory discountParam;
         for (uint256 i; i < newDiscounts.length;) {
-            // Set values used in inner loop
-            prevDiscountsLength = productDiscount.length;
-            currDiscountsLength = newDiscounts.length;
-            maxLength = currDiscountsLength > prevDiscountsLength ? currDiscountsLength : prevDiscountsLength;
-            minLength = maxLength == prevDiscountsLength ? currDiscountsLength : prevDiscountsLength;
+            discountParam = newDiscounts[i];
 
-            for (uint256 j; j < maxLength;) {
-                // If `j` is within bounds of `newDiscounts`
-                if (currDiscountsLength > j) {
-                    // Check relative discount doesn't exceed max value of 1e4 (100%)
-                    if (newDiscounts[j].discount > 1e4) {
-                        revert InvalidRelativeAmount();
-                    }
+            // Check relative discount doesn't exceed max value of 1e4 (100%)
+            if (discountParam.discount > 1e4) {
+                revert InvalidRelativeAmount();
+            }
 
-                    if (newDiscounts[j].minQuantity == 0) {
-                        revert InvalidMinQuantity();
-                    }
+            if (discountParam.minQuantity == 0) {
+                revert InvalidMinQuantity();
+            }
 
-                    // Check discounts are sorted in descending order
-                    if (j > 0) {
-                        if (newDiscounts[j].discount > prevDiscountValue) {
-                            revert DiscountsNotDescending(newDiscounts[j]);
-                        }
-                    }
-
-                    prevDiscountValue = newDiscounts[j].discount;
-
-                    if (j < minLength) {
-                        // Update in place
-                        productDiscount[j] = newDiscounts[j];
-                    } else if (j >= prevDiscountsLength) {
-                        // Append new discounts
-                        productDiscount.push(newDiscounts[j]);
-                    }
-                } else {
-                    // Remove old discounts
-                    productDiscount.pop();
-                }
-
-                unchecked {
-                    ++j;
+            // Check discounts are sorted in descending order
+            if (i > 0) {
+                if (discountParam.discount > prevDiscountValue) {
+                    revert DiscountsNotDescending(discountParam);
                 }
             }
+            prevDiscountValue = discountParam.discount;
+
+            productDiscount.push(discountParam);
 
             unchecked {
                 ++i;

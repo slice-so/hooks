@@ -42,6 +42,14 @@
     ]
   },
   "pricing": {
+    "NFTDiscount": [
+      {
+        "address": "0xb830a457d2f51d4cA1136b97FB30DF6366CFe2f5",
+        "blockNumber": 33596708,
+        "paramsSchema": "(address nft,uint80 discount,uint8 minQuantity,uint8 nftType,uint256 tokenId)[] discounts",
+        "transactionHash": "0x966be5fa1da3fab7c5027c9acb3f118307997e30687188b4745d74fd26ad9e7e"
+      }
+    ],
     "LinearVRGDAPrices": [
       {
         "address": "0xEC68E30182F4298b7032400B7ce809da613e4449",
@@ -56,14 +64,6 @@
         "blockNumber": 33511209,
         "paramsSchema": "(address currency,int128 targetPrice,uint128 min,int256 timeScale)[] logisticParams,int256 priceDecayPercent",
         "transactionHash": "0x2b27380661a38b54dbccf634305622296034ddfccf5865a07fbfb7810ea41025"
-      }
-    ],
-    "NFTDiscount": [
-      {
-        "address": "0xffdC32a35a7ADE286e8Ff11B93aeAFf48c659D4d",
-        "blockNumber": 33595797,
-        "paramsSchema": "(address nft,uint80 discount,uint8 minQuantity,uint8 nftType,uint256 tokenId)[] discounts",
-        "transactionHash": "0x461a6c45cebbfb33690bd4bb1d69ec7775a82d1706a58463b0fe17b735e9c79a"
       }
     ]
   },
