@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {RegistryPricingStrategy, IPricingStrategy, IProductsModule} from "@/utils/RegistryPricingStrategy.sol";
-import {ProductDiscounts, DiscountType} from "./types/ProductDiscounts.sol";
-import {DiscountParams, NFTType} from "./types/DiscountParams.sol";
+import {IProductsModule} from "slice/interfaces/IProductsModule.sol";
+import {RegistryPricingStrategy, IPricingStrategy} from "@/utils/RegistryPricingStrategy.sol";
+import {DiscountParams} from "./types/DiscountParams.sol";
 
 /**
  * @title   TieredDiscount
@@ -16,7 +16,7 @@ abstract contract TieredDiscount is RegistryPricingStrategy {
     //////////////////////////////////////////////////////////////*/
 
     error WrongCurrency();
-    error InvalidRelativeDiscount();
+    error InvalidRelativeAmount();
     error InvalidMinQuantity();
     error DiscountsNotDescending(DiscountParams nft);
 
@@ -24,8 +24,7 @@ abstract contract TieredDiscount is RegistryPricingStrategy {
         MUTABLE STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    mapping(uint256 slicerId => mapping(uint256 productId => mapping(address currency => ProductDiscounts))) public
-        productDiscounts;
+    mapping(uint256 slicerId => mapping(uint256 productId => DiscountParams[])) public discounts;
 
     /*//////////////////////////////////////////////////////////////
         CONSTRUCTOR
@@ -48,13 +47,13 @@ abstract contract TieredDiscount is RegistryPricingStrategy {
         address buyer,
         bytes memory data
     ) public view override returns (uint256 ethPrice, uint256 currencyPrice) {
-        ProductDiscounts memory discountParams = productDiscounts[slicerId][productId][currency];
+        (uint256 basePriceEth, uint256 basePriceCurrency) =
+            PRODUCTS_MODULE.basePrice(slicerId, productId, currency, quantity);
+        uint256 basePrice = currency == address(0) ? basePriceEth : basePriceCurrency;
 
-        if (discountParams.basePrice == 0) {
-            if (!discountParams.isFree) revert WrongCurrency();
-        } else {
-            return _productPrice(slicerId, productId, currency, quantity, buyer, data, discountParams);
-        }
+        DiscountParams[] memory discountParams = discounts[slicerId][productId];
+
+        return _productPrice(slicerId, productId, currency, quantity, buyer, data, basePrice, discountParams);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -70,7 +69,8 @@ abstract contract TieredDiscount is RegistryPricingStrategy {
      * @param quantity Number of units purchased
      * @param buyer Address of the buyer.
      * @param data Data passed to the productPrice function.
-     * @param discountParams `ProductDiscounts` struct.
+     * @param basePrice Base price of the product.
+     * @param discountParams Array of discount parameters.
      *
      * @return ethPrice and currencyPrice of product.
      */
@@ -81,6 +81,7 @@ abstract contract TieredDiscount is RegistryPricingStrategy {
         uint256 quantity,
         address buyer,
         bytes memory data,
-        ProductDiscounts memory discountParams
+        uint256 basePrice,
+        DiscountParams[] memory discountParams
     ) internal view virtual returns (uint256 ethPrice, uint256 currencyPrice);
 }

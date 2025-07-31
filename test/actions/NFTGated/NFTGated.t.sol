@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import {RegistryOnchainActionTest} from "@test/utils/RegistryOnchainActionTest.sol";
 import {MockNFTGated} from "./mocks/MockNFTGated.sol";
-import {NFTGates, NFTGate, TokenType} from "@/hooks/actions/NFTGated/NFTGated.sol";
+import {NFTGates, NFTGate, NftType} from "@/hooks/actions/NFTGated/NFTGated.sol";
 import {MockERC721} from "@test/utils/mocks/MockERC721.sol";
 import {MockERC1155} from "@test/utils/mocks/MockERC1155.sol";
 
@@ -92,8 +92,8 @@ contract NFTGatedTest is RegistryOnchainActionTest {
     function generateNFTGates() public view returns (NFTGates[] memory nftGates) {
         nftGates = new NFTGates[](4);
 
-        NFTGate memory gate721 = NFTGate(address(nft721), TokenType.ERC721, 1, 1);
-        NFTGate memory gate1155 = NFTGate(address(nft1155), TokenType.ERC1155, 1, 1);
+        NFTGate memory gate721 = NFTGate(address(nft721), NftType.ERC721, 1, 1);
+        NFTGate memory gate1155 = NFTGate(address(nft1155), NftType.ERC1155, 1, 1);
 
         // Only 721 is required
         NFTGate[] memory gates1 = new NFTGate[](1);

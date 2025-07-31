@@ -10,7 +10,7 @@ import {
     IOnchainAction,
     IHookRegistry
 } from "@/utils/RegistryOnchainAction.sol";
-import {TokenType, NFTGate, NFTGates} from "./types/NFTGate.sol";
+import {NftType, NFTGate, NFTGates} from "./types/NFTGate.sol";
 
 /**
  * @title   NFTGated
@@ -53,7 +53,7 @@ contract NFTGated is RegistryOnchainAction {
             for (uint256 i; i < nftGates_.gates.length;) {
                 NFTGate memory gate = nftGates_.gates[i];
 
-                if (gate.tokenType == TokenType.ERC1155) {
+                if (gate.nftType == NftType.ERC1155) {
                     if (IERC1155(gate.nft).balanceOf(account, gate.id) >= gate.minQuantity) {
                         ++totalOwned;
                     }
@@ -87,6 +87,6 @@ contract NFTGated is RegistryOnchainAction {
      * @inheritdoc IHookRegistry
      */
     function paramsSchema() external pure override returns (string memory) {
-        return "(address nft,uint8 tokenType,uint80 id,uint8 minQuantity)[] nftGates,uint256 minOwned";
+        return "(address nft,uint8 nftType,uint80 id,uint8 minQuantity)[] nftGates,uint256 minOwned";
     }
 }

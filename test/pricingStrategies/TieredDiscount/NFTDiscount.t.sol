@@ -105,8 +105,7 @@ contract NFTDiscountTest is RegistryPricingStrategyTest {
         (uint256 ethPrice, uint256 currencyPrice) =
             erc721GatedDiscount.productPrice(slicerId, productId, USDC, quantity, buyer, "");
 
-        (uint256 baseEthPrice, uint256 baseCurrencyPrice) =
-            PRODUCTS_MODULE.basePrice(slicerId, productId, USDC, quantity);
+        (, uint256 baseCurrencyPrice) = PRODUCTS_MODULE.basePrice(slicerId, productId, USDC, quantity);
 
         assertEq(currencyPrice, quantity * baseCurrencyPrice);
         assertEq(ethPrice, 0);
