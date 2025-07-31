@@ -7,6 +7,7 @@ import {VmSafe} from "forge-std/Vm.sol";
 import {ISliceCore} from "slice/interfaces/ISliceCore.sol";
 import {IProductsModule} from "slice/interfaces/IProductsModule.sol";
 import {IFundsModule} from "slice/interfaces/IFundsModule.sol";
+import {IHookRegistry} from "slice/interfaces/hooks/IHookRegistry.sol";
 
 /**
  * Helper contract to enforce correct chain selection in scripts
@@ -84,6 +85,7 @@ abstract contract SetUpContractsList is Script {
     struct ContractDeploymentData {
         address contractAddress;
         uint256 blockNumber;
+        string paramsSchema;
         bytes32 transactionHash;
     }
 
@@ -134,6 +136,7 @@ abstract contract SetUpContractsList is Script {
                                 string memory idx = vm.toString(j);
                                 vm.serializeAddress(idx, "address", existingData[j].contractAddress);
                                 vm.serializeUint(idx, "blockNumber", existingData[j].blockNumber);
+                                vm.serializeString(idx, "paramsSchema", existingData[j].paramsSchema);
                                 arrStrings[j] =
                                     vm.serializeBytes32(idx, "transactionHash", existingData[j].transactionHash);
                             }
@@ -210,6 +213,7 @@ abstract contract SetUpContractsList is Script {
             json = new string[](existingContractAddresses.length + 1);
             vm.serializeAddress("0", "address", transaction.contractAddress);
             vm.serializeUint("0", "blockNumber", receipt.blockNumber);
+            vm.serializeString("0", "paramsSchema", IHookRegistry(transaction.contractAddress).paramsSchema());
             json[0] = vm.serializeBytes32("0", "transactionHash", transaction.hash);
 
             for (uint256 i = 0; i < existingContractAddresses.length; i++) {
@@ -218,12 +222,14 @@ abstract contract SetUpContractsList is Script {
 
                 vm.serializeAddress(index, "address", existingContractAddress.contractAddress);
                 vm.serializeUint(index, "blockNumber", existingContractAddress.blockNumber);
+                vm.serializeString(index, "paramsSchema", existingContractAddress.paramsSchema);
                 json[i + 1] = vm.serializeBytes32(index, "transactionHash", existingContractAddress.transactionHash);
             }
         } else {
             json = new string[](1);
             vm.serializeAddress("0", "address", transaction.contractAddress);
             vm.serializeUint("0", "blockNumber", receipt.blockNumber);
+            vm.serializeString("0", "paramsSchema", IHookRegistry(transaction.contractAddress).paramsSchema());
             json[0] = vm.serializeBytes32("0", "transactionHash", transaction.hash);
         }
     }
@@ -411,7 +417,7 @@ abstract contract SetUpContractsList is Script {
                 break;
             }
         }
-        
+
         // For hooks subdirectories, use the subdirectory name as the category
         if (foundSrc) {
             // Look for "hooks/" after src
@@ -419,7 +425,7 @@ abstract contract SetUpContractsList is Script {
             while (hooksStart < pathBytes.length && pathBytes[hooksStart] == 0x2f) {
                 hooksStart++;
             }
-            
+
             // Check if path starts with "hooks/"
             bytes memory hooksBytes = bytes("hooks");
             bool isHooksPath = true;
@@ -437,7 +443,7 @@ abstract contract SetUpContractsList is Script {
             } else {
                 isHooksPath = false;
             }
-            
+
             if (isHooksPath) {
                 // Find the subdirectory after "hooks/"
                 uint256 subStart = hooksStart + hooksBytes.length + 1; // +1 for the slash
@@ -448,7 +454,7 @@ abstract contract SetUpContractsList is Script {
                 while (subEnd < pathBytes.length && pathBytes[subEnd] != 0x2f) {
                     subEnd++;
                 }
-                
+
                 if (subEnd > subStart) {
                     bytes memory subFolderBytes = new bytes(subEnd - subStart);
                     for (uint256 i = 0; i < subEnd - subStart; i++) {
@@ -482,7 +488,7 @@ abstract contract SetUpContractsList is Script {
         } else {
             firstFolderName = CONTRACT_PATH;
         }
-        
+
         // Now get the last folder as before
         for (uint256 i = 0; i < pathBytes.length; i++) {
             if (pathBytes[i] == "/") {

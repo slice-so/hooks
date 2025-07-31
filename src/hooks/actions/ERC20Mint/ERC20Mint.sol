@@ -123,6 +123,6 @@ contract ERC20Mint is RegistryOnchainAction {
      */
     function paramsSchema() external pure override returns (string memory) {
         return
-        "string name,string symbol,uint256 premintAmount,address premintReceiver,uint256 maxSupply,uint256 tokensPerUnit";
+        "string name,string symbol,uint256 premintAmount,address premintReceiver,bool revertOnMaxSupplyReached,uint256 maxSupply,uint256 tokensPerUnit";
     }
 }

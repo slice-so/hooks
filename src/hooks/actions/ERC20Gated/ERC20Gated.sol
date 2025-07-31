@@ -64,6 +64,8 @@ contract ERC20Gated is RegistryOnchainAction {
     function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) internal override {
         (ERC20Gate[] memory gates) = abi.decode(params, (ERC20Gate[]));
 
+        delete tokenGates[slicerId][productId];
+
         for (uint256 i = 0; i < gates.length; i++) {
             tokenGates[slicerId][productId].push(gates[i]);
         }

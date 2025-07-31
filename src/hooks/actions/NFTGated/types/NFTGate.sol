@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-enum TokenType {
+enum NftType {
     ERC721,
     ERC1155
 }
 
 struct NFTGate {
     address nft;
-    TokenType tokenType;
+    NftType nftType;
     uint80 id;
     uint8 minQuantity;
 }

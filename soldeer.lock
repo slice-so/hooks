@@ -28,7 +28,7 @@ integrity = "a41bd6903adfe80291f7b20c0317368e517db10c302e82aa7dc53776f17811cd"
 
 [[dependencies]]
 name = "slice"
-version = "0.0.4"
-url = "https://soldeer-revisions.s3.amazonaws.com/slice/0_0_4_14-07-2025_00:59:56_src.zip"
-checksum = "b71b5ab29290b4683269547cbe571044f7938e8940a3996be6da882534c29f9e"
-integrity = "07e086edca2dff96ddc168abeea5e11d3d7aa0f0a964163d3de4c0d1b7acbb0c"
+version = "0.0.5"
+url = "https://soldeer-revisions.s3.amazonaws.com/slice/0_0_5_31-07-2025_17:05:17_src.zip"
+checksum = "c27b2ae030af9a14ab8e443052f0e1f67076fdc314377a09c89293dc9f3d99ce"
+integrity = "bdb01a680685add0d3e23470b672638222d0073a9241beeafe30de692ab12f28"

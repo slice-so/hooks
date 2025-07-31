@@ -11,6 +11,6 @@ else
   forge script script/Deploy.s.sol --chain base --rpc-url base --private-key $PRIVATE_KEY --sig "run(string memory contractName)" "$contractName" --verify -vvvv --broadcast --slow
 fi 
 
-forge script script/WriteAddresses.s.sol --sig "run(string memory contractName)" "$contractName"
+forge script script/WriteAddresses.s.sol --sig "run(string memory contractName)" "$contractName" --chain base --rpc-url base 
 
 echo "Deployed contract: $contractName"
