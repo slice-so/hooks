@@ -11,8 +11,8 @@ uint256 constant productId = 1;
 
 contract ERC20GatedTest is RegistryOnchainActionTest {
     MockERC20Gated erc20Gated;
-    MockERC20 token = new MockERC20();
-    MockERC20 token2 = new MockERC20();
+    MockERC20 token = new MockERC20("Test", "TST", 18);
+    MockERC20 token2 = new MockERC20("Test2", "TST2", 18);
 
     function setUp() public {
         erc20Gated = new MockERC20Gated(PRODUCTS_MODULE);
@@ -45,7 +45,7 @@ contract ERC20GatedTest is RegistryOnchainActionTest {
         assertEq(erc20Gated.gates(slicerId, productId)[1].amount, 200);
         assertEq(erc20Gated.gates(slicerId, productId).length, 2);
 
-        MockERC20 token3 = new MockERC20();
+        MockERC20 token3 = new MockERC20("Test3", "TST3", 18);
         gates = new ERC20Gate[](1);
         gates[0] = ERC20Gate(token3, 300);
 

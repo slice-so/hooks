@@ -6,6 +6,13 @@ checksum = "932598a6426b76e315bb9fac536011eb21a76984015efe9e8167c4fc9d7e32a3"
 integrity = "954367e8adec93f80c6e795012955706347cdb0359360e7c835e4dd29e5a9c2f"
 
 [[dependencies]]
+name = "@openzeppelin-contracts-upgradeable"
+version = "4.8.0"
+url = "https://soldeer-revisions.s3.amazonaws.com/@openzeppelin-contracts-upgradeable/4_8_0_22-01-2024_13:14:55_contracts-upgradeable.zip"
+checksum = "9bd3feb8a6ac529ecf2ab1927bf482bfee9abc2568533b155e567715b83ba94e"
+integrity = "16aa3677eec13cfddee8ee412031773a45525d4780b741eab29c746b545afc77"
+
+[[dependencies]]
 name = "erc721a"
 version = "4.3.0"
 url = "https://soldeer-revisions.s3.amazonaws.com/erc721a/4_3_0_14-03-2024_06:28:52_erc721a.zip"
