@@ -312,7 +312,7 @@ contract LogisticVRGDATest is RegistryPricingStrategyTest {
         );
     }
 
-    function test_RevertOverflow_BeyondLimitTokens(uint256 timeSinceStart, uint256 sold) public {
+    function testRevert_OverflowBeyondLimitTokens(uint256 timeSinceStart, uint256 sold) public {
         int256 logisticLimit = toWadUnsafe(MAX_SELLABLE + 1);
         int256 decayConstant = wadLn(1e18 - priceDecayPercent);
 
