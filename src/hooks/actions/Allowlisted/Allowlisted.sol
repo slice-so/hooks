@@ -47,8 +47,16 @@ contract Allowlisted is RegistryOnchainAction {
         // Get Merkle proof from buyerCustomData
         bytes32[] memory proof = abi.decode(buyerCustomData, (bytes32[]));
 
+        uint256 leafValue = uint256(uint160(account));
+
         // Generate leaf from account address
-        bytes32 leaf = keccak256(abi.encodePacked(account));
+        bytes32 leaf;
+        /// @solidity memory-safe-assembly
+        assembly {
+            mstore(0x00, leafValue)
+            leaf := keccak256(0x00, 0x20)
+        }
+
         bytes32 root = merkleRoots[slicerId][productId];
 
         // Check if Merkle proof is valid

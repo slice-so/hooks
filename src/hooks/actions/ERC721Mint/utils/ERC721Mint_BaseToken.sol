@@ -22,7 +22,7 @@ contract ERC721Mint_BaseToken is ERC721A, IERC2981 {
         STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    address public immutable minter;
+    address public immutable MINTER;
 
     uint256 public maxSupply;
     address public royaltyReceiver;
@@ -43,7 +43,7 @@ contract ERC721Mint_BaseToken is ERC721A, IERC2981 {
         string memory baseURI__,
         string memory tokenURI__
     ) ERC721A(name_, symbol_) {
-        minter = msg.sender;
+        MINTER = msg.sender;
 
         _setMaxSupply(maxSupply_);
         royaltyReceiver = royaltyReceiver_;
@@ -57,7 +57,7 @@ contract ERC721Mint_BaseToken is ERC721A, IERC2981 {
     //////////////////////////////////////////////////////////////*/
 
     function mint(address to, uint256 amount) public {
-        if (msg.sender != minter) revert NotMinter();
+        if (msg.sender != MINTER) revert NotMinter();
         _mint(to, amount);
 
         if (totalSupply() > maxSupply) revert MaxSupplyExceeded();
@@ -70,7 +70,7 @@ contract ERC721Mint_BaseToken is ERC721A, IERC2981 {
         string memory baseURI__,
         string memory tokenURI__
     ) external {
-        if (msg.sender != minter) revert NotMinter();
+        if (msg.sender != MINTER) revert NotMinter();
 
         royaltyReceiver = royaltyReceiver_;
         royaltyFraction = royaltyFraction_;

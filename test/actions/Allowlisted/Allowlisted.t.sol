@@ -19,10 +19,10 @@ contract AllowlistedTest is RegistryOnchainActionTest {
 
         m = new Merkle();
         data = new bytes32[](4);
-        data[0] = bytes32(keccak256(abi.encodePacked(buyer)));
-        data[1] = bytes32(keccak256(abi.encodePacked(address(1))));
-        data[2] = bytes32(keccak256(abi.encodePacked(address(2))));
-        data[3] = bytes32(keccak256(abi.encodePacked(address(3))));
+        data[0] = bytes32(keccak256(abi.encode(buyer)));
+        data[1] = bytes32(keccak256(abi.encode(address(1))));
+        data[2] = bytes32(keccak256(abi.encode(address(2))));
+        data[3] = bytes32(keccak256(abi.encode(address(3))));
     }
 
     function testConfigureProduct() public {
@@ -40,10 +40,17 @@ contract AllowlistedTest is RegistryOnchainActionTest {
         vm.prank(productOwner);
         allowlisted.configureProduct(slicerId, productId, abi.encode(root));
 
-        bytes32[] memory wrongProof = m.getProof(data, 1);
-        assertFalse(allowlisted.isPurchaseAllowed(slicerId, productId, buyer, 0, "", abi.encode(wrongProof)));
-
         bytes32[] memory proof = m.getProof(data, 0);
         assertTrue(allowlisted.isPurchaseAllowed(slicerId, productId, buyer, 0, "", abi.encode(proof)));
+    }
+
+    function testIsPurchaseAllowed_wrongProof() public {
+        bytes32 root = m.getRoot(data);
+
+        vm.prank(productOwner);
+        allowlisted.configureProduct(slicerId, productId, abi.encode(root));
+
+        bytes32[] memory wrongProof = m.getProof(data, 1);
+        assertFalse(allowlisted.isPurchaseAllowed(slicerId, productId, buyer, 0, "", abi.encode(wrongProof)));
     }
 }

@@ -3,15 +3,14 @@ pragma solidity ^0.8.20;
 
 import {IERC721} from "@openzeppelin-4.8.0/interfaces/IERC721.sol";
 import {IERC1155} from "@openzeppelin-4.8.0/interfaces/IERC1155.sol";
-import {IOnchainAction} from "@/interfaces/IOnchainAction.sol";
 import {
     IPricingStrategy,
     RegistryOnchainAction,
     RegistryPricingStrategyAction,
-    HookRegistry,
     IHookRegistry,
     IProductsModule
 } from "@/utils/RegistryPricingStrategyAction.sol";
+import {HookRegistry} from "@/utils/RegistryOnchainAction.sol";
 import {ProductParams, TokenCondition} from "./types/ProductParams.sol";
 import {TokenType} from "./types/TokenCondition.sol";
 import {ITokenERC1155} from "./utils/ITokenERC1155.sol";
