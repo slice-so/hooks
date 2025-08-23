@@ -2,8 +2,8 @@
 pragma solidity ^0.8.20;
 
 import {RegistryProductActionTest} from "@test/utils/RegistryProductActionTest.sol";
+import {Merkle} from "@test/utils/murky/Merkle.sol";
 import {Allowlisted} from "@/hooks/actions/Allowlisted/Allowlisted.sol";
-import {Merkle} from "@murky/Merkle.sol";
 
 uint256 constant slicerId = 0;
 uint256 constant productId = 1;

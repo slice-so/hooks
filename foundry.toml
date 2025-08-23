@@ -11,7 +11,6 @@ remappings = [
   "@openzeppelin-4.8.0/=dependencies/@openzeppelin-contracts-4.8.0/",
   "@openzeppelin-upgradeable-4.8.0/=dependencies/@openzeppelin-contracts-upgradeable-4.8.0/",
   "@erc721a/=dependencies/erc721a-4.3.0/contracts/",
-  "@murky/=dependencies/murky-0.1.0/src/",
   "forge-std/=dependencies/forge-std-1.9.7/src/",
   "@test/=test/",
   "@/=src/"
@@ -45,7 +44,6 @@ remappings_generate = false
 remappings_regenerate = false
 
 [dependencies]
-murky = "0.1.0"
 slice = "0.0.7"
 forge-std = "1.9.7"
 "@openzeppelin-contracts" = "4.8.0"
