@@ -1,98 +1,65 @@
-# Pricing Strategy Actions
+# Pricing + Actions
 
-Pricing strategy actions combine both pricing strategies and onchain actions in a single contract. They implement both `IProductPrice` and `IProductAction` interfaces, allowing them to calculate dynamic prices AND execute custom logic during purchases.
+Combine dynamic pricing with onchain actions in a single contract.
 
-## Key Interfaces
+## Available Hooks
 
-**IProductPrice**:
-```solidity
-interface IProductPrice {
-    function productPrice(
-        uint256 slicerId,
-        uint256 productId,
-        address currency,
-        uint256 quantity,
-        address buyer,
-        bytes memory data
-    ) external view returns (uint256 ethPrice, uint256 currencyPrice);
-}
-```
+| Hook | Description |
+|------|-------------|
+| **[FirstForFree](./FirstForFree/)** | First purchase free based on conditions |
 
-**IProductAction**:
-```solidity
-interface IProductAction {
-    function isPurchaseAllowed(
-        uint256 slicerId,
-        uint256 productId,
-        address account,
-        uint256 quantity,
-        bytes memory slicerCustomData,
-        bytes memory buyerCustomData
-    ) external view returns (bool);
+## Creating Combined Hooks
 
-    function onProductPurchase(
-        uint256 slicerId,
-        uint256 productId,
-        address account,
-        uint256 quantity,
-        bytes memory slicerCustomData,
-        bytes memory buyerCustomData
-    ) external payable;
-}
-```
+### 1. Inherit Base Contract
 
-## Base Contract: RegistryProductPriceAction
-
-All pricing strategy actions inherit from `RegistryProductPriceAction`, which provides:
-- Combined functionality of both pricing strategies and onchain actions
-- Registry functionality for reusable hooks across multiple products
-- Implementation of `IHookRegistry` for Slice frontend integration
-
-## Available Pricing Strategy Actions
-
-- **[FirstForFree](./FirstForFree/FirstForFree.sol)**: Discounts the first purchase of a product for free, based on conditions.
-
-## Creating Custom Pricing Strategy Actions
-
-To create a custom pricing strategy action:
-
-1. **Inherit from RegistryProductPriceAction**:
 ```solidity
 import {RegistryProductPriceAction, IProductsModule} from "@/utils/RegistryProductPriceAction.sol";
 
-contract MyProductPriceAction is RegistryProductPriceAction {
+contract MyHook is RegistryProductPriceAction {
     constructor(IProductsModule productsModule) 
         RegistryProductPriceAction(productsModule) {}
 }
 ```
 
-2. **Implement required functions**:
+### 2. Implement All Functions
+
 ```solidity
-function productPrice(...) public view override returns (uint256 ethPrice, uint256 currencyPrice) {
-    // Your pricing logic here
+// Pricing logic
+function productPrice(...) public view override 
+    returns (uint256 ethPrice, uint256 currencyPrice) {
+    // Calculate price
 }
 
+// Purchase eligibility
 function isPurchaseAllowed(...) public view override returns (bool) {
-    // Your eligibility logic here
+    // Check eligibility
 }
 
+// Purchase action
 function _onProductPurchase(...) internal override {
-    // Custom logic to execute on purchase
+    // Execute action
 }
 
+// Configuration
 function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) 
     internal override {
-    // Handle product configuration
+    // Store config
 }
 
+// Parameters
 function paramsSchema() external pure override returns (string memory) {
-    return "uint256 param1,address param2"; // Your parameter schema
+    return "uint256 discount,address token";
 }
 ```
 
-## Integration with Slice
+## Testing
 
-Pricing strategy actions that inherit from `RegistryProductPriceAction` are automatically compatible with Slice frontends through the `IHookRegistry` interface, enabling:
-- Product configuration via `configureProduct()`
-- Parameter validation via `paramsSchema()`
-- Automatic discovery and integration
+Inherit from `RegistryProductPriceActionTest` for testing:
+
+```solidity
+import {RegistryProductPriceActionTest} from "@test/utils/RegistryProductPriceActionTest.sol";
+
+contract MyHookTest is RegistryProductPriceActionTest {
+    // Your tests
+}
+```
