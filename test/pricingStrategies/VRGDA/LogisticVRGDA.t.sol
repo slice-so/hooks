@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {RegistryPricingStrategyTest} from "@test/utils/RegistryPricingStrategyTest.sol";
+import {RegistryProductPriceTest} from "@test/utils/RegistryProductPriceTest.sol";
 import {unsafeDiv, wadLn, toWadUnsafe, toDaysWadUnsafe, fromDaysWadUnsafe} from "@/utils/math/SignedWadMath.sol";
 
 import "./mocks/MockLogisticVRGDAPrices.sol";
@@ -20,7 +20,7 @@ int256 constant timeScale = 0.0023e18;
 int256 constant logisticLimitAdjusted = int256((MAX_SELLABLE + 1) * 2e18);
 int256 constant logisticLimitDoubled = int256((MAX_SELLABLE + 1e18) * 2e18);
 
-contract LogisticVRGDATest is RegistryPricingStrategyTest {
+contract LogisticVRGDATest is RegistryProductPriceTest {
     MockLogisticVRGDAPrices vrgda;
 
     function setUp() public {

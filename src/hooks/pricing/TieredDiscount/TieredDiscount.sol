@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 import {IProductsModule} from "slice/interfaces/IProductsModule.sol";
-import {RegistryPricingStrategy, IPricingStrategy} from "@/utils/RegistryPricingStrategy.sol";
+import {RegistryProductPrice, IProductPrice} from "@/utils/RegistryProductPrice.sol";
 import {DiscountParams} from "./types/DiscountParams.sol";
 
 /**
@@ -10,7 +10,7 @@ import {DiscountParams} from "./types/DiscountParams.sol";
  * @notice  Tiered discounts based on asset ownership
  * @author  Slice <jacopo.eth>
  */
-abstract contract TieredDiscount is RegistryPricingStrategy {
+abstract contract TieredDiscount is RegistryProductPrice {
     /*//////////////////////////////////////////////////////////////
         ERRORS
     //////////////////////////////////////////////////////////////*/
@@ -30,14 +30,14 @@ abstract contract TieredDiscount is RegistryPricingStrategy {
         CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(IProductsModule productsModuleAddress) RegistryPricingStrategy(productsModuleAddress) {}
+    constructor(IProductsModule productsModuleAddress) RegistryProductPrice(productsModuleAddress) {}
 
     /*//////////////////////////////////////////////////////////////
         FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @inheritdoc IPricingStrategy
+     * @inheritdoc IProductPrice
      */
     function productPrice(
         uint256 slicerId,

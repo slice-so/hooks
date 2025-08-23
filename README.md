@@ -21,8 +21,8 @@ src/
 
 Hooks are built around three main interfaces:
 
-- **[`IOnchainAction`](./src/interfaces/IOnchainAction.sol)**: Execute custom logic during purchases (eligibility checks, rewards, etc.)
-- **[`IPricingStrategy`](./src/interfaces/IPricingStrategy.sol)**: Calculate dynamic prices for products
+- **[`IProductAction`](./src/interfaces/IProductAction.sol)**: Execute custom logic during purchases (eligibility checks, rewards, etc.)
+- **[`IProductPrice`](./src/interfaces/IProductPrice.sol)**: Calculate dynamic prices for products
 - **[`IHookRegistry`](./src/interfaces/IHookRegistry.sol)**: Enable reusable hooks across multiple products with frontend integration
 
 Hooks can be:
@@ -42,13 +42,13 @@ Here's how hooks integrate into the product purchase flow:
        ▼
 ┌─────────────────────┐
 │   Price Fetching    │ ← `productPrice` called here
-│   (before purchase) │   (IPricingStrategy)
+│   (before purchase) │   (IProductPrice)
 └─────────────────────┘
        │
        ▼
 ┌─────────────────────┐
 │  Purchase Execution │ ← `onProductPurchase` called here
-│  (during purchase)  │   (IOnchainAction)
+│  (during purchase)  │   (IProductAction)
 └─────────────────────┘
        │
        ▼
@@ -85,15 +85,15 @@ The base contracts in `src/utils` are designed to be inherited, providing essent
 
 ###  Registry (Reusable):
 
-- **`RegistryOnchainAction`**: Base for reusable onchain actions
-- **`RegistryPricingStrategy`**: Base for reusable pricing strategies  
-- **`RegistryPricingStrategyAction`**: Base for reusable pricing + action hooks
+- **`RegistryProductAction`**: Base for reusable onchain actions
+- **`RegistryProductPrice`**: Base for reusable pricing strategies  
+- **`RegistryProductPriceAction`**: Base for reusable pricing + action hooks
 
 ### Product-Specific
 
-- **`OnchainAction`**: Base for product-specific onchain actions
-- **`PricingStrategy`**: Base for product-specific pricing strategies
-- **`PricingStrategyAction`**: Base for product-specific pricing + action hooks
+- **`ProductAction`**: Base for product-specific onchain actions
+- **`ProductPrice`**: Base for product-specific pricing strategies
+- **`ProductPriceAction`**: Base for product-specific pricing + action hooks
 
 ## Quick Start
 
@@ -126,12 +126,12 @@ The script will present you with a list of available contracts to deploy. Select
 
 When writing tests for your hooks, inherit from the appropriate base test contract:
 
-- **`RegistryOnchainActionTest`**: For testing `RegistryOnchainAction` contracts
-- **`RegistryPricingStrategyTest`**: For testing `RegistryPricingStrategy` contracts
-- **`RegistryPricingStrategyActionTest`**: For testing `RegistryPricingStrategyAction` contracts
-- **`OnchainActionTest`**: For testing `OnchainAction` contracts
-- **`PricingStrategyTest`**: For testing `PricingStrategy` contracts
-- **`PricingStrategyActionTest`**: For testing `PricingStrategyAction` contracts
+- **`RegistryProductActionTest`**: For testing `RegistryProductAction` contracts
+- **`RegistryProductPriceTest`**: For testing `RegistryProductPrice` contracts
+- **`RegistryProductPriceActionTest`**: For testing `RegistryProductPriceAction` contracts
+- **`ProductActionTest`**: For testing `ProductAction` contracts
+- **`ProductPriceTest`**: For testing `ProductPrice` contracts
+- **`ProductPriceActionTest`**: For testing `ProductPriceAction` contracts
 
 Inheriting the appropriate test contract for your hook allows you to focus your tests solely on your custom hook logic.
 

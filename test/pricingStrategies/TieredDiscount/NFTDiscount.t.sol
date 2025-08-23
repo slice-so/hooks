@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {RegistryPricingStrategyTest} from "@test/utils/RegistryPricingStrategyTest.sol";
+import {RegistryProductPriceTest} from "@test/utils/RegistryProductPriceTest.sol";
 import {console2} from "forge-std/console2.sol";
 import {
     IProductsModule,
@@ -19,7 +19,7 @@ uint256 constant productId = 1;
 uint80 constant percentDiscountOne = 1000; // 10%
 uint80 constant percentDiscountTwo = 2000; // 20%
 
-contract NFTDiscountTest is RegistryPricingStrategyTest {
+contract NFTDiscountTest is RegistryProductPriceTest {
     NFTDiscount erc721GatedDiscount;
     MockERC721 nftOne = new MockERC721();
     MockERC721 nftTwo = new MockERC721();

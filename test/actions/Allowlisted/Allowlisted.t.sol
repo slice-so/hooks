@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {RegistryOnchainActionTest} from "@test/utils/RegistryOnchainActionTest.sol";
+import {RegistryProductActionTest} from "@test/utils/RegistryProductActionTest.sol";
 import {Allowlisted} from "@/hooks/actions/Allowlisted/Allowlisted.sol";
 import {Merkle} from "@murky/Merkle.sol";
 
 uint256 constant slicerId = 0;
 uint256 constant productId = 1;
 
-contract AllowlistedTest is RegistryOnchainActionTest {
+contract AllowlistedTest is RegistryProductActionTest {
     Allowlisted allowlisted;
     Merkle m;
     bytes32[] data;

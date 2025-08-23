@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {IProductsModule, RegistryOnchainAction, HookRegistry, IHookRegistry} from "@/utils/RegistryOnchainAction.sol";
+import {IProductsModule, RegistryProductAction, HookRegistry, IHookRegistry} from "@/utils/RegistryProductAction.sol";
 import {MAX_ROYALTY, ERC721Mint_BaseToken} from "./utils/ERC721Mint_BaseToken.sol";
 import {ERC721Data} from "./types/ERC721Data.sol";
 
@@ -11,7 +11,7 @@ import {ERC721Data} from "./types/ERC721Data.sol";
  * @dev     If `revertOnMaxSupplyReached` is set to true, reverts when max supply is exceeded.
  * @author  Slice <jacopo.eth>
  */
-contract ERC721Mint is RegistryOnchainAction {
+contract ERC721Mint is RegistryProductAction {
     /*//////////////////////////////////////////////////////////////
         ERRORS
     //////////////////////////////////////////////////////////////*/
@@ -29,14 +29,14 @@ contract ERC721Mint is RegistryOnchainAction {
         CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(IProductsModule productsModuleAddress) RegistryOnchainAction(productsModuleAddress) {}
+    constructor(IProductsModule productsModuleAddress) RegistryProductAction(productsModuleAddress) {}
 
     /*//////////////////////////////////////////////////////////////
         CONFIGURATION
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @inheritdoc RegistryOnchainAction
+     * @inheritdoc RegistryProductAction
      * @notice Mint tokens to the buyer.
      * @dev If `revertOnMaxSupplyReached` is set to true, reverts when max supply is exceeded.
      */

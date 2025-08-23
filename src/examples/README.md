@@ -4,9 +4,9 @@ This folder contains product-specific smart contract implementations that demons
 
 ## Key Interfaces
 
-**IPricingStrategy**:
+**IProductPrice**:
 ```solidity
-interface IPricingStrategy {
+interface IProductPrice {
     function productPrice(
         uint256 slicerId,
         uint256 productId,
@@ -18,9 +18,9 @@ interface IPricingStrategy {
 }
 ```
 
-**IOnchainAction**:
+**IProductAction**:
 ```solidity
-interface IOnchainAction {
+interface IProductAction {
     function isPurchaseAllowed(
         uint256 slicerId,
         uint256 productId,
@@ -43,15 +43,15 @@ interface IOnchainAction {
 
 ## Base Contracts
 
-- **OnchainAction**: Add arbitrary requirements and/or custom logic after product purchase.
-- **PricingStrategy**: Customize product pricing logic.
-- **PricingStrategyAction**: Provide functionality of both Onchain Actions and Pricing Strategies
+- **ProductAction**: Add arbitrary requirements and/or custom logic after product purchase.
+- **ProductPrice**: Customize product pricing logic.
+- **ProductPriceAction**: Provide functionality of both Onchain Actions and Pricing Strategies
 
 ## Key Differences from Registry Hooks
 
 Unlike the reusable hooks in `/hooks/`, these examples:
 - Are tailored for specific products/projects
-- Inherit directly from base contracts (`OnchainAction`, `PricingStrategy`)
+- Inherit directly from base contracts (`ProductAction`, `ProductPrice`)
 - Don't implement `IHookRegistry` (not intended for Slice frontend integration)
 - Serve as reference implementations and starting points
 
@@ -68,13 +68,13 @@ Unlike the reusable hooks in `/hooks/`, these examples:
 
 To create a custom product-specific onchain action:
 
-1. **Inherit from OnchainAction**:
+1. **Inherit from ProductAction**:
 ```solidity
-import {OnchainAction, IProductsModule} from "@/utils/OnchainAction.sol";
+import {ProductAction, IProductsModule} from "@/utils/ProductAction.sol";
 
-contract MyProductAction is OnchainAction {
+contract MyProductAction is ProductAction {
     constructor(IProductsModule productsModule, uint256 slicerId)
-        OnchainAction(productsModule, slicerId) {}
+        ProductAction(productsModule, slicerId) {}
 }
 ```
 
@@ -108,13 +108,13 @@ function isPurchaseAllowed(
 
 To create a custom product-specific pricing strategy:
 
-1. **Inherit from PricingStrategy**:
+1. **Inherit from ProductPrice**:
 ```solidity
-import {PricingStrategy, IProductsModule} from "@/utils/PricingStrategy.sol";
+import {ProductPrice, IProductsModule} from "@/utils/ProductPrice.sol";
 
-contract MyProductAction is PricingStrategy {
+contract MyProductAction is ProductPrice {
     constructor(IProductsModule productsModule, uint256 slicerId)
-        PricingStrategy(productsModule, slicerId) {}
+        ProductPrice(productsModule, slicerId) {}
 }
 ```
 

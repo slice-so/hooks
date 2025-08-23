@@ -1,12 +1,12 @@
 # Pricing Strategy Actions
 
-Pricing strategy actions combine both pricing strategies and onchain actions in a single contract. They implement both `IPricingStrategy` and `IOnchainAction` interfaces, allowing them to calculate dynamic prices AND execute custom logic during purchases.
+Pricing strategy actions combine both pricing strategies and onchain actions in a single contract. They implement both `IProductPrice` and `IProductAction` interfaces, allowing them to calculate dynamic prices AND execute custom logic during purchases.
 
 ## Key Interfaces
 
-**IPricingStrategy**:
+**IProductPrice**:
 ```solidity
-interface IPricingStrategy {
+interface IProductPrice {
     function productPrice(
         uint256 slicerId,
         uint256 productId,
@@ -18,9 +18,9 @@ interface IPricingStrategy {
 }
 ```
 
-**IOnchainAction**:
+**IProductAction**:
 ```solidity
-interface IOnchainAction {
+interface IProductAction {
     function isPurchaseAllowed(
         uint256 slicerId,
         uint256 productId,
@@ -41,9 +41,9 @@ interface IOnchainAction {
 }
 ```
 
-## Base Contract: RegistryPricingStrategyAction
+## Base Contract: RegistryProductPriceAction
 
-All pricing strategy actions inherit from `RegistryPricingStrategyAction`, which provides:
+All pricing strategy actions inherit from `RegistryProductPriceAction`, which provides:
 - Combined functionality of both pricing strategies and onchain actions
 - Registry functionality for reusable hooks across multiple products
 - Implementation of `IHookRegistry` for Slice frontend integration
@@ -56,13 +56,13 @@ All pricing strategy actions inherit from `RegistryPricingStrategyAction`, which
 
 To create a custom pricing strategy action:
 
-1. **Inherit from RegistryPricingStrategyAction**:
+1. **Inherit from RegistryProductPriceAction**:
 ```solidity
-import {RegistryPricingStrategyAction, IProductsModule} from "@/utils/RegistryPricingStrategyAction.sol";
+import {RegistryProductPriceAction, IProductsModule} from "@/utils/RegistryProductPriceAction.sol";
 
-contract MyPricingStrategyAction is RegistryPricingStrategyAction {
+contract MyProductPriceAction is RegistryProductPriceAction {
     constructor(IProductsModule productsModule) 
-        RegistryPricingStrategyAction(productsModule) {}
+        RegistryProductPriceAction(productsModule) {}
 }
 ```
 
@@ -92,7 +92,7 @@ function paramsSchema() external pure override returns (string memory) {
 
 ## Integration with Slice
 
-Pricing strategy actions that inherit from `RegistryPricingStrategyAction` are automatically compatible with Slice frontends through the `IHookRegistry` interface, enabling:
+Pricing strategy actions that inherit from `RegistryProductPriceAction` are automatically compatible with Slice frontends through the `IHookRegistry` interface, enabling:
 - Product configuration via `configureProduct()`
 - Parameter validation via `paramsSchema()`
 - Automatic discovery and integration

@@ -5,11 +5,11 @@ import {IERC721} from "@openzeppelin-4.8.0/interfaces/IERC721.sol";
 import {IERC1155} from "@openzeppelin-4.8.0/interfaces/IERC1155.sol";
 import {
     IProductsModule,
-    RegistryOnchainAction,
+    RegistryProductAction,
     HookRegistry,
-    IOnchainAction,
+    IProductAction,
     IHookRegistry
-} from "@/utils/RegistryOnchainAction.sol";
+} from "@/utils/RegistryProductAction.sol";
 import {NftType, NFTGate, NFTGates} from "./types/NFTGate.sol";
 
 /**
@@ -17,7 +17,7 @@ import {NftType, NFTGate, NFTGates} from "./types/NFTGate.sol";
  * @notice  Onchain action registry for NFT gating.
  * @author  Slice <jacopo.eth>
  */
-contract NFTGated is RegistryOnchainAction {
+contract NFTGated is RegistryProductAction {
     /*//////////////////////////////////////////////////////////////
         MUTABLE STORAGE
     //////////////////////////////////////////////////////////////*/
@@ -28,14 +28,14 @@ contract NFTGated is RegistryOnchainAction {
         CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(IProductsModule productsModuleAddress) RegistryOnchainAction(productsModuleAddress) {}
+    constructor(IProductsModule productsModuleAddress) RegistryProductAction(productsModuleAddress) {}
 
     /*//////////////////////////////////////////////////////////////
         CONFIGURATION
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @inheritdoc IOnchainAction
+     * @inheritdoc IProductAction
      * @dev Checks if `account` owns the required amount of NFT tokens.
      */
     function isPurchaseAllowed(

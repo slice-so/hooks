@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-// import {IProductsModule} from "@/utils/OnchainAction.sol";
+// import {IProductsModule} from "@/utils/ProductAction.sol";
 import {Test} from "forge-std/Test.sol";
 
 contract MockProductsModule is

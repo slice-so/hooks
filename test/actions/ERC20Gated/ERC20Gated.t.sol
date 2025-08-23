@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {RegistryOnchainActionTest} from "@test/utils/RegistryOnchainActionTest.sol";
+import {RegistryProductActionTest} from "@test/utils/RegistryProductActionTest.sol";
 import {MockERC20Gated} from "./mocks/MockERC20Gated.sol";
 import {ERC20Gate} from "@/hooks/actions/ERC20Gated/ERC20Gated.sol";
 import {IERC20, MockERC20} from "@test/utils/mocks/MockERC20.sol";
@@ -9,7 +9,7 @@ import {IERC20, MockERC20} from "@test/utils/mocks/MockERC20.sol";
 uint256 constant slicerId = 0;
 uint256 constant productId = 1;
 
-contract ERC20GatedTest is RegistryOnchainActionTest {
+contract ERC20GatedTest is RegistryProductActionTest {
     MockERC20Gated erc20Gated;
     MockERC20 token = new MockERC20("Test", "TST", 18);
     MockERC20 token2 = new MockERC20("Test2", "TST2", 18);

@@ -1,11 +1,11 @@
 # Onchain Actions
 
-Onchain actions are smart contracts that execute custom logic when products are purchased on Slice. They implement the `IOnchainAction` interface and can control purchase eligibility and perform actions after purchases.
+Onchain actions are smart contracts that execute custom logic when products are purchased on Slice. They implement the `IProductAction` interface and can control purchase eligibility and perform actions after purchases.
 
-## Key Interface: IOnchainAction
+## Key Interface: IProductAction
 
 ```solidity
-interface IOnchainAction {
+interface IProductAction {
     function isPurchaseAllowed(
         uint256 slicerId,
         uint256 productId,
@@ -26,9 +26,9 @@ interface IOnchainAction {
 }
 ```
 
-## Base Contract: RegistryOnchainAction
+## Base Contract: RegistryProductAction
 
-All actions in this directory inherit from `RegistryOnchainAction`, which provides:
+All actions in this directory inherit from `RegistryProductAction`, which provides:
 - Registry functionality for reusable hooks across multiple products
 - Implementation of `IHookRegistry` for Slice frontend integration
 - Base implementations for common patterns
@@ -45,13 +45,13 @@ All actions in this directory inherit from `RegistryOnchainAction`, which provid
 
 To create a custom onchain action:
 
-1. **Inherit from RegistryOnchainAction**:
+1. **Inherit from RegistryProductAction**:
 ```solidity
-import {RegistryOnchainAction, IProductsModule} from "@/utils/RegistryOnchainAction.sol";
+import {RegistryProductAction, IProductsModule} from "@/utils/RegistryProductAction.sol";
 
-contract MyAction is RegistryOnchainAction {
+contract MyAction is RegistryProductAction {
     constructor(IProductsModule productsModule) 
-        RegistryOnchainAction(productsModule) {}
+        RegistryProductAction(productsModule) {}
 }
 ```
 
@@ -77,7 +77,7 @@ function paramsSchema() external pure override returns (string memory) {
 
 ## Integration with Slice
 
-Actions that inherit from `RegistryOnchainAction` are automatically compatible with Slice frontends through the `IHookRegistry` interface, enabling:
+Actions that inherit from `RegistryProductAction` are automatically compatible with Slice frontends through the `IHookRegistry` interface, enabling:
 - Product configuration via `configureProduct()`
 - Parameter validation via `paramsSchema()`
 - Automatic discovery and integration

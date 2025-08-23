@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {RegistryOnchainAction, RegistryOnchainActionTest} from "@test/utils/RegistryOnchainActionTest.sol";
+import {RegistryProductAction, RegistryProductActionTest} from "@test/utils/RegistryProductActionTest.sol";
 import {ERC721Mint} from "@/hooks/actions/ERC721Mint/ERC721Mint.sol";
 import {ERC721Data} from "@/hooks/actions/ERC721Mint/types/ERC721Data.sol";
 import {ERC721Mint_BaseToken, MAX_ROYALTY} from "@/hooks/actions/ERC721Mint/utils/ERC721Mint_BaseToken.sol";
@@ -10,7 +10,7 @@ import {console2} from "forge-std/console2.sol";
 
 uint256 constant slicerId = 0;
 
-contract ERC721MintTest is RegistryOnchainActionTest {
+contract ERC721MintTest is RegistryProductActionTest {
     ERC721Mint erc721Mint;
 
     uint256[] productIds = [1, 2, 3, 4];

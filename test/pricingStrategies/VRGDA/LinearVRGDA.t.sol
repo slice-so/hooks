@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {RegistryPricingStrategyTest} from "@test/utils/RegistryPricingStrategyTest.sol";
+import {RegistryProductPriceTest} from "@test/utils/RegistryProductPriceTest.sol";
 import {wadLn, toWadUnsafe, toDaysWadUnsafe, fromDaysWadUnsafe} from "@/utils/math/SignedWadMath.sol";
 
 import "./mocks/MockLinearVRGDAPrices.sol";
-import {IProductsModule} from "@/utils/PricingStrategy.sol";
+import {IProductsModule} from "@/utils/ProductPrice.sol";
 
 uint256 constant ONE_THOUSAND_YEARS = 356 days * 1000;
 
@@ -18,7 +18,7 @@ uint128 constant min = 1e18;
 int256 constant priceDecayPercent = 0.31e18;
 int256 constant perTimeUnit = 2e18;
 
-contract LinearVRGDATest is RegistryPricingStrategyTest {
+contract LinearVRGDATest is RegistryProductPriceTest {
     MockLinearVRGDAPrices vrgda;
 
     function setUp() public {

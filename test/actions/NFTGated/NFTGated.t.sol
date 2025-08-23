@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {RegistryOnchainActionTest} from "@test/utils/RegistryOnchainActionTest.sol";
+import {RegistryProductActionTest} from "@test/utils/RegistryProductActionTest.sol";
 import {MockNFTGated} from "./mocks/MockNFTGated.sol";
 import {NFTGates, NFTGate, NftType} from "@/hooks/actions/NFTGated/NFTGated.sol";
 import {MockERC721} from "@test/utils/mocks/MockERC721.sol";
@@ -11,7 +11,7 @@ import {console2} from "forge-std/console2.sol";
 
 uint256 constant slicerId = 0;
 
-contract NFTGatedTest is RegistryOnchainActionTest {
+contract NFTGatedTest is RegistryProductActionTest {
     MockNFTGated nftGated;
     MockERC721 nft721 = new MockERC721();
     MockERC1155 nft1155 = new MockERC1155();

@@ -3,12 +3,12 @@ pragma solidity ^0.8.20;
 
 import {console} from "forge-std/console.sol";
 import {Vm} from "forge-std/Vm.sol";
-import {RegistryPricingStrategyTest} from "@test/utils/RegistryPricingStrategyTest.sol";
+import {RegistryProductPriceTest} from "@test/utils/RegistryProductPriceTest.sol";
 import {wadLn, toWadUnsafe} from "@/utils/math/SignedWadMath.sol";
-import {IProductsModule} from "@/utils/PricingStrategy.sol";
+import {IProductsModule} from "@/utils/ProductPrice.sol";
 import {MockLinearVRGDAPrices, LinearVRGDAParams} from "../mocks/MockLinearVRGDAPrices.sol";
 
-contract LinearVRGDACorrectnessTest is RegistryPricingStrategyTest {
+contract LinearVRGDACorrectnessTest is RegistryProductPriceTest {
     // Sample parameters for differential fuzzing campaign.
     uint256 constant maxTimeframe = 356 days * 10;
     uint256 constant maxSellable = 10000;

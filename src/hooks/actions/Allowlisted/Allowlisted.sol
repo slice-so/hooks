@@ -4,18 +4,18 @@ pragma solidity ^0.8.20;
 import {MerkleProof} from "@openzeppelin-4.8.0/utils/cryptography/MerkleProof.sol";
 import {
     IProductsModule,
-    RegistryOnchainAction,
+    RegistryProductAction,
     HookRegistry,
-    IOnchainAction,
+    IProductAction,
     IHookRegistry
-} from "@/utils/RegistryOnchainAction.sol";
+} from "@/utils/RegistryProductAction.sol";
 
 /**
  * @title   Allowlisted
  * @notice  Onchain action registry for allowlist requirement.
  * @author  Slice <jacopo.eth>
  */
-contract Allowlisted is RegistryOnchainAction {
+contract Allowlisted is RegistryProductAction {
     /*//////////////////////////////////////////////////////////////
         MUTABLE STORAGE
     //////////////////////////////////////////////////////////////*/
@@ -26,14 +26,14 @@ contract Allowlisted is RegistryOnchainAction {
         CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(IProductsModule productsModuleAddress) RegistryOnchainAction(productsModuleAddress) {}
+    constructor(IProductsModule productsModuleAddress) RegistryProductAction(productsModuleAddress) {}
 
     /*//////////////////////////////////////////////////////////////
         CONFIGURATION
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @inheritdoc IOnchainAction
+     * @inheritdoc IProductAction
      * @dev Checks if the account is in the allowlist.
      */
     function isPurchaseAllowed(

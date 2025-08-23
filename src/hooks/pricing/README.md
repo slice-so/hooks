@@ -1,11 +1,11 @@
 # Pricing Strategies
 
-Pricing strategies are smart contracts that calculate dynamic prices for products on Slice. They implement the `IPricingStrategy` interface to provide custom pricing logic based on arbitrary factors and conditions.
+Pricing strategies are smart contracts that calculate dynamic prices for products on Slice. They implement the `IProductPrice` interface to provide custom pricing logic based on arbitrary factors and conditions.
 
-## Key Interface: IPricingStrategy
+## Key Interface: IProductPrice
 
 ```solidity
-interface IPricingStrategy {
+interface IProductPrice {
     function productPrice(
         uint256 slicerId,
         uint256 productId,
@@ -17,9 +17,9 @@ interface IPricingStrategy {
 }
 ```
 
-## Base Contract: RegistryPricingStrategy
+## Base Contract: RegistryProductPrice
 
-All pricing strategies in this directory inherit from `RegistryPricingStrategy`, which provides:
+All pricing strategies in this directory inherit from `RegistryProductPrice`, which provides:
 - Registry functionality for reusable pricing across multiple products
 - Implementation of `IHookRegistry` for Slice frontend integration
 - Base implementations for common patterns
@@ -35,13 +35,13 @@ All pricing strategies in this directory inherit from `RegistryPricingStrategy`,
 
 To create a custom pricing strategy:
 
-1. **Inherit from RegistryPricingStrategy**:
+1. **Inherit from RegistryProductPrice**:
 ```solidity
-import {RegistryPricingStrategy, IProductsModule} from "@/utils/RegistryPricingStrategy.sol";
+import {RegistryProductPrice, IProductsModule} from "@/utils/RegistryProductPrice.sol";
 
-contract MyPricingStrategy is RegistryPricingStrategy {
+contract MyProductPrice is RegistryProductPrice {
     constructor(IProductsModule productsModule) 
-        RegistryPricingStrategy(productsModule) {}
+        RegistryProductPrice(productsModule) {}
 }
 ```
 
@@ -63,7 +63,7 @@ function paramsSchema() external pure override returns (string memory) {
 
 ## Integration with Slice
 
-Pricing strategies that inherit from `RegistryPricingStrategy` are automatically compatible with Slice frontends through the `IHookRegistry` interface, enabling:
+Pricing strategies that inherit from `RegistryProductPrice` are automatically compatible with Slice frontends through the `IHookRegistry` interface, enabling:
 - Product configuration via `configureProduct()`
 - Parameter validation via `paramsSchema()`
 - Automatic discovery and integration

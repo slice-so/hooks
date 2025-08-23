@@ -4,18 +4,18 @@ pragma solidity ^0.8.20;
 import {ERC20Gate} from "./types/ERC20Gate.sol";
 import {
     IProductsModule,
-    RegistryOnchainAction,
+    RegistryProductAction,
     HookRegistry,
-    IOnchainAction,
+    IProductAction,
     IHookRegistry
-} from "@/utils/RegistryOnchainAction.sol";
+} from "@/utils/RegistryProductAction.sol";
 
 /**
  * @title   ERC20Gated
  * @notice  Onchain action registry for ERC20 gating.
  * @author  Slice <jacopo.eth>
  */
-contract ERC20Gated is RegistryOnchainAction {
+contract ERC20Gated is RegistryProductAction {
     /*//////////////////////////////////////////////////////////////
         MUTABLE STORAGE
     //////////////////////////////////////////////////////////////*/
@@ -26,14 +26,14 @@ contract ERC20Gated is RegistryOnchainAction {
         CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(IProductsModule productsModuleAddress) RegistryOnchainAction(productsModuleAddress) {}
+    constructor(IProductsModule productsModuleAddress) RegistryProductAction(productsModuleAddress) {}
 
     /*//////////////////////////////////////////////////////////////
         CONFIGURATION
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @inheritdoc IOnchainAction
+     * @inheritdoc IProductAction
      * @dev Checks if `account` owns the required amount of all ERC20 tokens.
      */
     function isPurchaseAllowed(

@@ -3,11 +3,11 @@ pragma solidity ^0.8.20;
 
 import {
     IProductsModule,
-    RegistryOnchainAction,
+    RegistryProductAction,
     HookRegistry,
-    IOnchainAction,
+    IProductAction,
     IHookRegistry
-} from "@/utils/RegistryOnchainAction.sol";
+} from "@/utils/RegistryProductAction.sol";
 import {ERC20Data} from "./types/ERC20Data.sol";
 import {ERC20Mint_BaseToken} from "./utils/ERC20Mint_BaseToken.sol";
 
@@ -17,7 +17,7 @@ import {ERC20Mint_BaseToken} from "./utils/ERC20Mint_BaseToken.sol";
  * @dev     If `revertOnMaxSupplyReached` is set to true, reverts when max supply is exceeded.
  * @author  Slice <jacopo.eth>
  */
-contract ERC20Mint is RegistryOnchainAction {
+contract ERC20Mint is RegistryProductAction {
     /*//////////////////////////////////////////////////////////////
         ERRORS
     //////////////////////////////////////////////////////////////*/
@@ -34,14 +34,14 @@ contract ERC20Mint is RegistryOnchainAction {
         CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(IProductsModule productsModuleAddress) RegistryOnchainAction(productsModuleAddress) {}
+    constructor(IProductsModule productsModuleAddress) RegistryProductAction(productsModuleAddress) {}
 
     /*//////////////////////////////////////////////////////////////
         CONFIGURATION
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @inheritdoc IOnchainAction
+     * @inheritdoc IProductAction
      * @dev If `revertOnMaxSupplyReached` is set to true, returns false when max supply is exceeded.
      */
     function isPurchaseAllowed(
@@ -63,7 +63,7 @@ contract ERC20Mint is RegistryOnchainAction {
     }
 
     /**
-     * @inheritdoc RegistryOnchainAction
+     * @inheritdoc RegistryProductAction
      * @notice Mint tokens to the buyer.
      * @dev If `revertOnMaxSupplyReached` is set to true, reverts when max supply is exceeded.
      */
