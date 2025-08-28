@@ -25,10 +25,10 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Does an open PR from slice/internal -> master already exist?
+          # Does an open PR from slice/internal -> main already exist?
           pr_number=$(gh pr list \
               --head slice/internal \
-              --base master \
+              --base main \
               --state open \
               --json number \
               --jq '.[0].number' || true)
@@ -37,8 +37,8 @@ jobs:
             echo "No open PR found – creating one."
             gh pr create \
               --head slice/internal \
-              --base master \
-              --title "Sync slice/internal → master" \
+              --base main \
+              --title "Sync slice/internal → main" \
               --body  "Automated PR – triggered by commit $GITHUB_SHA"
           else
             echo "PR #$pr_number already exists – nothing to do."
