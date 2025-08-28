@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.30;
 
 import {IProductsModule} from "slice/interfaces/IProductsModule.sol";
 import {RegistryProductPrice, IProductPrice} from "@/utils/RegistryProductPrice.sol";

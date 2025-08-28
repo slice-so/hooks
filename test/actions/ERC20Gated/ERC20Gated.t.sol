@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.30;
 
 import {RegistryProductActionTest} from "@test/utils/RegistryProductActionTest.sol";
 import {MockERC20Gated} from "./mocks/MockERC20Gated.sol";

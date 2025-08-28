@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.30;
 
 import {Allowlisted} from "./Allowlisted/Allowlisted.sol";
 import {ERC20Gated} from "./ERC20Gated/ERC20Gated.sol";

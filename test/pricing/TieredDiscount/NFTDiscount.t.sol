@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.30;
 
 import {RegistryProductPriceTest} from "@test/utils/RegistryProductPriceTest.sol";
 import {console2} from "forge-std/console2.sol";

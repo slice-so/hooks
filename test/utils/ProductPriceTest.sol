@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.30;
 
 import {HookTest} from "./HookTest.sol";
 import {IProductPrice} from "@/utils/ProductPrice.sol";

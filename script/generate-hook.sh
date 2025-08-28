@@ -79,17 +79,31 @@ echo -e "${GREEN}✓ Contract name: ${CONTRACT_NAME}${NC}"
 
 # Check for duplicate hook names
 EXISTING_DIRS=""
-case $TYPE in
-    "action")
-        EXISTING_DIRS="src/hooks/actions/${CONTRACT_NAME}"
-        ;;
-    "pricing-strategy")
-        EXISTING_DIRS="src/hooks/pricing/${CONTRACT_NAME}"
-        ;;
-    "pricing-action")
-        EXISTING_DIRS="src/hooks/pricingActions/${CONTRACT_NAME}"
-        ;;
-esac
+if [ "$SCOPE" = "registry" ]; then
+    case $TYPE in
+        "action")
+            EXISTING_DIRS="src/hooks/actions/${CONTRACT_NAME}"
+            ;;
+        "pricing-strategy")
+            EXISTING_DIRS="src/hooks/pricing/${CONTRACT_NAME}"
+            ;;
+        "pricing-action")
+            EXISTING_DIRS="src/hooks/pricingActions/${CONTRACT_NAME}"
+            ;;
+    esac
+else
+    case $TYPE in
+        "action")
+            EXISTING_DIRS="src/custom/actions/${CONTRACT_NAME}"
+            ;;
+        "pricing-strategy")
+            EXISTING_DIRS="src/custom/pricing/${CONTRACT_NAME}"
+            ;;
+        "pricing-action")
+            EXISTING_DIRS="src/custom/pricingActions/${CONTRACT_NAME}"
+            ;;
+    esac
+fi
 
 if [ -d "$EXISTING_DIRS" ]; then
     echo -e "${RED}✗ Error: Hook '${CONTRACT_NAME}' already exists at ${EXISTING_DIRS}${NC}"
@@ -107,18 +121,33 @@ fi
 echo -e "${GREEN}✓ Author: ${AUTHOR}${NC}"
 echo
 
-# Set directory based on type
-case $TYPE in
-    "action")
-        DIR="src/hooks/actions/${CONTRACT_NAME}"
-        ;;
-    "pricing-strategy")
-        DIR="src/hooks/pricing/${CONTRACT_NAME}"
-        ;;
-    "pricing-action")
-        DIR="src/hooks/pricingActions/${CONTRACT_NAME}"
-        ;;
-esac
+# Set directory based on scope and type
+if [ "$SCOPE" = "registry" ]; then
+    case $TYPE in
+        "action")
+            DIR="src/hooks/actions/${CONTRACT_NAME}"
+            ;;
+        "pricing-strategy")
+            DIR="src/hooks/pricing/${CONTRACT_NAME}"
+            ;;
+        "pricing-action")
+            DIR="src/hooks/pricingActions/${CONTRACT_NAME}"
+            ;;
+    esac
+else
+    # Product-specific hooks go in custom directory
+    case $TYPE in
+        "action")
+            DIR="src/custom/actions/${CONTRACT_NAME}"
+            ;;
+        "pricing-strategy")
+            DIR="src/custom/pricing/${CONTRACT_NAME}"
+            ;;
+        "pricing-action")
+            DIR="src/custom/pricingActions/${CONTRACT_NAME}"
+            ;;
+    esac
+fi
 
 # Create directory
 mkdir -p "$DIR"
@@ -132,7 +161,7 @@ echo -e "${BLUE}Generating contract at: ${FILE_PATH}${NC}"
 if [ "$SCOPE" = "registry" ] && [ "$TYPE" = "action" ]; then
     cat > "$FILE_PATH" << 'EOF'
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.30;
 
 import {
     RegistryProductAction,
@@ -209,7 +238,7 @@ EOF
 elif [ "$SCOPE" = "product" ] && [ "$TYPE" = "action" ]; then
     cat > "$FILE_PATH" << 'EOF'
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.30;
 
 import {ProductAction, IProductsModule, IProductAction} from "@/utils/ProductAction.sol";
 
@@ -265,7 +294,7 @@ EOF
 elif [ "$SCOPE" = "registry" ] && [ "$TYPE" = "pricing-strategy" ]; then
     cat > "$FILE_PATH" << 'EOF'
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.30;
 
 import {
     RegistryProductPrice,
@@ -325,7 +354,7 @@ EOF
 elif [ "$SCOPE" = "product" ] && [ "$TYPE" = "pricing-strategy" ]; then
     cat > "$FILE_PATH" << 'EOF'
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.30;
 
 import {ProductPrice, IProductsModule, IProductPrice} from "@/utils/ProductPrice.sol";
 
@@ -366,7 +395,7 @@ EOF
 elif [ "$SCOPE" = "registry" ] && [ "$TYPE" = "pricing-action" ]; then
     cat > "$FILE_PATH" << 'EOF'
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.30;
 
 import {
     RegistryProductPriceAction,
@@ -459,7 +488,7 @@ EOF
 elif [ "$SCOPE" = "product" ] && [ "$TYPE" = "pricing-action" ]; then
     cat > "$FILE_PATH" << 'EOF'
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.30;
 
 import {
     ProductPriceAction,
@@ -633,7 +662,7 @@ if [ "$SCOPE" = "registry" ]; then
     if [ "$TYPE" = "action" ]; then
         cat > "$TEST_FILE" << 'EOF'
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.30;
 
 import {RegistryProductAction, RegistryProductActionTest} from "@test/utils/RegistryProductActionTest.sol";
 import {CONTRACT_NAME} from "@/hooks/actions/CONTRACT_NAME/CONTRACT_NAME.sol";
@@ -708,7 +737,7 @@ EOF
     elif [ "$TYPE" = "pricing-strategy" ]; then
         cat > "$TEST_FILE" << 'EOF'
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.30;
 
 import {RegistryProductPrice, RegistryProductPriceTest} from "@test/utils/RegistryProductPriceTest.sol";
 import {CONTRACT_NAME} from "@/hooks/pricing/CONTRACT_NAME/CONTRACT_NAME.sol";
@@ -763,7 +792,7 @@ EOF
     elif [ "$TYPE" = "pricing-action" ]; then
         cat > "$TEST_FILE" << 'EOF'
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.30;
 
 import {RegistryProductPriceAction, RegistryProductPriceActionTest} from "@test/utils/RegistryProductPriceActionTest.sol";
 import {CONTRACT_NAME} from "@/hooks/pricingActions/CONTRACT_NAME/CONTRACT_NAME.sol";
@@ -866,8 +895,9 @@ fi
 
 echo
 echo -e "${YELLOW}Next steps:${NC}"
-echo "1. Review and customize the generated contract"
-echo "2. Implement your specific contract logic"
-echo "3. Update the test file with your test cases"
-echo "4. Run tests with 'forge test'"
-echo "5. Deploy using the deployment scripts"
+echo "1. Customize the generated contract with your custom logic"
+echo "2. Update the test file with your test cases"
+echo "3. Run tests with 'forge test'"
+if [ "$SCOPE" = "registry" ]; then
+    echo "4. Deploy by running './script/deploy.sh'"
+fi
