@@ -4,6 +4,8 @@ Smart contracts for creating custom pricing strategies and onchain actions for [
 
 Hooks enable dynamic pricing, purchase restrictions, rewards, integration with external protocols and other custom behaviors when products are bought.
 
+**[Contribute](#contributing)** by building new hooks and have them automatically integrated across all Slice stores and clients.
+
 ## Architecture
 
 ### Product Purchase Lifecycle
