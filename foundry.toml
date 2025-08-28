@@ -51,5 +51,5 @@ forge-std = "1.9.7"
 erc721a = "4.3.0"
 
 [lint]
-ignore = ["test/**/*.sol","script/**/*.sol", "src/interfaces/*.sol", "src/utils/*.sol", "src/hooks/actions/actions.sol", "src/hooks/pricing/pricing.sol", "src/hooks/pricingActions/pricingActions.sol", "src/examples/actions/BaseGirlsScout.sol"]
+ignore = ["test/**/*.sol","script/**/*.sol", "src/interfaces/*.sol", "src/utils/*.sol", "src/hooks/actions/actions.sol", "src/hooks/pricing/pricing.sol", "src/hooks/pricingActions/pricingActions.sol"]
 exclude_lints=["mixed-case-function", "mixed-case-variable", "pascal-case-struct"]
