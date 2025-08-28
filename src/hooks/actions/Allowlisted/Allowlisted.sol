@@ -4,18 +4,18 @@ pragma solidity ^0.8.20;
 import {MerkleProof} from "@openzeppelin-4.8.0/utils/cryptography/MerkleProof.sol";
 import {
     IProductsModule,
-    RegistryOnchainAction,
+    RegistryProductAction,
     HookRegistry,
-    IOnchainAction,
+    IProductAction,
     IHookRegistry
-} from "@/utils/RegistryOnchainAction.sol";
+} from "@/utils/RegistryProductAction.sol";
 
 /**
  * @title   Allowlisted
  * @notice  Onchain action registry for allowlist requirement.
  * @author  Slice <jacopo.eth>
  */
-contract Allowlisted is RegistryOnchainAction {
+contract Allowlisted is RegistryProductAction {
     /*//////////////////////////////////////////////////////////////
         MUTABLE STORAGE
     //////////////////////////////////////////////////////////////*/
@@ -26,20 +26,20 @@ contract Allowlisted is RegistryOnchainAction {
         CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(IProductsModule productsModuleAddress) RegistryOnchainAction(productsModuleAddress) {}
+    constructor(IProductsModule productsModuleAddress) RegistryProductAction(productsModuleAddress) {}
 
     /*//////////////////////////////////////////////////////////////
         CONFIGURATION
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @inheritdoc IOnchainAction
+     * @inheritdoc IProductAction
      * @dev Checks if the account is in the allowlist.
      */
     function isPurchaseAllowed(
         uint256 slicerId,
         uint256 productId,
-        address account,
+        address buyer,
         uint256,
         bytes memory,
         bytes memory buyerCustomData
@@ -47,8 +47,16 @@ contract Allowlisted is RegistryOnchainAction {
         // Get Merkle proof from buyerCustomData
         bytes32[] memory proof = abi.decode(buyerCustomData, (bytes32[]));
 
+        uint256 leafValue = uint256(uint160(buyer));
+
         // Generate leaf from account address
-        bytes32 leaf = keccak256(abi.encodePacked(account));
+        bytes32 leaf;
+        /// @solidity memory-safe-assembly
+        assembly {
+            mstore(0x00, leafValue)
+            leaf := keccak256(0x00, 0x20)
+        }
+
         bytes32 root = merkleRoots[slicerId][productId];
 
         // Check if Merkle proof is valid

@@ -2,9 +2,9 @@
 pragma solidity ^0.8.20;
 
 import {HookTest} from "./HookTest.sol";
-import {IHookRegistry} from "@/utils/RegistryPricingStrategy.sol";
+import {IHookRegistry} from "@/utils/RegistryProductPrice.sol";
 import {MockProductsModule} from "./mocks/MockProductsModule.sol";
-import {SliceContext} from "@/utils/RegistryOnchainAction.sol";
+import {SliceContext} from "@/utils/RegistryProductAction.sol";
 
 abstract contract HookRegistryTest is HookTest {
     function testParamsSchema() public view {

@@ -3,15 +3,14 @@ pragma solidity ^0.8.20;
 
 import {IERC721} from "@openzeppelin-4.8.0/interfaces/IERC721.sol";
 import {IERC1155} from "@openzeppelin-4.8.0/interfaces/IERC1155.sol";
-import {IOnchainAction} from "@/interfaces/IOnchainAction.sol";
 import {
-    IPricingStrategy,
-    RegistryOnchainAction,
-    RegistryPricingStrategyAction,
-    HookRegistry,
+    IProductPrice,
+    RegistryProductAction,
+    RegistryProductPriceAction,
     IHookRegistry,
     IProductsModule
-} from "@/utils/RegistryPricingStrategyAction.sol";
+} from "@/utils/RegistryProductPriceAction.sol";
+import {HookRegistry} from "@/utils/RegistryProductAction.sol";
 import {ProductParams, TokenCondition} from "./types/ProductParams.sol";
 import {TokenType} from "./types/TokenCondition.sol";
 import {ITokenERC1155} from "./utils/ITokenERC1155.sol";
@@ -21,7 +20,7 @@ import {ITokenERC1155} from "./utils/ITokenERC1155.sol";
  * @notice  Discounts the first purchase of a product for free, based on conditions.
  * @author  Slice <jacopo.eth>
  */
-contract FirstForFree is RegistryPricingStrategyAction {
+contract FirstForFree is RegistryProductPriceAction {
     /*//////////////////////////////////////////////////////////////
         MUTABLE STORAGE
     //////////////////////////////////////////////////////////////*/
@@ -33,14 +32,14 @@ contract FirstForFree is RegistryPricingStrategyAction {
         CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(IProductsModule productsModuleAddress) RegistryPricingStrategyAction(productsModuleAddress) {}
+    constructor(IProductsModule productsModuleAddress) RegistryProductPriceAction(productsModuleAddress) {}
 
     /*//////////////////////////////////////////////////////////////
         CONFIGURATION
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @inheritdoc IPricingStrategy
+     * @inheritdoc IProductPrice
      * @notice Applies discount only for first N purchases on a slicer.
      */
     function productPrice(uint256 slicerId, uint256 productId, address, uint256 quantity, address buyer, bytes memory)
@@ -69,7 +68,7 @@ contract FirstForFree is RegistryPricingStrategyAction {
     }
 
     /**
-     * @inheritdoc RegistryOnchainAction
+     * @inheritdoc RegistryProductAction
      * @notice Mint `quantity` NFTs to `account` on purchase. Keeps track of total purchases.
      */
     function _onProductPurchase(

@@ -1,69 +1,43 @@
 # Pricing Strategies
 
-Pricing strategies are smart contracts that calculate dynamic prices for products on Slice. They implement the `IPricingStrategy` interface to provide custom pricing logic based on arbitrary factors and conditions.
+Calculate dynamic prices for products on Slice. Pricing strategies implement the `IProductPrice` interface to provide custom pricing logic based on various factors.
 
-## Key Interface: IPricingStrategy
+## How Pricing Works
 
-```solidity
-interface IPricingStrategy {
-    function productPrice(
-        uint256 slicerId,
-        uint256 productId,
-        address currency,
-        uint256 quantity,
-        address buyer,
-        bytes memory data
-    ) external view returns (uint256 ethPrice, uint256 currencyPrice);
-}
+The `productPrice` function is called before purchase to determine:
+- **ETH price** - Price in native currency
+- **Currency price** - Price in ERC20 tokens (if applicable)
+
+## Creating Custom Pricing
+
+### Quick Start with Generator Script
+
+The easiest way to create a new pricing strategy is using the hook generator:
+
+```bash
+# From the hooks directory
+./script/generate-hook.sh
 ```
 
-## Base Contract: RegistryPricingStrategy
+Select:
+1. Registry (for Slice-integrated hooks)
+2. Pricing Strategy
+3. Enter your contract name
+4. Enter author name (optional)
 
-All pricing strategies in this directory inherit from `RegistryPricingStrategy`, which provides:
-- Registry functionality for reusable pricing across multiple products
-- Implementation of `IHookRegistry` for Slice frontend integration
-- Base implementations for common patterns
+The script will create your contract file with the proper template and add it to the aggregator.
 
-## Available Strategies
+### Registry Integration
 
-- **[TieredDiscount](./TieredDiscount/TieredDiscount.sol)**: Tiered discounts based on asset ownership
-- **[LinearVRGDAPrices](./VRGDA/LinearVRGDAPrices/LinearVRGDAPrices.sol)**: VRGDA with a linear issuance curve - Price library with different params for each Slice product
-- **[LogisticVRGDAPrices](./VRGDA/LogisticVRGDAPrices/LogisticVRGDAPrices.sol)**: VRGDA with a logistic issuance curve - Price library with different params for each Slice product
-- **[VRGDAPrices](./VRGDA/VRGDAPrices.sol)**: Variable Rate Gradual Dutch Auction
+Strategies inheriting from `RegistryProductPrice` automatically support frontend integration through:
+- **Product configuration** via `configureProduct()`
+- **Parameter validation** via `paramsSchema()`
 
-## Creating Custom Pricing Strategies
+### Testing
 
-To create a custom pricing strategy:
+The generator script will also create a test file for your pricing strategy. Customize it to your needs to test your pricing logic.
 
-1. **Inherit from RegistryPricingStrategy**:
-```solidity
-import {RegistryPricingStrategy, IProductsModule} from "@/utils/RegistryPricingStrategy.sol";
+## Best Practices
 
-contract MyPricingStrategy is RegistryPricingStrategy {
-    constructor(IProductsModule productsModule) 
-        RegistryPricingStrategy(productsModule) {}
-}
-```
-
-2. **Implement required functions**:
-```solidity
-function productPrice(...) public view override returns (uint256 ethPrice, uint256 currencyPrice) {
-    // Your pricing logic here
-}
-
-function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) 
-    internal override {
-    // Handle product configuration
-}
-
-function paramsSchema() external pure override returns (string memory) {
-    return "uint256 basePrice,uint256 multiplier"; // Your parameter schema
-}
-```
-
-## Integration with Slice
-
-Pricing strategies that inherit from `RegistryPricingStrategy` are automatically compatible with Slice frontends through the `IHookRegistry` interface, enabling:
-- Product configuration via `configureProduct()`
-- Parameter validation via `paramsSchema()`
-- Automatic discovery and integration
+- Ensure the returned price adapts based on the quantity.
+- Typically either ETH or currency price is returned, but you can return both if needed.

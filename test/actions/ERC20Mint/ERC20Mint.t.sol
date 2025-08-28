@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {RegistryOnchainAction, RegistryOnchainActionTest} from "@test/utils/RegistryOnchainActionTest.sol";
+import {RegistryProductAction, RegistryProductActionTest} from "@test/utils/RegistryProductActionTest.sol";
 import {ERC20Mint} from "@/hooks/actions/ERC20Mint/ERC20Mint.sol";
 import {ERC20Data} from "@/hooks/actions/ERC20Mint/types/ERC20Data.sol";
 import {ERC20Mint_BaseToken} from "@/hooks/actions/ERC20Mint/utils/ERC20Mint_BaseToken.sol";
@@ -10,7 +10,7 @@ import {console2} from "forge-std/console2.sol";
 
 uint256 constant slicerId = 0;
 
-contract ERC20MintTest is RegistryOnchainActionTest {
+contract ERC20MintTest is RegistryProductActionTest {
     ERC20Mint erc20Mint;
 
     uint256[] productIds = [1, 2, 3, 4];
@@ -346,7 +346,7 @@ contract ERC20MintTest is RegistryOnchainActionTest {
         assertEq(token.totalSupply(), 1000); // at max supply
 
         // This should revert (no tokens available)
-        vm.expectRevert(RegistryOnchainAction.NotAllowed.selector);
+        vm.expectRevert(RegistryProductAction.NotAllowed.selector);
         vm.prank(address(PRODUCTS_MODULE));
         erc20Mint.onProductPurchase(slicerId, productIds[0], buyer, 1, "", "");
     }

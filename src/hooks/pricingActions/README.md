@@ -1,98 +1,43 @@
-# Pricing Strategy Actions
+# Pricing + Actions
 
-Pricing strategy actions combine both pricing strategies and onchain actions in a single contract. They implement both `IPricingStrategy` and `IOnchainAction` interfaces, allowing them to calculate dynamic prices AND execute custom logic during purchases.
+Combine dynamic pricing with onchain actions in a single contract. These hooks implement both `IProductPrice` and `IProductAction` interfaces.
 
-## Key Interfaces
+Pricing Actions are useful when:
+- You want a single contract to handle both pricing and action logic
+- The price logic is related to the action logic (for example, [FirstForFree](./FirstForFree/FirstForFree.sol) allows for the first item to be free for each buyer, and all future ones to be paid at a base price)
 
-**IPricingStrategy**:
-```solidity
-interface IPricingStrategy {
-    function productPrice(
-        uint256 slicerId,
-        uint256 productId,
-        address currency,
-        uint256 quantity,
-        address buyer,
-        bytes memory data
-    ) external view returns (uint256 ethPrice, uint256 currencyPrice);
-}
+## How Combined Hooks Work
+
+Pricing actions are called at multiple points:
+1. **`productPrice`** - Calculate dynamic price before purchase
+2. **`isPurchaseAllowed`** - Check eligibility before payment
+3. **`onProductPurchase`** - Execute custom logic after payment
+
+## Creating Combined Hooks
+
+### Quick Start with Generator Script
+
+The easiest way to create a new pricing action is using the hook generator:
+
+```bash
+# From the hooks directory
+./script/generate-hook.sh
 ```
 
-**IOnchainAction**:
-```solidity
-interface IOnchainAction {
-    function isPurchaseAllowed(
-        uint256 slicerId,
-        uint256 productId,
-        address account,
-        uint256 quantity,
-        bytes memory slicerCustomData,
-        bytes memory buyerCustomData
-    ) external view returns (bool);
+Select:
+1. Registry (for Slice-integrated hooks)
+2. Pricing Action
+3. Enter your contract name
+4. Enter author name (optional)
 
-    function onProductPurchase(
-        uint256 slicerId,
-        uint256 productId,
-        address account,
-        uint256 quantity,
-        bytes memory slicerCustomData,
-        bytes memory buyerCustomData
-    ) external payable;
-}
-```
+The script will create your contract file with the proper template and add it to the aggregator.
 
-## Base Contract: RegistryPricingStrategyAction
+### Registry Integration
 
-All pricing strategy actions inherit from `RegistryPricingStrategyAction`, which provides:
-- Combined functionality of both pricing strategies and onchain actions
-- Registry functionality for reusable hooks across multiple products
-- Implementation of `IHookRegistry` for Slice frontend integration
+Hooks inheriting from `RegistryProductPriceAction` automatically support frontend integration through:
+- **Product configuration** via `configureProduct()`
+- **Parameter validation** via `paramsSchema()`
 
-## Available Pricing Strategy Actions
+### Testing
 
-- **[FirstForFree](./FirstForFree/FirstForFree.sol)**: Discounts the first purchase of a product for free, based on conditions.
-
-## Creating Custom Pricing Strategy Actions
-
-To create a custom pricing strategy action:
-
-1. **Inherit from RegistryPricingStrategyAction**:
-```solidity
-import {RegistryPricingStrategyAction, IProductsModule} from "@/utils/RegistryPricingStrategyAction.sol";
-
-contract MyPricingStrategyAction is RegistryPricingStrategyAction {
-    constructor(IProductsModule productsModule) 
-        RegistryPricingStrategyAction(productsModule) {}
-}
-```
-
-2. **Implement required functions**:
-```solidity
-function productPrice(...) public view override returns (uint256 ethPrice, uint256 currencyPrice) {
-    // Your pricing logic here
-}
-
-function isPurchaseAllowed(...) public view override returns (bool) {
-    // Your eligibility logic here
-}
-
-function _onProductPurchase(...) internal override {
-    // Custom logic to execute on purchase
-}
-
-function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) 
-    internal override {
-    // Handle product configuration
-}
-
-function paramsSchema() external pure override returns (string memory) {
-    return "uint256 param1,address param2"; // Your parameter schema
-}
-```
-
-## Integration with Slice
-
-Pricing strategy actions that inherit from `RegistryPricingStrategyAction` are automatically compatible with Slice frontends through the `IHookRegistry` interface, enabling:
-- Product configuration via `configureProduct()`
-- Parameter validation via `paramsSchema()`
-- Automatic discovery and integration
+The generator script will also create a test file for your pricing action. Customize it to your needs to test both pricing and action logic.

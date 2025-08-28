@@ -1,5 +1,80 @@
 {
-  "actions": {},
-  "pricingStrategies": {},
-  "pricingStrategyActions": {}
+  "actions": {
+    "Allowlisted": [
+      {
+        "address": "0x157428DD791E03c20880D22C3dA2B66A36B5cF26",
+        "blockNumber": 33510607,
+        "paramsSchema": "bytes32 merkleRoot",
+        "transactionHash": "0x6af9ac700f1c9a38de57fa4bc13262162d9b674649fd417ccd50237b6cfbc178"
+      }
+    ],
+    "ERC20Gated": [
+      {
+        "address": "0x26A1C86B555013995Fc72864D261fDe984752E7c",
+        "blockNumber": 33558792,
+        "paramsSchema": "(address erc20,uint256 amount)[] erc20Gates",
+        "transactionHash": "0x3a7c01ede05a34280073479d5cdf1f35e41d9f08c36a71f358b9c503ccc54526"
+      }
+    ],
+    "ERC20Mint": [
+      {
+        "address": "0x67f9799FaC1D53C63217BEE47f553150F5BB0836",
+        "blockNumber": 33520592,
+        "paramsSchema": "string name,string symbol,uint256 premintAmount,address premintReceiver,bool revertOnMaxSupplyReached,uint256 maxSupply,uint256 tokensPerUnit",
+        "transactionHash": "0xfcd7e8fe47aa509afa0acdef86b741656c2602626f3258f8a83b359c665d6b04"
+      }
+    ],
+    "ERC721Mint": [
+      {
+        "address": "0x2b6488115FAa50142E140172CbCd60e6370675F7",
+        "blockNumber": 33511082,
+        "paramsSchema": "string name,string symbol,address royaltyReceiver,uint256 royaltyFraction,string baseURI,string tokenURI,bool revertOnMaxSupplyReached,uint256 maxSupply",
+        "transactionHash": "0x4981b3b67c0b8abe6a942b3ca86643f2b1dfdbcce59d6c819ad20a82814956e0"
+      }
+    ],
+    "NFTGated": [
+      {
+        "address": "0xD4eF7A46bF4c58036eaCA886119F5230e5a2C25d",
+        "blockNumber": 33563508,
+        "paramsSchema": "(address nft,uint8 nftType,uint80 id,uint8 minQuantity)[] nftGates,uint256 minOwned",
+        "transactionHash": "0x9dd101a6155b432849cb33f65c5d4b9f6875e6b1e7bf806005a8a6b0d070f634"
+      }
+    ]
+  },
+  "pricing": {
+    "NFTDiscount": [
+      {
+        "address": "0xb830a457d2f51d4cA1136b97FB30DF6366CFe2f5",
+        "blockNumber": 33596708,
+        "paramsSchema": "(address nft,uint80 discount,uint8 minQuantity,uint8 nftType,uint256 tokenId)[] discounts",
+        "transactionHash": "0x966be5fa1da3fab7c5027c9acb3f118307997e30687188b4745d74fd26ad9e7e"
+      }
+    ],
+    "LinearVRGDAPrices": [
+      {
+        "address": "0xEC68E30182F4298b7032400B7ce809da613e4449",
+        "blockNumber": 33511188,
+        "paramsSchema": "(address currency,int128 targetPrice,uint128 min,int256 perTimeUnit)[] linearParams,int256 priceDecayPercent",
+        "transactionHash": "0xf2667ce20d07561e59c8d3e3de135bbd895c5b08bb57fe487c6c8197c91a0d73"
+      }
+    ],
+    "LogisticVRGDAPrices": [
+      {
+        "address": "0x2b02cC8528EF18abf8185543CEC29A94F0542c8F",
+        "blockNumber": 33511209,
+        "paramsSchema": "(address currency,int128 targetPrice,uint128 min,int256 timeScale)[] logisticParams,int256 priceDecayPercent",
+        "transactionHash": "0x2b27380661a38b54dbccf634305622296034ddfccf5865a07fbfb7810ea41025"
+      }
+    ]
+  },
+  "pricingActions": {
+    "FirstForFree": [
+      {
+        "address": "0x2C18D37b8229233F672bF406bCe8799BCfD43B5A",
+        "blockNumber": 33510960,
+        "paramsSchema": "uint256 usdcPrice,(address tokenAddress,uint8 tokenType,uint88 tokenId,uint8 minQuantity)[] eligibleTokens,address mintToken,uint88 mintTokenId,uint8 freeUnits",
+        "transactionHash": "0x8bd0b9de8edd704899210f8450096adf7f4f853030a7ba0a2f64494bc1ba726e"
+      }
+    ]
+  }
 }

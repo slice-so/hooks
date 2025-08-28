@@ -1,83 +1,44 @@
 # Onchain Actions
 
-Onchain actions are smart contracts that execute custom logic when products are purchased on Slice. They implement the `IOnchainAction` interface and can control purchase eligibility and perform actions after purchases.
+Execute custom logic when products are purchased on Slice. Actions implement the `IProductAction` interface to control purchase eligibility and perform operations during transactions.
 
-## Key Interface: IOnchainAction
+## How Actions Work
 
-```solidity
-interface IOnchainAction {
-    function isPurchaseAllowed(
-        uint256 slicerId,
-        uint256 productId,
-        address account,
-        uint256 quantity,
-        bytes memory slicerCustomData,
-        bytes memory buyerCustomData
-    ) external view returns (bool);
+Actions are called at two points during purchase:
 
-    function onProductPurchase(
-        uint256 slicerId,
-        uint256 productId,
-        address account,
-        uint256 quantity,
-        bytes memory slicerCustomData,
-        bytes memory buyerCustomData
-    ) external payable;
-}
-```
-
-## Base Contract: RegistryOnchainAction
-
-All actions in this directory inherit from `RegistryOnchainAction`, which provides:
-- Registry functionality for reusable hooks across multiple products
-- Implementation of `IHookRegistry` for Slice frontend integration
-- Base implementations for common patterns
-
-## Available Actions
-
-- **[Allowlisted](./Allowlisted/Allowlisted.sol)**: Onchain action registry for allowlist requirement.
-- **[ERC20Gated](./ERC20Gated/ERC20Gated.sol)**: Onchain action registry for ERC20 token gating.
-- **[ERC20Mint](./ERC20Mint/ERC20Mint.sol)**: Onchain action registry that mints ERC20 tokens to buyers.
-- **[ERC721AMint](./ERC721AMint/ERC721Mint.sol)**: Onchain action registry that mints ERC721A tokens to buyers.
-- **[NFTGated](./NFTGated/NFTGated.sol)**: Onchain action registry for NFT gating.
+1. **`isPurchaseAllowed`** - Before payment, checks if buyer can purchase
+2. **`onProductPurchase`** - After payment, executes custom logic
 
 ## Creating Custom Actions
 
-To create a custom onchain action:
+### Quick Start with Generator Script
 
-1. **Inherit from RegistryOnchainAction**:
-```solidity
-import {RegistryOnchainAction, IProductsModule} from "@/utils/RegistryOnchainAction.sol";
+The easiest way to create a new action is using the hook generator:
 
-contract MyAction is RegistryOnchainAction {
-    constructor(IProductsModule productsModule) 
-        RegistryOnchainAction(productsModule) {}
-}
+```bash
+# From the hooks directory
+./script/generate-hook.sh
 ```
 
-2. **Implement required functions**:
-```solidity
-function isPurchaseAllowed(...) public view override returns (bool) {
-    // Your eligibility logic here
-}
+Select:
+1. Registry (for Slice-integrated hooks)
+2. Onchain Action
+3. Enter your contract name
+4. Enter author name (optional)
 
-function _onProductPurchase(...) internal override {
-    // Custom logic to execute on purchase
-}
+The script will create your contract file with the proper template and add it to the aggregator.
 
-function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) 
-    internal override {
-    // Handle product configuration
-}
+### Registry Integration
 
-function paramsSchema() external pure override returns (string memory) {
-    return "uint256 param1,address param2"; // Your parameter schema
-}
-```
+Actions inheriting from `RegistryProductAction` automatically support frontend integration through:
+- **Product configuration** via `configureProduct()`
+- **Parameter validation** via `paramsSchema()`
 
-## Integration with Slice
+### Testing
 
-Actions that inherit from `RegistryOnchainAction` are automatically compatible with Slice frontends through the `IHookRegistry` interface, enabling:
-- Product configuration via `configureProduct()`
-- Parameter validation via `paramsSchema()`
-- Automatic discovery and integration
+The generator script will also create a test file for your action. Customize it to your needs to test your action.
+
+## Best Practices
+
+- Add all your requirements for purchase in `isPurchaseAllowed`, and all the additional logic in `onProductPurchase`.
+- Don't add functions you don't need. For example, if you don't need to gate the purchase, don't add the `isPurchaseAllowed` function.

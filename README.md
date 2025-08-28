@@ -1,54 +1,28 @@
 # ▼ Slice Hooks
 
-Smart contracts for creating custom pricing strategies and onchain actions for [Slice](https://slice.so) products. 
+Smart contracts for creating custom pricing strategies and onchain actions for [Slice](https://slice.so) products.
 
 Hooks enable dynamic pricing, purchase restrictions, rewards, integration with external protocols and other custom behaviors when products are bought.
 
-## Repository Structure
+## Architecture
 
-```
-src/
-├── hooks/              # Reusable hooks with registry support
-│   ├── actions/        # Onchain actions (gating, rewards, etc.)
-│   ├── pricing/        # Pricing strategies (NFT discounts, VRGDA, etc.)
-│   └── pricingActions/ # Combined pricing + action hooks
-├── examples/           # Product-specific reference implementations
-├── interfaces/         # Core hook interfaces
-└── utils/              # Base contracts and utilities
-```
-
-## Core Concepts
-
-Hooks are built around three main interfaces:
-
-- **[`IOnchainAction`](./src/interfaces/IOnchainAction.sol)**: Execute custom logic during purchases (eligibility checks, rewards, etc.)
-- **[`IPricingStrategy`](./src/interfaces/IPricingStrategy.sol)**: Calculate dynamic prices for products
-- **[`IHookRegistry`](./src/interfaces/IHookRegistry.sol)**: Enable reusable hooks across multiple products with frontend integration
-
-Hooks can be:
-
-- **Product-specific**: Custom smart contracts tailored for individual products. These are integrated using the `custom` onchain action or pricing strategy in Slice.
-- **Registry hooks**: Reusable contracts designed to support multiple products. Registries enable automatic integration with Slice clients.
-
-See [Hook types](#hook-types) for more details.
-
-## Product Purchase Lifecycle
+### Product Purchase Lifecycle
 
 Here's how hooks integrate into the product purchase flow:
 
 ```
-  Checkout
+   Checkout
        │
        ▼
 ┌─────────────────────┐
-│   Price Fetching    │ ← `productPrice` called here
-│   (before purchase) │   (IPricingStrategy)
+│  Price Fetching     │ ← `IProductPrice.productPrice()`
+│  (before purchase)  │
 └─────────────────────┘
        │
        ▼
 ┌─────────────────────┐
-│  Purchase Execution │ ← `onProductPurchase` called here
-│  (during purchase)  │   (IOnchainAction)
+│  Purchase Execution │ ← `IProductAction.onProductPurchase()`
+│  (during purchase)  │
 └─────────────────────┘
        │
        ▼
@@ -63,86 +37,123 @@ Here's how hooks integrate into the product purchase flow:
 - Validate purchase eligibility
 - Execute custom logic (gating, minting, rewards, etc.)
 
-## Hook Types
+### Core Interfaces
 
-### Registry Hooks (Reusable)
+Hooks are built around three main interfaces:
 
-Deploy once, use across multiple products with frontend integration:
+**IProductPrice** - Calculate dynamic prices for products:
+```solidity
+function productPrice(
+   uint256 slicerId,
+   uint256 productId,
+   address currency,
+   uint256 quantity,
+   address buyer,
+   bytes memory data
+) external view returns (uint256 ethPrice, uint256 currencyPrice);
+```
 
-- **[Actions](./src/hooks/actions/)**: See available onchain actions and implementation guide
-- **[Pricing](./src/hooks/pricing/)**: See available pricing strategies and implementation guide  
-- **[Pricing Actions](./src/hooks/pricingActions/)**: See combined pricing + action hooks
+**IProductAction** - Execute custom logic during purchases (eligibility checks, rewards, etc.):
+```solidity
+function isPurchaseAllowed(
+   uint256 slicerId,
+   uint256 productId,
+   address buyer,
+   uint256 quantity,
+   bytes memory slicerCustomData,
+   bytes memory buyerCustomData
+) external view returns (bool);
 
-### Product-Specific Hooks
+function onProductPurchase(
+   uint256 slicerId,
+   uint256 productId,
+   address buyer,
+   uint256 quantity,
+   bytes memory slicerCustomData,
+   bytes memory buyerCustomData
+) external payable;
+```
 
-Tailored implementations for individual products:
+**IHookRegistry** - Enable reusable hooks across multiple products with frontend integration:
+```solidity
+function configureProduct(uint256 slicerId, uint256 productId, bytes memory params) external;
+function paramsSchema() external pure returns (string memory);
+```
 
-- **[Examples](./src/examples/)**: See real-world implementations and creation guide
+### Hook Types
 
-## Base Contracts
+#### Registry Hooks (Reusable)
 
-The base contracts in `src/utils` are designed to be inherited, providing essential building blocks for developing custom Slice hooks efficiently.
+Reusable contracts designed to support multiple products, automatically integrated with Slice clients.
 
-###  Registry (Reusable):
+- **[Actions](./src/hooks/actions/)** - Purchase restrictions and onchain effects
+- **[Pricing](./src/hooks/pricing/)** - Dynamic pricing strategies  
+- **[PricingActions](./src/hooks/pricingActions/)** - Pricing + actions in one contract
 
-- **`RegistryOnchainAction`**: Base for reusable onchain actions
-- **`RegistryPricingStrategy`**: Base for reusable pricing strategies  
-- **`RegistryPricingStrategyAction`**: Base for reusable pricing + action hooks
+#### Product-Specific Hooks
 
-### Product-Specific
+Custom smart contracts tailored for individual products, integrated using the `custom` onchain action or pricing strategy in Slice.
 
-- **`OnchainAction`**: Base for product-specific onchain actions
-- **`PricingStrategy`**: Base for product-specific pricing strategies
-- **`PricingStrategyAction`**: Base for product-specific pricing + action hooks
+- **[Examples](./src/examples/)**: Reference implementations and templates
 
-## Quick Start
+All hooks inherit from base contracts in `src/utils/`.
 
-- **For reusable actions**: See detailed guides in [`/src/hooks/actions`](./src/hooks/actions)
-- **For reusable pricing strategies**: See detailed guides in [`/src/hooks/pricing`](./src/hooks/pricing)
-- **For reusable pricing strategy actions**: See detailed guides in [`/src/hooks/pricingActions`](./src/hooks/pricingActions)
-- **For product-specific hooks**: See implementation examples in [`/src/examples/`](./src/examples/)
+## Contributing
 
-## Development
+### Quick Start
 
 ```bash
-forge soldeer install       # Install dependencies
-forge test                  # Run tests
-forge build                 # Build
+forge soldeer install   # Install dependencies
+forge build             # Compile contracts
+forge test              # Run test suite
 ```
 
 Requires [Foundry](https://book.getfoundry.sh/getting-started/installation).
 
-### Deployment
+Deploy by running `./script/deploy.sh` and following instructions
 
-To deploy hooks, use the deployment script:
+### Building a Hook
+
+The quickest way to create a new hook is using the interactive generator:
 
 ```bash
-./script/deploy.sh
+./script/generate-hook.sh
 ```
 
-The script will present you with a list of available contracts to deploy. Select the contract you want to deploy and follow the prompts.
+This will guide you through:
+1. Choosing hook scope (Registry or Product-specific)
+2. Selecting hook type (Action, Pricing Strategy, or Pricing Action)
+3. Naming your contract
+4. Setting authorship (optional)
 
-### Testing
+The script automatically:
+- Creates the contract file with appropriate template
+- Adds imports to aggregator contracts (for registry hooks)
+- Generates test files with proper structure (for registry hooks)
 
-When writing tests for your hooks, inherit from the appropriate base test contract:
+Once the hook is generated, add your custom contract logic to the and write tests for it.
 
-- **`RegistryOnchainActionTest`**: For testing `RegistryOnchainAction` contracts
-- **`RegistryPricingStrategyTest`**: For testing `RegistryPricingStrategy` contracts
-- **`RegistryPricingStrategyActionTest`**: For testing `RegistryPricingStrategyAction` contracts
-- **`OnchainActionTest`**: For testing `OnchainAction` contracts
-- **`PricingStrategyTest`**: For testing `PricingStrategy` contracts
-- **`PricingStrategyActionTest`**: For testing `PricingStrategyAction` contracts
+For more detailed information, follow the appropriate guide for your hook type:
+- [Actions](./src/hooks/actions/README.md)
+- [Pricing](./src/hooks/pricing/README.md)
+- [PricingActions](./src/hooks/pricingActions/README.md)
 
-Inheriting the appropriate test contract for your hook allows you to focus your tests solely on your custom hook logic.
+### Repository Structure
 
-## Contributing
+```
+src/
+├── hooks/              # Reusable hooks with registry support
+│   ├── actions/        # Onchain actions (gating, rewards, etc.)
+│   ├── pricing/        # Pricing strategies (NFT discounts, VRGDA, etc.)
+│   └── pricingActions/ # Combined pricing + action hooks
+├── examples/           # Product-specific reference implementations
+├── interfaces/         # Core hook interfaces
+└── utils/              # Base contracts and utilities
+```
 
-To contribute a new hook to this repository:
+### Resources
 
-1. **Choose the appropriate hook type** based on your needs (registry vs product-specific)
-2. **Implement your hook** following the existing patterns in the codebase
-3. **Write comprehensive tests** using the appropriate test base contract
-4. **Add documentation** explaining your hook's purpose and usage
-5. **Submit a pull request** against this repository
-
-Make sure your contribution follows the existing code style and includes proper documentation.
+- [Actions Guide](./src/hooks/actions/README.md)
+- [Pricing Strategies Guide](./src/hooks/pricing/README.md)
+- [Pricing + Actions Guide](./src/hooks/pricingActions/README.md)
+- [Example Implementations](./src/examples/README.md)

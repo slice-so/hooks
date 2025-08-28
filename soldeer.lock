@@ -6,6 +6,13 @@ checksum = "932598a6426b76e315bb9fac536011eb21a76984015efe9e8167c4fc9d7e32a3"
 integrity = "954367e8adec93f80c6e795012955706347cdb0359360e7c835e4dd29e5a9c2f"
 
 [[dependencies]]
+name = "@openzeppelin-contracts-upgradeable"
+version = "4.8.0"
+url = "https://soldeer-revisions.s3.amazonaws.com/@openzeppelin-contracts-upgradeable/4_8_0_22-01-2024_13:14:55_contracts-upgradeable.zip"
+checksum = "9bd3feb8a6ac529ecf2ab1927bf482bfee9abc2568533b155e567715b83ba94e"
+integrity = "16aa3677eec13cfddee8ee412031773a45525d4780b741eab29c746b545afc77"
+
+[[dependencies]]
 name = "erc721a"
 version = "4.3.0"
 url = "https://soldeer-revisions.s3.amazonaws.com/erc721a/4_3_0_14-03-2024_06:28:52_erc721a.zip"
@@ -20,15 +27,8 @@ checksum = "8d9e0a885fa8ee6429a4d344aeb6799119f6a94c7c4fe6f188df79b0dce294ba"
 integrity = "9e60fdba82bc374df80db7f2951faff6467b9091873004a3d314cf0c084b3c7d"
 
 [[dependencies]]
-name = "murky"
-version = "0.1.0"
-url = "https://soldeer-revisions.s3.amazonaws.com/murky/0_1_0_27-02-2025_09:52:15_murky.zip"
-checksum = "44716641e084b50af27de35f0676706c7cd42b22b39a12f7136fda4156023a15"
-integrity = "a41bd6903adfe80291f7b20c0317368e517db10c302e82aa7dc53776f17811cd"
-
-[[dependencies]]
 name = "slice"
-version = "0.0.4"
-url = "https://soldeer-revisions.s3.amazonaws.com/slice/0_0_4_14-07-2025_00:59:56_src.zip"
-checksum = "b71b5ab29290b4683269547cbe571044f7938e8940a3996be6da882534c29f9e"
-integrity = "07e086edca2dff96ddc168abeea5e11d3d7aa0f0a964163d3de4c0d1b7acbb0c"
+version = "0.0.8"
+url = "https://soldeer-revisions.s3.amazonaws.com/slice/0_0_8_28-08-2025_00:55:13_src.zip"
+checksum = "0df8789a04d00a6577f9be207aec4ea0057d9e79569dda522facbd7f04dbed2f"
+integrity = "308b4ab7daad57e76ee001b55b2ebb19c707427bee3720fbbaad9d3c7b69021e"

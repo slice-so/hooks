@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {HookRegistry, IPricingStrategy, IHookRegistry, IProductsModule} from "@/utils/RegistryPricingStrategy.sol";
+import {HookRegistry, IProductPrice, IHookRegistry, IProductsModule} from "@/utils/RegistryProductPrice.sol";
 import {
     wadMul,
     toWadUnsafe,
@@ -72,7 +72,7 @@ contract LogisticVRGDAPrices is VRGDAPrices {
     }
 
     /**
-     * @inheritdoc IPricingStrategy
+     * @inheritdoc IProductPrice
      */
     function productPrice(
         uint256 slicerId,

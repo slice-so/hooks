@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {RegistryPricingStrategyActionTest} from "@test/utils/RegistryPricingStrategyActionTest.sol";
+import {RegistryProductPriceActionTest} from "@test/utils/RegistryProductPriceActionTest.sol";
 import {FirstForFree} from "@/hooks/pricingActions/FirstForFree/FirstForFree.sol";
 import {ProductParams} from "@/hooks/pricingActions/FirstForFree/types/ProductParams.sol";
 import {TokenCondition, TokenType} from "@/hooks/pricingActions/FirstForFree/types/TokenCondition.sol";
@@ -26,7 +26,7 @@ contract MockERC1155Token is ITokenERC1155 {
     }
 }
 
-contract FirstForFreeTest is RegistryPricingStrategyActionTest {
+contract FirstForFreeTest is RegistryProductPriceActionTest {
     FirstForFree firstForFree;
     MockERC721 mockERC721;
     MockERC1155Token mockERC1155;

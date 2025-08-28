@@ -3,9 +3,9 @@ pragma solidity ^0.8.20;
 
 import {IERC721} from "@openzeppelin-4.8.0/token/ERC721/IERC721.sol";
 import {IERC1155} from "@openzeppelin-4.8.0/token/ERC1155/IERC1155.sol";
-import {HookRegistry, IHookRegistry, IProductsModule} from "@/utils/RegistryPricingStrategy.sol";
-import {DiscountParams, ProductDiscounts, DiscountType, TieredDiscount, NFTType} from "../TieredDiscount.sol";
-import {CurrencyParams} from "../types/CurrencyParams.sol";
+import {HookRegistry, IHookRegistry, IProductsModule} from "@/utils/RegistryProductPrice.sol";
+import {DiscountParams, TieredDiscount} from "../TieredDiscount.sol";
+import {NFTType} from "../types/DiscountParams.sol";
 
 /**
  * @title   NFTDiscount
@@ -26,74 +26,38 @@ contract NFTDiscount is TieredDiscount {
     /**
      * @inheritdoc HookRegistry
      * @notice Set base price and NFT discounts for a product.
-     * @dev Discounts must be sorted in descending order
+     * @dev Discounts must be sorted in descending order and expressed as a percentage of the base price as a 4 decimal fixed point number.
      */
     function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) internal override {
-        (CurrencyParams[] memory allCurrencyParams) = abi.decode(params, (CurrencyParams[]));
+        (DiscountParams[] memory newDiscounts) = abi.decode(params, (DiscountParams[]));
 
-        CurrencyParams memory currencyParams;
-        DiscountParams[] memory newDiscounts;
+        DiscountParams[] storage productDiscount = discounts[slicerId][productId];
+
+        delete discounts[slicerId][productId];
+
         uint256 prevDiscountValue;
-        uint256 prevDiscountsLength;
-        uint256 currDiscountsLength;
-        uint256 maxLength;
-        uint256 minLength;
-        for (uint256 i; i < allCurrencyParams.length;) {
-            currencyParams = allCurrencyParams[i];
+        DiscountParams memory discountParam;
+        for (uint256 i; i < newDiscounts.length;) {
+            discountParam = newDiscounts[i];
 
-            ProductDiscounts storage productDiscount = productDiscounts[slicerId][productId][currencyParams.currency];
+            // Check relative discount doesn't exceed max value of 1e4 (100%)
+            if (discountParam.discount > 1e4) {
+                revert InvalidRelativeAmount();
+            }
 
-            // Set `productDiscount` values
-            productDiscount.basePrice = currencyParams.basePrice;
-            productDiscount.isFree = currencyParams.isFree;
-            productDiscount.discountType = currencyParams.discountType;
+            if (discountParam.minQuantity == 0) {
+                revert InvalidMinQuantity();
+            }
 
-            // Set values used in inner loop
-            newDiscounts = currencyParams.discounts;
-            prevDiscountsLength = productDiscount.discountsArray.length;
-            currDiscountsLength = newDiscounts.length;
-            maxLength = currDiscountsLength > prevDiscountsLength ? currDiscountsLength : prevDiscountsLength;
-            minLength = maxLength == prevDiscountsLength ? currDiscountsLength : prevDiscountsLength;
-
-            for (uint256 j; j < maxLength;) {
-                // If `j` is within bounds of `newDiscounts`
-                if (currDiscountsLength > j) {
-                    // Check relative discount doesn't exceed max value of 1e4
-                    if (currencyParams.discountType == DiscountType.Relative) {
-                        if (newDiscounts[j].discount > 1e4) {
-                            revert InvalidRelativeDiscount();
-                        }
-                    }
-
-                    if (newDiscounts[j].minQuantity == 0) {
-                        revert InvalidMinQuantity();
-                    }
-
-                    // Check discounts are sorted in descending order
-                    if (j > 0) {
-                        if (newDiscounts[j].discount > prevDiscountValue) {
-                            revert DiscountsNotDescending(newDiscounts[j]);
-                        }
-                    }
-
-                    prevDiscountValue = newDiscounts[j].discount;
-
-                    if (j < minLength) {
-                        // Update in place
-                        productDiscount.discountsArray[j] = newDiscounts[j];
-                    } else if (j >= prevDiscountsLength) {
-                        // Append new discounts
-                        productDiscount.discountsArray.push(newDiscounts[j]);
-                    }
-                } else {
-                    // Remove old discounts
-                    productDiscount.discountsArray.pop();
-                }
-
-                unchecked {
-                    ++j;
+            // Check discounts are sorted in descending order
+            if (i > 0) {
+                if (discountParam.discount > prevDiscountValue) {
+                    revert DiscountsNotDescending(discountParam);
                 }
             }
+            prevDiscountValue = discountParam.discount;
+
+            productDiscount.push(discountParam);
 
             unchecked {
                 ++i;
@@ -105,8 +69,7 @@ contract NFTDiscount is TieredDiscount {
      * @inheritdoc IHookRegistry
      */
     function paramsSchema() external pure override returns (string memory) {
-        return
-        "(address currency,uint240 basePrice,bool isFree,uint8 discountType,(address nft,uint80 discount,uint8 minQuantity,uint8 nftType,uint256 tokenId)[] discounts)[] allCurrencyParams";
+        return "(address nft,uint80 discount,uint8 minQuantity,uint8 nftType,uint256 tokenId)[] discounts";
     }
 
     /**
@@ -120,13 +83,12 @@ contract NFTDiscount is TieredDiscount {
         uint256 quantity,
         address buyer,
         bytes memory,
-        ProductDiscounts memory discountParams
+        uint256 basePrice,
+        DiscountParams[] memory discountParams
     ) internal view virtual override returns (uint256 ethPrice, uint256 currencyPrice) {
         uint256 discount = _getHighestDiscount(discountParams, buyer);
 
-        uint256 price = discount != 0
-            ? _getPriceBasedOnDiscountType(discountParams.basePrice, discountParams.discountType, discount, quantity)
-            : quantity * discountParams.basePrice;
+        uint256 price = discount != 0 ? _getDiscountedPrice(basePrice, discount, quantity) : quantity * basePrice;
 
         if (currency == address(0)) {
             ethPrice = price;
@@ -147,21 +109,20 @@ contract NFTDiscount is TieredDiscount {
      *
      * @return Discount value
      */
-    function _getHighestDiscount(ProductDiscounts memory discountParams, address buyer)
+    function _getHighestDiscount(DiscountParams[] memory discountParams, address buyer)
         internal
         view
         virtual
         returns (uint256)
     {
-        DiscountParams[] memory discounts = discountParams.discountsArray;
-        uint256 length = discounts.length;
+        uint256 length = discountParams.length;
         DiscountParams memory el;
 
         address prevAsset;
         uint256 prevTokenId;
         uint256 nftBalance;
         for (uint256 i; i < length;) {
-            el = discounts[i];
+            el = discountParams[i];
 
             // Skip retrieving balance if asset is the same as previous iteration
             if (el.nftType == NFTType.ERC1155) {
@@ -195,28 +156,23 @@ contract NFTDiscount is TieredDiscount {
      * @notice Calculate price based on `discountType`
      *
      * @param basePrice Base price of the product
-     * @param discountType Type of discount, either `Absolute` or `Relative`
      * @param discount Discount value based on `discountType`
      * @param quantity Number of units purchased
      *
      * @return price of product inclusive of discount.
      */
-    function _getPriceBasedOnDiscountType(
-        uint256 basePrice,
-        DiscountType discountType,
-        uint256 discount,
-        uint256 quantity
-    ) internal pure virtual returns (uint256 price) {
-        if (discountType == DiscountType.Absolute) {
-            price = (basePrice - discount) * quantity;
-        } else {
-            uint256 k;
-            /// @dev discount cannot be higher than 1e4, as it's checked on `setProductPrice`
-            unchecked {
-                k = 1e4 - discount;
-            }
-
-            price = (basePrice * k * quantity) / 1e4;
+    function _getDiscountedPrice(uint256 basePrice, uint256 discount, uint256 quantity)
+        internal
+        pure
+        virtual
+        returns (uint256 price)
+    {
+        uint256 k;
+        /// @dev discount cannot be higher than 1e4, as it's checked on `setProductPrice`
+        unchecked {
+            k = 1e4 - discount;
         }
+
+        price = (basePrice * k * quantity) / 1e4;
     }
 }

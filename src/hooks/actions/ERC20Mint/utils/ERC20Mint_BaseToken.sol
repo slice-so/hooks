@@ -19,7 +19,7 @@ contract ERC20Mint_BaseToken is ERC20 {
         STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    address public immutable minter;
+    address public immutable MINTER;
     uint256 public maxSupply;
 
     /*//////////////////////////////////////////////////////////////
@@ -27,7 +27,7 @@ contract ERC20Mint_BaseToken is ERC20 {
     //////////////////////////////////////////////////////////////*/
 
     constructor(string memory name_, string memory symbol_, uint256 maxSupply_) ERC20(name_, symbol_) {
-        minter = msg.sender;
+        MINTER = msg.sender;
         _setMaxSupply(maxSupply_);
     }
 
@@ -36,14 +36,14 @@ contract ERC20Mint_BaseToken is ERC20 {
     //////////////////////////////////////////////////////////////*/
 
     function mint(address to, uint256 amount) public {
-        if (msg.sender != minter) revert NotMinter();
+        if (msg.sender != MINTER) revert NotMinter();
         _mint(to, amount);
 
         if (totalSupply() > maxSupply) revert MaxSupplyExceeded();
     }
 
     function setMaxSupply(uint256 maxSupply_) public {
-        if (msg.sender != minter) revert NotMinter();
+        if (msg.sender != MINTER) revert NotMinter();
 
         _setMaxSupply(maxSupply_);
     }

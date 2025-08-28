@@ -7,10 +7,10 @@ dynamic_test_linking = true
 libs = ["dependencies", "../core/src", "../core/dependencies"]
 fs_permissions = [{ access = "read", path = "./src"}, { access= "read", path = "./broadcast/Deploy.s.sol/8453/run-latest.json"}, { access = "read-write", path = "./deployments"}, { access = "read", path = "./out"}]
 remappings = [
-  "slice/=dependencies/slice-0.0.4/",
+  "slice/=dependencies/slice-0.0.8/",
   "@openzeppelin-4.8.0/=dependencies/@openzeppelin-contracts-4.8.0/",
+  "@openzeppelin-upgradeable-4.8.0/=dependencies/@openzeppelin-contracts-upgradeable-4.8.0/",
   "@erc721a/=dependencies/erc721a-4.3.0/contracts/",
-  "@murky/=dependencies/murky-0.1.0/src/",
   "forge-std/=dependencies/forge-std-1.9.7/src/",
   "@test/=test/",
   "@/=src/"
@@ -44,9 +44,12 @@ remappings_generate = false
 remappings_regenerate = false
 
 [dependencies]
-slice = "0.0.4"
+slice = "0.0.8"
 forge-std = "1.9.7"
 "@openzeppelin-contracts" = "4.8.0"
+"@openzeppelin-contracts-upgradeable" = "4.8.0"
 erc721a = "4.3.0"
-murky = "0.1.0"
 
+[lint]
+ignore = ["test/**/*.sol","script/**/*.sol", "src/interfaces/*.sol", "src/utils/*.sol", "src/hooks/actions/actions.sol", "src/hooks/pricing/pricing.sol", "src/hooks/pricingActions/pricingActions.sol", "src/examples/actions/BaseGirlsScout.sol"]
+exclude_lints=["mixed-case-function", "mixed-case-variable", "pascal-case-struct"]
