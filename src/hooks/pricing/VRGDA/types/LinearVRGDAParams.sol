@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.30;
 
 /// @param targetPrice Target price for a product, to be scaled according to sales pace.
 /// @param min minimum price to be paid for a token, scaled by 1e18

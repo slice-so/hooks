@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.30;
 
 import {IProductsModule, RegistryProductAction, HookRegistry, IHookRegistry} from "@/utils/RegistryProductAction.sol";
 import {MAX_ROYALTY, ERC721Mint_BaseToken} from "./utils/ERC721Mint_BaseToken.sol";

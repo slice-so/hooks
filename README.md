@@ -94,7 +94,7 @@ Reusable contracts designed to support multiple products, automatically integrat
 
 Custom smart contracts tailored for individual products, integrated using the `custom` onchain action or pricing strategy in Slice.
 
-- **[Examples](./src/examples/)**: Reference implementations and templates
+- **[Custom](./src/custom/)**: Product-specific implementations
 
 All hooks inherit from base contracts in `src/utils/`.
 
@@ -146,7 +146,7 @@ src/
 │   ├── actions/        # Onchain actions (gating, rewards, etc.)
 │   ├── pricing/        # Pricing strategies (NFT discounts, VRGDA, etc.)
 │   └── pricingActions/ # Combined pricing + action hooks
-├── examples/           # Product-specific reference implementations
+├── custom/             # Product-specific custom hooks
 ├── interfaces/         # Core hook interfaces
 └── utils/              # Base contracts and utilities
 ```
@@ -156,4 +156,4 @@ src/
 - [Actions Guide](./src/hooks/actions/README.md)
 - [Pricing Strategies Guide](./src/hooks/pricing/README.md)
 - [Pricing + Actions Guide](./src/hooks/pricingActions/README.md)
-- [Example Implementations](./src/examples/README.md)
+- [Custom Implementations](./src/custom/README.md)

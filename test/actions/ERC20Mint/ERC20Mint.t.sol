@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.30;
 
 import {RegistryProductAction, RegistryProductActionTest} from "@test/utils/RegistryProductActionTest.sol";
 import {ERC20Mint} from "@/hooks/actions/ERC20Mint/ERC20Mint.sol";

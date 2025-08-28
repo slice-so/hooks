@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.30;
 
 import {RegistryProductPriceActionTest} from "@test/utils/RegistryProductPriceActionTest.sol";
 import {FirstForFree} from "@/hooks/pricingActions/FirstForFree/FirstForFree.sol";

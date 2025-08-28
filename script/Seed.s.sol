@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.30;
 
 import {Script} from "forge-std/Script.sol";
 import {CommonStorage} from "slice/utils/CommonStorage.sol";
