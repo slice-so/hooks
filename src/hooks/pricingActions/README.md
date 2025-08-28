@@ -1,65 +1,43 @@
 # Pricing + Actions
 
-Combine dynamic pricing with onchain actions in a single contract.
+Combine dynamic pricing with onchain actions in a single contract. These hooks implement both `IProductPrice` and `IProductAction` interfaces.
 
-## Available Hooks
+Pricing Actions are useful when:
+- You want a single contract to handle both pricing and action logic
+- The price logic is related to the action logic (for example, [FirstForFree](./FirstForFree/FirstForFree.sol) allows for the first item to be free for each buyer, and all future ones to be paid at a base price)
 
-| Hook | Description |
-|------|-------------|
-| **[FirstForFree](./FirstForFree/)** | First purchase free based on conditions |
+## How Combined Hooks Work
+
+Pricing actions are called at multiple points:
+1. **`productPrice`** - Calculate dynamic price before purchase
+2. **`isPurchaseAllowed`** - Check eligibility before payment
+3. **`onProductPurchase`** - Execute custom logic after payment
 
 ## Creating Combined Hooks
 
-### 1. Inherit Base Contract
+### Quick Start with Generator Script
 
-```solidity
-import {RegistryProductPriceAction, IProductsModule} from "@/utils/RegistryProductPriceAction.sol";
+The easiest way to create a new pricing action is using the hook generator:
 
-contract MyHook is RegistryProductPriceAction {
-    constructor(IProductsModule productsModule) 
-        RegistryProductPriceAction(productsModule) {}
-}
+```bash
+# From the hooks directory
+./script/generate-hook.sh
 ```
 
-### 2. Implement All Functions
+Select:
+1. Registry (for Slice-integrated hooks)
+2. Pricing Action
+3. Enter your contract name
+4. Enter author name (optional)
 
-```solidity
-// Pricing logic
-function productPrice(...) public view override 
-    returns (uint256 ethPrice, uint256 currencyPrice) {
-    // Calculate price
-}
+The script will create your contract file with the proper template and add it to the aggregator.
 
-// Purchase eligibility
-function isPurchaseAllowed(...) public view override returns (bool) {
-    // Check eligibility
-}
+### Registry Integration
 
-// Purchase action
-function _onProductPurchase(...) internal override {
-    // Execute action
-}
+Hooks inheriting from `RegistryProductPriceAction` automatically support frontend integration through:
+- **Product configuration** via `configureProduct()`
+- **Parameter validation** via `paramsSchema()`
 
-// Configuration
-function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) 
-    internal override {
-    // Store config
-}
+### Testing
 
-// Parameters
-function paramsSchema() external pure override returns (string memory) {
-    return "uint256 discount,address token";
-}
-```
-
-## Testing
-
-Inherit from `RegistryProductPriceActionTest` for testing:
-
-```solidity
-import {RegistryProductPriceActionTest} from "@test/utils/RegistryProductPriceActionTest.sol";
-
-contract MyHookTest is RegistryProductPriceActionTest {
-    // Your tests
-}
-```
+The generator script will also create a test file for your pricing action. Customize it to your needs to test both pricing and action logic.

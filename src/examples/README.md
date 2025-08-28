@@ -2,12 +2,13 @@
 
 Reference implementations for custom product hooks without registry support.
 
-## Available Examples
+## When to Use
 
-| Example | Type | Description |
-|---------|------|-------------|
-| **[BaseCafe_2](./actions/BaseCafe_2.sol)** | Action | Mints NFT on every purchase |
-| **[BaseGirlsScout](./actions/BaseGirlsScout.sol)** | Action | Mints Base Girls Scout NFTs |
+Choose product-specific hooks when:
+- Building for a single product
+- Don't want others to use the same hook for their products
+- Don't require client integration
+- Need immediate deployment
 
 ## Key Differences from Registry Hooks
 
@@ -20,17 +21,66 @@ Reference implementations for custom product hooks without registry support.
 
 ## Creating Product-Specific Hooks
 
+### Quick Start with Generator Script
+
+The easiest way to create a new product-specific hook is using the hook generator:
+
+```bash
+# From the hooks directory
+./script/generate-hook.sh
+```
+
+Select:
+1. Product-specific
+2. The desired hook type (Action, Pricing, PricingAction)
+3. Enter your contract name
+4. Enter author name (optional)
+
 ### Action Example
 
 ```solidity
-import {ProductAction, IProductsModule} from "@/utils/ProductAction.sol";
+import {ProductAction, IProductsModule, IProductAction} from "@/utils/ProductAction.sol";
 
 contract MyProductAction is ProductAction {
-    constructor(IProductsModule productsModule, uint256 slicerId)
-        ProductAction(productsModule, slicerId) {}
-    
-    function _onProductPurchase(...) internal override {
-        // Custom logic - mint NFTs, track purchases, etc.
+    /*//////////////////////////////////////////////////////////////
+        CONSTRUCTOR
+    //////////////////////////////////////////////////////////////*/
+
+    constructor(IProductsModule productsModuleAddress, uint256 slicerId)
+        ProductAction(productsModuleAddress, slicerId)
+    {}
+
+    /*//////////////////////////////////////////////////////////////
+        CONFIGURATION
+    //////////////////////////////////////////////////////////////*/
+
+    /**
+     * @inheritdoc IProductAction
+     */
+    function isPurchaseAllowed(
+        uint256 slicerId,
+        uint256 productId,
+        address buyer,
+        uint256 quantity,
+        bytes memory slicerCustomData,
+        bytes memory buyerCustomData
+    ) public view override returns (bool) {
+        // Your eligibility logic. Return true if eligible, false otherwise.
+        return true;
+    }
+
+    /**
+     * @inheritdoc ProductAction
+     */
+    function _onProductPurchase(
+        uint256 slicerId,
+        uint256 productId,
+        address buyer,
+        uint256 quantity,
+        bytes memory slicerCustomData,
+        bytes memory buyerCustomData
+    ) internal override {
+        // Your logic to be executed after product purchase.
     }
 }
 ```
@@ -38,23 +88,33 @@ contract MyProductAction is ProductAction {
 ### Pricing Example
 
 ```solidity
-import {ProductPrice, IProductsModule} from "@/utils/ProductPrice.sol";
+import {ProductPrice, IProductsModule, IProductPrice} from "@/utils/ProductPrice.sol";
 
 contract MyProductPrice is ProductPrice {
-    constructor(IProductsModule productsModule, uint256 slicerId)
-        ProductPrice(productsModule, slicerId) {}
-    
-    function productPrice(...) public view override 
-        returns (uint256 ethPrice, uint256 currencyPrice) {
-        // Custom pricing logic
+    /*//////////////////////////////////////////////////////////////
+        CONSTRUCTOR
+    //////////////////////////////////////////////////////////////*/
+
+    constructor(IProductsModule productsModuleAddress, uint256 slicerId)
+        ProductPrice(productsModuleAddress)
+    {}
+
+    /*//////////////////////////////////////////////////////////////
+        CONFIGURATION
+    //////////////////////////////////////////////////////////////*/
+
+    /**
+     * @inheritdoc IProductPrice
+     */
+    function productPrice(
+        uint256 slicerId,
+        uint256 productId,
+        address currency,
+        uint256 quantity,
+        address buyer,
+        bytes memory data
+    ) external view returns (uint256 ethPrice, uint256 currencyPrice) {
+        // Your pricing logic. Calculate and return the total price.
     }
 }
 ```
-
-## When to Use
-
-Choose product-specific hooks when:
-- Building for a single product
-- Need maximum customization
-- Don't require frontend auto-integration
-- Want simpler deployment
