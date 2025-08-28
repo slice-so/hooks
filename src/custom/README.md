@@ -1,6 +1,6 @@
-# Product-Specific Examples
+# Product-Specific Custom Hooks
 
-Reference implementations for custom product hooks without registry support.
+Custom product hooks tailored for individual products without registry support.
 
 ## When to Use
 

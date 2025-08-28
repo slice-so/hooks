@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.30;
 
 import {IProductsModule, ProductAction} from "@/utils/ProductAction.sol";
 import {Ownable} from "@openzeppelin-4.8.0/access/Ownable.sol";
