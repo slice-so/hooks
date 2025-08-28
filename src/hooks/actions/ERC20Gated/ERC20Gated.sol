@@ -36,19 +36,17 @@ contract ERC20Gated is RegistryProductAction {
      * @inheritdoc IProductAction
      * @dev Checks if `account` owns the required amount of all ERC20 tokens.
      */
-    function isPurchaseAllowed(
-        uint256 slicerId,
-        uint256 productId,
-        address account,
-        uint256,
-        bytes memory,
-        bytes memory
-    ) public view override returns (bool) {
+    function isPurchaseAllowed(uint256 slicerId, uint256 productId, address buyer, uint256, bytes memory, bytes memory)
+        public
+        view
+        override
+        returns (bool)
+    {
         ERC20Gate[] memory gates = tokenGates[slicerId][productId];
 
         for (uint256 i = 0; i < gates.length; i++) {
             ERC20Gate memory gate = gates[i];
-            uint256 accountBalance = gate.erc20.balanceOf(account);
+            uint256 accountBalance = gate.erc20.balanceOf(buyer);
             if (accountBalance < gate.amount) {
                 return false;
             }

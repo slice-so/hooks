@@ -39,7 +39,7 @@ contract Allowlisted is RegistryProductAction {
     function isPurchaseAllowed(
         uint256 slicerId,
         uint256 productId,
-        address account,
+        address buyer,
         uint256,
         bytes memory,
         bytes memory buyerCustomData
@@ -47,7 +47,7 @@ contract Allowlisted is RegistryProductAction {
         // Get Merkle proof from buyerCustomData
         bytes32[] memory proof = abi.decode(buyerCustomData, (bytes32[]));
 
-        uint256 leafValue = uint256(uint160(account));
+        uint256 leafValue = uint256(uint160(buyer));
 
         // Generate leaf from account address
         bytes32 leaf;

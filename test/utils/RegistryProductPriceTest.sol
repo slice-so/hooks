@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 import {HookRegistryTest} from "./HookRegistryTest.sol";
-import {IHookRegistry, IProductPrice} from "@/utils/RegistryProductPrice.sol";
+import {RegistryProductPrice, IHookRegistry, IProductPrice} from "@/utils/RegistryProductPrice.sol";
 
 abstract contract RegistryProductPriceTest is HookRegistryTest {
     function testSupportsInterface_RegistryProductPrice() public view {

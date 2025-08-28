@@ -3,7 +3,11 @@ pragma solidity ^0.8.20;
 
 import {HookRegistryTest} from "./HookRegistryTest.sol";
 import {
-    RegistryProductAction, IHookRegistry, IProductAction, IProductPrice
+    RegistryProductPriceAction,
+    RegistryProductAction,
+    IHookRegistry,
+    IProductAction,
+    IProductPrice
 } from "@/utils/RegistryProductPriceAction.sol";
 
 abstract contract RegistryProductPriceActionTest is HookRegistryTest {

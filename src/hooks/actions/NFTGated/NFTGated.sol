@@ -38,14 +38,12 @@ contract NFTGated is RegistryProductAction {
      * @inheritdoc IProductAction
      * @dev Checks if `account` owns the required amount of NFT tokens.
      */
-    function isPurchaseAllowed(
-        uint256 slicerId,
-        uint256 productId,
-        address account,
-        uint256,
-        bytes memory,
-        bytes memory
-    ) public view override returns (bool isAllowed) {
+    function isPurchaseAllowed(uint256 slicerId, uint256 productId, address buyer, uint256, bytes memory, bytes memory)
+        public
+        view
+        override
+        returns (bool isAllowed)
+    {
         NFTGates memory nftGates_ = nftGates[slicerId][productId];
 
         uint256 totalOwned;
@@ -54,10 +52,10 @@ contract NFTGated is RegistryProductAction {
                 NFTGate memory gate = nftGates_.gates[i];
 
                 if (gate.nftType == NftType.ERC1155) {
-                    if (IERC1155(gate.nft).balanceOf(account, gate.id) >= gate.minQuantity) {
+                    if (IERC1155(gate.nft).balanceOf(buyer, gate.id) >= gate.minQuantity) {
                         ++totalOwned;
                     }
-                } else if (IERC721(gate.nft).balanceOf(account) >= gate.minQuantity) {
+                } else if (IERC721(gate.nft).balanceOf(buyer) >= gate.minQuantity) {
                     ++totalOwned;
                 }
 

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {RegistryProductAction, RegistryProductActionTest} from "@test/utils/RegistryProductActionTest.sol";
+import {RegistryProductActionTest} from "@test/utils/RegistryProductActionTest.sol";
 import {ERC721Mint} from "@/hooks/actions/ERC721Mint/ERC721Mint.sol";
 import {ERC721Data} from "@/hooks/actions/ERC721Mint/types/ERC721Data.sol";
 import {ERC721Mint_BaseToken, MAX_ROYALTY} from "@/hooks/actions/ERC721Mint/utils/ERC721Mint_BaseToken.sol";

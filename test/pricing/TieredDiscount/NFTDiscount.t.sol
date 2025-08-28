@@ -12,7 +12,6 @@ import {
 import {MockERC721} from "@test/utils/mocks/MockERC721.sol";
 import {MockERC1155} from "@test/utils/mocks/MockERC1155.sol";
 
-address constant ETH = address(0);
 address constant USDC = address(1);
 uint256 constant slicerId = 0;
 uint256 constant productId = 1;
