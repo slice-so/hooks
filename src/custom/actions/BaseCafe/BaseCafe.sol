@@ -32,7 +32,7 @@ contract BaseCafe is ProductAction {
      * @inheritdoc ProductAction
      * @notice Mint `quantity` NFTs to `account` on purchase
      */
-    function _onProductPurchase(uint256, uint256, address buyer, uint256 quantity, bytes memory, bytes memory)
+    function _onProductPurchase(uint256, uint256, uint256, address buyer, uint256 quantity, bytes memory)
         internal
         override
     {

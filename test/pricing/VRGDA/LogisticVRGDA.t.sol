@@ -173,18 +173,16 @@ contract LogisticVRGDATest is RegistryProductPriceTest {
 
         vm.warp(block.timestamp + 10 days);
 
-        (uint256 ethPrice, uint256 currencyPrice) =
-            vrgda.productPrice(slicerId, productIdTest, address(0), 1, address(0), "");
+        Price memory price = vrgda.productPrice(slicerId, productIdTest, 0, address(0), 1, address(0), "");
 
         // assertApproxEqAbs(uint256(targetPriceTest), ethPrice, 1e18);
-        assertNotEq(ethPrice, 0);
-        assertEq(currencyPrice, 0);
+        assertNotEq(price.eth, 0);
+        assertEq(price.currency, 0);
 
-        (uint256 ethPrice2, uint256 currencyPrice2) =
-            vrgda.productPrice(slicerId, productId, address(20), 1, address(0), "");
+        Price memory price2 = vrgda.productPrice(slicerId, productId, 0, address(20), 1, address(0), "");
 
-        assertEq(ethPrice2, 0);
-        assertNotEq(currencyPrice2, 0);
+        assertEq(price2.eth, 0);
+        assertNotEq(price2.currency, 0);
     }
 
     function testProductPriceEth() public {
@@ -207,11 +205,10 @@ contract LogisticVRGDATest is RegistryProductPriceTest {
             1
         );
 
-        (uint256 ethPrice, uint256 currencyPrice) =
-            vrgda.productPrice(slicerId, productId, ethCurrency, 1, address(0), "");
+        Price memory price = vrgda.productPrice(slicerId, productId, 0, ethCurrency, 1, address(0), "");
 
-        assertApproxEqAbs(cost, ethPrice, 0.00001e18);
-        assertEq(currencyPrice, 0);
+        assertApproxEqAbs(cost, price.eth, 0.00001e18);
+        assertEq(price.currency, 0);
     }
 
     function testProductPriceErc20() public {
@@ -234,11 +231,10 @@ contract LogisticVRGDATest is RegistryProductPriceTest {
             1
         );
 
-        (uint256 ethPrice, uint256 currencyPrice) =
-            vrgda.productPrice(slicerId, productId, erc20Currency, 1, address(0), "");
+        Price memory price = vrgda.productPrice(slicerId, productId, 0, erc20Currency, 1, address(0), "");
 
-        assertApproxEqAbs(cost, currencyPrice, 0.00001e18);
-        assertEq(ethPrice, 0);
+        assertApproxEqAbs(cost, price.currency, 0.00001e18);
+        assertEq(price.eth, 0);
     }
 
     function testProductPriceMultiple() public {
@@ -260,9 +256,9 @@ contract LogisticVRGDATest is RegistryProductPriceTest {
             min,
             3
         );
-        (uint256 ethPrice,) = vrgda.productPrice(slicerId, productId, ethCurrency, 3, address(0), "");
+        Price memory price = vrgda.productPrice(slicerId, productId, 0, ethCurrency, 3, address(0), "");
 
-        assertApproxEqAbs(costMultiple, ethPrice, 5e14);
+        assertApproxEqAbs(costMultiple, price.eth, 5e14);
     }
 
     function testGetTargetSaleTimeDoesNotRevertEarly() public view {

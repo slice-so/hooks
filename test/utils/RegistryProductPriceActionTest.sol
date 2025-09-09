@@ -19,6 +19,6 @@ abstract contract RegistryProductPriceActionTest is HookRegistryTest {
 
     function testRevert_onProductPurchase_NotPurchase() public {
         vm.expectRevert(abi.encodeWithSelector(RegistryProductAction.NotPurchase.selector));
-        IProductAction(hook).onProductPurchase(0, 0, address(0), 0, "", "");
+        IProductAction(hook).onProductPurchase(0, 0, 0, address(0), 0, "");
     }
 }

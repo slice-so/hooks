@@ -44,14 +44,13 @@ contract ERC20Mint is RegistryProductAction {
      * @inheritdoc IProductAction
      * @dev If `revertOnMaxSupplyReached` is set to true, returns false when max supply is exceeded.
      */
-    function isPurchaseAllowed(
-        uint256 slicerId,
-        uint256 productId,
-        address,
-        uint256 quantity,
-        bytes memory,
-        bytes memory
-    ) public view virtual override returns (bool isAllowed) {
+    function isPurchaseAllowed(uint256 slicerId, uint256 productId, uint256, address, uint256 quantity, bytes memory)
+        public
+        view
+        virtual
+        override
+        returns (bool isAllowed)
+    {
         ERC20Data memory tokenData_ = tokenData[slicerId][productId];
 
         if (tokenData_.revertOnMaxSupplyReached) {
@@ -70,9 +69,9 @@ contract ERC20Mint is RegistryProductAction {
     function _onProductPurchase(
         uint256 slicerId,
         uint256 productId,
+        uint256,
         address buyer,
         uint256 quantity,
-        bytes memory,
         bytes memory
     ) internal override {
         ERC20Data memory tokenData_ = tokenData[slicerId][productId];

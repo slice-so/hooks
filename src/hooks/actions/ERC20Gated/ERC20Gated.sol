@@ -36,7 +36,7 @@ contract ERC20Gated is RegistryProductAction {
      * @inheritdoc IProductAction
      * @dev Checks if `account` owns the required amount of all ERC20 tokens.
      */
-    function isPurchaseAllowed(uint256 slicerId, uint256 productId, address buyer, uint256, bytes memory, bytes memory)
+    function isPurchaseAllowed(uint256 slicerId, uint256 productId, uint256, address buyer, uint256, bytes memory)
         public
         view
         override
