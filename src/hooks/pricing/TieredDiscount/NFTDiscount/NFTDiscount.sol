@@ -4,7 +4,7 @@ pragma solidity ^0.8.30;
 import {IERC721} from "@openzeppelin-4.8.0/token/ERC721/IERC721.sol";
 import {IERC1155} from "@openzeppelin-4.8.0/token/ERC1155/IERC1155.sol";
 import {HookRegistry, IHookRegistry, IProductsModule} from "@/utils/RegistryProductPrice.sol";
-import {DiscountParams, TieredDiscount} from "../TieredDiscount.sol";
+import {DiscountParams, Price, TieredDiscount} from "../TieredDiscount.sol";
 import {NFTType} from "../types/DiscountParams.sol";
 
 /**
@@ -79,21 +79,22 @@ contract NFTDiscount is TieredDiscount {
     function _productPrice(
         uint256,
         uint256,
+        uint256,
         address currency,
         uint256 quantity,
         address buyer,
         bytes memory,
         uint256 basePrice,
         DiscountParams[] memory discountParams
-    ) internal view virtual override returns (uint256 ethPrice, uint256 currencyPrice) {
+    ) internal view virtual override returns (Price memory price) {
         uint256 discount = _getHighestDiscount(discountParams, buyer);
 
-        uint256 price = discount != 0 ? _getDiscountedPrice(basePrice, discount, quantity) : quantity * basePrice;
+        uint256 amount = discount != 0 ? _getDiscountedPrice(basePrice, discount, quantity) : quantity * basePrice;
 
         if (currency == address(0)) {
-            ethPrice = price;
+            price.eth = amount;
         } else {
-            currencyPrice = price;
+            price.currency = amount;
         }
     }
 

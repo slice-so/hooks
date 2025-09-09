@@ -210,15 +210,15 @@ contract ERC20MintTest is RegistryProductActionTest {
         // Current supply: 800, max supply: 1000
         // Available: 200 tokens, with 10 tokens per unit = 20 units max
 
-        assertTrue(erc20Mint.isPurchaseAllowed(slicerId, productIds[0], buyer, 1, "", "")); // 10 tokens needed
-        assertTrue(erc20Mint.isPurchaseAllowed(slicerId, productIds[0], buyer, 10, "", "")); // 100 tokens needed
-        assertTrue(erc20Mint.isPurchaseAllowed(slicerId, productIds[0], buyer, 20, "", "")); // 200 tokens needed (exactly at limit)
-        assertFalse(erc20Mint.isPurchaseAllowed(slicerId, productIds[0], buyer, 21, "", "")); // 210 tokens needed (exceeds limit)
+        assertTrue(erc20Mint.isPurchaseAllowed(slicerId, productIds[0], 0, buyer, 1, "")); // 10 tokens needed
+        assertTrue(erc20Mint.isPurchaseAllowed(slicerId, productIds[0], 0, buyer, 10, "")); // 100 tokens needed
+        assertTrue(erc20Mint.isPurchaseAllowed(slicerId, productIds[0], 0, buyer, 20, "")); // 200 tokens needed (exactly at limit)
+        assertFalse(erc20Mint.isPurchaseAllowed(slicerId, productIds[0], 0, buyer, 21, "")); // 210 tokens needed (exceeds limit)
 
         // Test product 2 (unlimited supply)
-        assertTrue(erc20Mint.isPurchaseAllowed(slicerId, productIds[1], buyer, 1, "", ""));
-        assertTrue(erc20Mint.isPurchaseAllowed(slicerId, productIds[1], buyer, 1000, "", ""));
-        assertTrue(erc20Mint.isPurchaseAllowed(slicerId, productIds[1], buyer, type(uint256).max, "", ""));
+        assertTrue(erc20Mint.isPurchaseAllowed(slicerId, productIds[1], 0, buyer, 1, ""));
+        assertTrue(erc20Mint.isPurchaseAllowed(slicerId, productIds[1], 0, buyer, 1000, ""));
+        assertTrue(erc20Mint.isPurchaseAllowed(slicerId, productIds[1], 0, buyer, type(uint256).max, ""));
     }
 
     function testOnProductPurchase() public {
@@ -263,7 +263,7 @@ contract ERC20MintTest is RegistryProductActionTest {
         uint256 initialSupply1 = token1.totalSupply();
 
         vm.prank(address(PRODUCTS_MODULE));
-        erc20Mint.onProductPurchase(slicerId, productIds[0], buyer, 3, "", "");
+        erc20Mint.onProductPurchase(slicerId, productIds[0], 0, buyer, 3, "");
 
         assertEq(token1.balanceOf(buyer), initialBalance1 + 300); // 3 * 100
         assertEq(token1.totalSupply(), initialSupply1 + 300);
@@ -273,14 +273,14 @@ contract ERC20MintTest is RegistryProductActionTest {
         uint256 initialSupply2 = token2.totalSupply();
 
         vm.prank(address(PRODUCTS_MODULE));
-        erc20Mint.onProductPurchase(slicerId, productIds[1], buyer2, 5, "", "");
+        erc20Mint.onProductPurchase(slicerId, productIds[1], 0, buyer2, 5, "");
 
         assertEq(token2.balanceOf(buyer2), initialBalance2 + 250); // 5 * 50
         assertEq(token2.totalSupply(), initialSupply2 + 250);
 
         // Test multiple purchases
         vm.prank(address(PRODUCTS_MODULE));
-        erc20Mint.onProductPurchase(slicerId, productIds[0], buyer3, 2, "", "");
+        erc20Mint.onProductPurchase(slicerId, productIds[0], 0, buyer3, 2, "");
         assertEq(token1.balanceOf(buyer3), 200); // 2 * 100
         assertEq(token1.totalSupply(), initialSupply1 + 500); // 300 + 200
     }
@@ -311,7 +311,7 @@ contract ERC20MintTest is RegistryProductActionTest {
         uint256 initialSupply = token.totalSupply();
 
         vm.prank(address(PRODUCTS_MODULE));
-        erc20Mint.onProductPurchase(slicerId, productIds[0], buyer, 2, "", "");
+        erc20Mint.onProductPurchase(slicerId, productIds[0], 0, buyer, 2, "");
 
         // Balance and supply should remain unchanged (mint failed silently)
         assertEq(token.balanceOf(buyer), initialBalance);
@@ -340,7 +340,7 @@ contract ERC20MintTest is RegistryProductActionTest {
 
         // This should succeed (50 tokens available, need 50)
         vm.prank(address(PRODUCTS_MODULE));
-        erc20Mint.onProductPurchase(slicerId, productIds[0], buyer, 5, "", "");
+        erc20Mint.onProductPurchase(slicerId, productIds[0], 0, buyer, 5, "");
 
         (ERC20Mint_BaseToken token,,) = erc20Mint.tokenData(slicerId, productIds[0]);
         assertEq(token.totalSupply(), 1000); // at max supply
@@ -348,6 +348,6 @@ contract ERC20MintTest is RegistryProductActionTest {
         // This should revert (no tokens available)
         vm.expectRevert(RegistryProductAction.NotAllowed.selector);
         vm.prank(address(PRODUCTS_MODULE));
-        erc20Mint.onProductPurchase(slicerId, productIds[0], buyer, 1, "", "");
+        erc20Mint.onProductPurchase(slicerId, productIds[0], 0, buyer, 1, "");
     }
 }

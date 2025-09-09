@@ -41,7 +41,7 @@ contract AllowlistedTest is RegistryProductActionTest {
         allowlisted.configureProduct(slicerId, productId, abi.encode(root));
 
         bytes32[] memory proof = m.getProof(data, 0);
-        assertTrue(allowlisted.isPurchaseAllowed(slicerId, productId, buyer, 0, "", abi.encode(proof)));
+        assertTrue(allowlisted.isPurchaseAllowed(slicerId, productId, 0, buyer, 0, abi.encode(proof)));
     }
 
     function testIsPurchaseAllowed_wrongProof() public {
@@ -51,6 +51,6 @@ contract AllowlistedTest is RegistryProductActionTest {
         allowlisted.configureProduct(slicerId, productId, abi.encode(root));
 
         bytes32[] memory wrongProof = m.getProof(data, 1);
-        assertFalse(allowlisted.isPurchaseAllowed(slicerId, productId, buyer, 0, "", abi.encode(wrongProof)));
+        assertFalse(allowlisted.isPurchaseAllowed(slicerId, productId, 0, buyer, 0, abi.encode(wrongProof)));
     }
 }

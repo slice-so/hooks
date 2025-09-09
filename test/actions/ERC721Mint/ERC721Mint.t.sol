@@ -224,7 +224,7 @@ contract ERC721MintTest is RegistryProductActionTest {
         uint256 initialSupply1 = token1.totalSupply();
 
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[0], buyer, 3, "", "");
+        erc721Mint.onProductPurchase(slicerId, productIds[0], 0, buyer, 3, "");
 
         assertEq(token1.balanceOf(buyer), initialBalance1 + 3);
         assertEq(token1.totalSupply(), initialSupply1 + 3);
@@ -234,14 +234,14 @@ contract ERC721MintTest is RegistryProductActionTest {
         uint256 initialSupply2 = token2.totalSupply();
 
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[1], buyer2, 5, "", "");
+        erc721Mint.onProductPurchase(slicerId, productIds[1], 0, buyer2, 5, "");
 
         assertEq(token2.balanceOf(buyer2), initialBalance2 + 5);
         assertEq(token2.totalSupply(), initialSupply2 + 5);
 
         // Test multiple purchases
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[0], buyer3, 2, "", "");
+        erc721Mint.onProductPurchase(slicerId, productIds[0], 0, buyer3, 2, "");
         assertEq(token1.balanceOf(buyer3), 2);
         assertEq(token1.totalSupply(), initialSupply1 + 5); // 3 + 2
     }
@@ -269,12 +269,12 @@ contract ERC721MintTest is RegistryProductActionTest {
 
         // First purchase - should succeed
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[0], buyer, 3, "", "");
+        erc721Mint.onProductPurchase(slicerId, productIds[0], 0, buyer, 3, "");
         assertEq(token.totalSupply(), 3);
 
         // Second purchase - should succeed
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[0], buyer2, 2, "", "");
+        erc721Mint.onProductPurchase(slicerId, productIds[0], 0, buyer2, 2, "");
         assertEq(token.totalSupply(), 5);
 
         // Third purchase - exceeds max supply but should not revert (mint will fail silently)
@@ -282,7 +282,7 @@ contract ERC721MintTest is RegistryProductActionTest {
         uint256 supplyBefore = token.totalSupply();
 
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[0], buyer3, 2, "", "");
+        erc721Mint.onProductPurchase(slicerId, productIds[0], 0, buyer3, 2, "");
 
         // Balance and supply should remain unchanged (mint failed silently)
         assertEq(token.balanceOf(buyer3), balanceBefore);
@@ -310,20 +310,20 @@ contract ERC721MintTest is RegistryProductActionTest {
 
         // First purchase - should succeed
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[0], buyer, 3, "", "");
+        erc721Mint.onProductPurchase(slicerId, productIds[0], 0, buyer, 3, "");
 
         (ERC721Mint_BaseToken token,) = erc721Mint.tokenData(slicerId, productIds[0]);
         assertEq(token.totalSupply(), 3);
 
         // Second purchase - should succeed (exactly at max supply)
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[0], buyer2, 2, "", "");
+        erc721Mint.onProductPurchase(slicerId, productIds[0], 0, buyer2, 2, "");
         assertEq(token.totalSupply(), 5);
 
         // Third purchase - should revert (exceeds max supply)
         vm.expectRevert(ERC721Mint.MaxSupplyExceeded.selector);
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[0], buyer3, 1, "", "");
+        erc721Mint.onProductPurchase(slicerId, productIds[0], 0, buyer3, 1, "");
     }
 
     function testTokenURI() public {
@@ -368,10 +368,10 @@ contract ERC721MintTest is RegistryProductActionTest {
 
         // Mint some tokens
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[0], buyer, 2, "", "");
+        erc721Mint.onProductPurchase(slicerId, productIds[0], 0, buyer, 2, "");
 
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[1], buyer, 1, "", "");
+        erc721Mint.onProductPurchase(slicerId, productIds[1], 0, buyer, 1, "");
 
         // Test token URIs for product 1 (with baseURI)
         assertEq(token1.tokenURI(0), "https://api.example.com/metadata/0");

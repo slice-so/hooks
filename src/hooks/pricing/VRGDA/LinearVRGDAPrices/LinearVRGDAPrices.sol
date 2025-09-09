@@ -6,6 +6,7 @@ import {wadLn, unsafeWadDiv, toDaysWadUnsafe} from "@/utils/math/SignedWadMath.s
 import {LinearProductParams} from "../types/LinearProductParams.sol";
 import {LinearVRGDAParams} from "../types/LinearVRGDAParams.sol";
 import {VRGDAPrices} from "../VRGDAPrices.sol";
+import {Price} from "slice/types/Price.sol";
 
 /// @title   LinearVRGDAPrices
 /// @notice  VRGDA with a linear issuance curve - Price library with different params for each Slice product.
@@ -43,7 +44,7 @@ contract LinearVRGDAPrices is VRGDAPrices {
 
         /// Get product availability and isInfinite
         /// @dev available units is a uint32
-        (uint256 availableUnits, bool isInfinite) = PRODUCTS_MODULE.availableUnits(slicerId, productId);
+        (uint256 availableUnits, bool isInfinite) = PRODUCTS_MODULE.stockUnits(slicerId, productId, 0);
 
         // Product must not have infinite availability
         require(!isInfinite, "NOT_FINITE_AVAILABILITY");
@@ -69,11 +70,12 @@ contract LinearVRGDAPrices is VRGDAPrices {
     function productPrice(
         uint256 slicerId,
         uint256 productId,
+        uint256 variantId,
         address currency,
         uint256 quantity,
         address,
         bytes memory
-    ) public view override returns (uint256 ethPrice, uint256 currencyPrice) {
+    ) public view override returns (Price memory price) {
         // Add reference for product and pricing params
         LinearProductParams storage productParams = _productParams[slicerId][productId];
         LinearVRGDAParams memory pricingParams = productParams.pricingParams[currency];
@@ -81,14 +83,14 @@ contract LinearVRGDAPrices is VRGDAPrices {
         require(productParams.startTime != 0, "PRODUCT_UNSET");
 
         // Get available units
-        (uint256 availableUnits,) = PRODUCTS_MODULE.availableUnits(slicerId, productId);
+        (uint256 availableUnits,) = PRODUCTS_MODULE.stockUnits(slicerId, productId, variantId);
 
         // Calculate sold units from availableUnits
         uint256 soldUnits = productParams.startUnits - availableUnits;
 
         // Set ethPrice or currencyPrice based on chosen currency
         if (currency == address(0)) {
-            ethPrice = getAdjustedVRGDAPrice(
+            price.eth = getAdjustedVRGDAPrice(
                 pricingParams.targetPrice,
                 productParams.decayConstant,
                 toDaysWadUnsafe(block.timestamp - productParams.startTime),
@@ -98,7 +100,7 @@ contract LinearVRGDAPrices is VRGDAPrices {
                 quantity
             );
         } else {
-            currencyPrice = getAdjustedVRGDAPrice(
+            price.currency = getAdjustedVRGDAPrice(
                 pricingParams.targetPrice,
                 productParams.decayConstant,
                 toDaysWadUnsafe(block.timestamp - productParams.startTime),

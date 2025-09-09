@@ -39,9 +39,9 @@ contract Allowlisted is RegistryProductAction {
     function isPurchaseAllowed(
         uint256 slicerId,
         uint256 productId,
+        uint256,
         address buyer,
         uint256,
-        bytes memory,
         bytes memory buyerCustomData
     ) public view override returns (bool isAllowed) {
         // Get Merkle proof from buyerCustomData

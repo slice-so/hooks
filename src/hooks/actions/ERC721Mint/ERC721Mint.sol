@@ -43,9 +43,9 @@ contract ERC721Mint is RegistryProductAction {
     function _onProductPurchase(
         uint256 slicerId,
         uint256 productId,
+        uint256,
         address buyer,
         uint256 quantity,
-        bytes memory,
         bytes memory
     ) internal override {
         ERC721Data memory tokenData_ = tokenData[slicerId][productId];

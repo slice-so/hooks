@@ -4,6 +4,7 @@ pragma solidity ^0.8.30;
 import {IProductsModule} from "slice/interfaces/IProductsModule.sol";
 import {RegistryProductPrice, IProductPrice} from "@/utils/RegistryProductPrice.sol";
 import {DiscountParams} from "./types/DiscountParams.sol";
+import {Price} from "slice/types/Price.sol";
 
 /**
  * @title   TieredDiscount
@@ -42,18 +43,27 @@ abstract contract TieredDiscount is RegistryProductPrice {
     function productPrice(
         uint256 slicerId,
         uint256 productId,
+        uint256 variantId,
         address currency,
         uint256 quantity,
         address buyer,
         bytes memory data
-    ) public view override returns (uint256 ethPrice, uint256 currencyPrice) {
-        (uint256 basePriceEth, uint256 basePriceCurrency) =
-            PRODUCTS_MODULE.basePrice(slicerId, productId, currency, quantity);
-        uint256 basePrice = currency == address(0) ? basePriceEth : basePriceCurrency;
+    ) public view override returns (Price memory) {
+        Price memory basePrice = PRODUCTS_MODULE.basePrice(slicerId, productId, variantId, currency, quantity);
 
         DiscountParams[] memory discountParams = discounts[slicerId][productId];
 
-        return _productPrice(slicerId, productId, currency, quantity, buyer, data, basePrice, discountParams);
+        return _productPrice(
+            slicerId,
+            productId,
+            variantId,
+            currency,
+            quantity,
+            buyer,
+            data,
+            currency == address(0) ? basePrice.eth : basePrice.currency,
+            discountParams
+        );
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -77,11 +87,12 @@ abstract contract TieredDiscount is RegistryProductPrice {
     function _productPrice(
         uint256 slicerId,
         uint256 productId,
+        uint256 variantId,
         address currency,
         uint256 quantity,
         address buyer,
         bytes memory data,
         uint256 basePrice,
         DiscountParams[] memory discountParams
-    ) internal view virtual returns (uint256 ethPrice, uint256 currencyPrice);
+    ) internal view virtual returns (Price memory);
 }

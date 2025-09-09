@@ -15,6 +15,7 @@ import {
 import {LogisticProductParams} from "../types/LogisticProductParams.sol";
 import {LogisticVRGDAParams} from "../types/LogisticVRGDAParams.sol";
 import {IProductsModule, VRGDAPrices} from "../VRGDAPrices.sol";
+import {Price} from "slice/types/Price.sol";
 
 /// @title   LogisticVRGDAPrices
 /// @notice  VRGDA with a logistic issuance curve - Price library with different params for each Slice product.
@@ -51,7 +52,7 @@ contract LogisticVRGDAPrices is VRGDAPrices {
         require(decayConstant >= type(int184).min, "MIN_DECAY_CONSTANT_EXCEEDED");
 
         // Get product availability and isInfinite
-        (uint256 availableUnits, bool isInfinite) = PRODUCTS_MODULE.availableUnits(slicerId, productId);
+        (uint256 availableUnits, bool isInfinite) = PRODUCTS_MODULE.stockUnits(slicerId, productId, 0);
 
         // Product must not have infinite availability
         require(!isInfinite, "NON_FINITE_AVAILABILITY");
@@ -77,11 +78,12 @@ contract LogisticVRGDAPrices is VRGDAPrices {
     function productPrice(
         uint256 slicerId,
         uint256 productId,
+        uint256 variantId,
         address currency,
         uint256 quantity,
         address,
         bytes memory
-    ) public view override returns (uint256 ethPrice, uint256 currencyPrice) {
+    ) public view override returns (Price memory price) {
         // Add reference for product and pricing params
         LogisticProductParams storage productParams = _productParams[slicerId][productId];
         LogisticVRGDAParams memory pricingParams = productParams.pricingParams[currency];
@@ -89,11 +91,11 @@ contract LogisticVRGDAPrices is VRGDAPrices {
         require(productParams.startTime != 0, "PRODUCT_UNSET");
 
         // Get available units
-        (uint256 availableUnits,) = PRODUCTS_MODULE.availableUnits(slicerId, productId);
+        (uint256 availableUnits,) = PRODUCTS_MODULE.stockUnits(slicerId, productId, variantId);
 
         // Set ethPrice or currencyPrice based on chosen currency
         if (currency == address(0)) {
-            ethPrice = getAdjustedVRGDALogisticPrice(
+            price.eth = getAdjustedVRGDALogisticPrice(
                 pricingParams.targetPrice,
                 productParams.decayConstant,
                 toDaysWadUnsafe(block.timestamp - productParams.startTime),
@@ -104,7 +106,7 @@ contract LogisticVRGDAPrices is VRGDAPrices {
                 quantity
             );
         } else {
-            currencyPrice = getAdjustedVRGDALogisticPrice(
+            price.currency = getAdjustedVRGDALogisticPrice(
                 pricingParams.targetPrice,
                 productParams.decayConstant,
                 toDaysWadUnsafe(block.timestamp - productParams.startTime),

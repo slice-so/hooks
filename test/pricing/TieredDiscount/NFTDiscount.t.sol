@@ -6,6 +6,7 @@ import {console2} from "forge-std/console2.sol";
 import {
     IProductsModule,
     NFTDiscount,
+    Price,
     DiscountParams,
     NFTType
 } from "@/hooks/pricing/TieredDiscount/NFTDiscount/NFTDiscount.sol";
@@ -51,13 +52,12 @@ contract NFTDiscountTest is RegistryProductPriceTest {
         erc721GatedDiscount.configureProduct(slicerId, productId, abi.encode(discountParams));
 
         /// check product price
-        (uint256 ethPrice, uint256 currencyPrice) =
-            erc721GatedDiscount.productPrice(slicerId, productId, ETH, quantity, buyer, "");
+        Price memory price = erc721GatedDiscount.productPrice(slicerId, productId, 0, ETH, quantity, buyer, "");
 
-        (uint256 baseEthPrice,) = PRODUCTS_MODULE.basePrice(slicerId, productId, ETH, quantity);
+        Price memory basePrice = PRODUCTS_MODULE.basePrice(slicerId, productId, 0, ETH, quantity);
 
-        assertEq(ethPrice, quantity * (baseEthPrice - (baseEthPrice * percentDiscountOne) / 1e4));
-        assertEq(currencyPrice, 0);
+        assertEq(price.eth, quantity * (basePrice.eth - (basePrice.eth * percentDiscountOne) / 1e4));
+        assertEq(price.currency, 0);
     }
 
     function testConfigureProduct__ERC20() public {
@@ -76,13 +76,12 @@ contract NFTDiscountTest is RegistryProductPriceTest {
         erc721GatedDiscount.configureProduct(slicerId, productId, abi.encode(discountParams));
 
         /// check product price
-        (uint256 ethPrice, uint256 currencyPrice) =
-            erc721GatedDiscount.productPrice(slicerId, productId, USDC, quantity, buyer, "");
+        Price memory price = erc721GatedDiscount.productPrice(slicerId, productId, 0, USDC, quantity, buyer, "");
 
-        (, uint256 baseCurrencyPrice) = PRODUCTS_MODULE.basePrice(slicerId, productId, USDC, quantity);
+        Price memory basePrice = PRODUCTS_MODULE.basePrice(slicerId, productId, 0, USDC, quantity);
 
-        assertEq(currencyPrice, quantity * (baseCurrencyPrice - (baseCurrencyPrice * percentDiscountOne) / 1e4));
-        assertTrue(ethPrice == 0);
+        assertEq(price.currency, quantity * (basePrice.currency - (basePrice.currency * percentDiscountOne) / 1e4));
+        assertTrue(price.eth == 0);
     }
 
     function testConfigureProduct__ERC1155() public {
@@ -101,20 +100,19 @@ contract NFTDiscountTest is RegistryProductPriceTest {
         erc721GatedDiscount.configureProduct(slicerId, productId, abi.encode(discountParams));
 
         /// check product price
-        (uint256 ethPrice, uint256 currencyPrice) =
-            erc721GatedDiscount.productPrice(slicerId, productId, USDC, quantity, buyer, "");
+        Price memory price = erc721GatedDiscount.productPrice(slicerId, productId, 0, USDC, quantity, buyer, "");
 
-        (, uint256 baseCurrencyPrice) = PRODUCTS_MODULE.basePrice(slicerId, productId, USDC, quantity);
+        Price memory basePrice = PRODUCTS_MODULE.basePrice(slicerId, productId, 0, USDC, quantity);
 
-        assertEq(currencyPrice, quantity * baseCurrencyPrice);
-        assertEq(ethPrice, 0);
+        assertEq(price.currency, quantity * basePrice.currency);
+        assertEq(price.eth, 0);
 
         nft1155.mint(buyer);
 
-        (ethPrice, currencyPrice) = erc721GatedDiscount.productPrice(slicerId, productId, USDC, quantity, buyer, "");
+        price = erc721GatedDiscount.productPrice(slicerId, productId, 0, USDC, quantity, buyer, "");
 
-        assertEq(currencyPrice, quantity * (baseCurrencyPrice - (baseCurrencyPrice * percentDiscountOne) / 1e4));
-        assertEq(ethPrice, 0);
+        assertEq(price.currency, quantity * (basePrice.currency - (basePrice.currency * percentDiscountOne) / 1e4));
+        assertEq(price.eth, 0);
     }
 
     function testConfigureProduct__HigherDiscount() public {
@@ -139,20 +137,19 @@ contract NFTDiscountTest is RegistryProductPriceTest {
         erc721GatedDiscount.configureProduct(slicerId, productId, abi.encode(discountParams));
 
         /// check product price for ETH
-        (uint256 ethPrice, uint256 currencyPrice) =
-            erc721GatedDiscount.productPrice(slicerId, productId, ETH, quantity, buyer, "");
+        Price memory price = erc721GatedDiscount.productPrice(slicerId, productId, 0, ETH, quantity, buyer, "");
 
-        (uint256 baseEthPrice,) = PRODUCTS_MODULE.basePrice(slicerId, productId, ETH, quantity);
+        Price memory basePrice = PRODUCTS_MODULE.basePrice(slicerId, productId, 0, ETH, quantity);
 
-        assertEq(ethPrice, quantity * (baseEthPrice - (baseEthPrice * percentDiscountOne) / 1e4));
-        assertEq(currencyPrice, 0);
+        assertEq(price.eth, quantity * (basePrice.eth - (basePrice.eth * percentDiscountOne) / 1e4));
+        assertEq(price.currency, 0);
 
         nft1155.mint(buyer);
 
-        (ethPrice, currencyPrice) = erc721GatedDiscount.productPrice(slicerId, productId, ETH, quantity, buyer, "");
+        price = erc721GatedDiscount.productPrice(slicerId, productId, 0, ETH, quantity, buyer, "");
 
-        assertEq(ethPrice, quantity * (baseEthPrice - (baseEthPrice * percentDiscountTwo) / 1e4));
-        assertEq(currencyPrice, 0);
+        assertEq(price.eth, quantity * (basePrice.eth - (basePrice.eth * percentDiscountTwo) / 1e4));
+        assertEq(price.currency, 0);
     }
 
     function testRevert_ProductPrice__NotNFTOwner() public {
@@ -171,13 +168,12 @@ contract NFTDiscountTest is RegistryProductPriceTest {
         erc721GatedDiscount.configureProduct(slicerId, productId, abi.encode(discountParams));
 
         /// check product price
-        (uint256 ethPrice, uint256 currencyPrice) =
-            erc721GatedDiscount.productPrice(slicerId, productId, ETH, quantity, buyer, "");
+        Price memory price = erc721GatedDiscount.productPrice(slicerId, productId, 0, ETH, quantity, buyer, "");
 
-        (uint256 baseEthPrice,) = PRODUCTS_MODULE.basePrice(slicerId, productId, ETH, quantity);
+        Price memory basePrice = PRODUCTS_MODULE.basePrice(slicerId, productId, 0, ETH, quantity);
 
-        assertEq(ethPrice, quantity * baseEthPrice);
-        assertEq(currencyPrice, 0);
+        assertEq(price.eth, quantity * basePrice.eth);
+        assertEq(price.currency, 0);
     }
 
     function testProductPrice__MinQuantity() public {
@@ -196,23 +192,21 @@ contract NFTDiscountTest is RegistryProductPriceTest {
         erc721GatedDiscount.configureProduct(slicerId, productId, abi.encode(discountParams));
 
         /// check product price
-        (uint256 ethPrice, uint256 currencyPrice) =
-            erc721GatedDiscount.productPrice(slicerId, productId, ETH, quantity, buyer, "");
+        Price memory price = erc721GatedDiscount.productPrice(slicerId, productId, 0, ETH, quantity, buyer, "");
 
-        (uint256 baseEthPrice,) = PRODUCTS_MODULE.basePrice(slicerId, productId, ETH, quantity);
+        Price memory basePrice = PRODUCTS_MODULE.basePrice(slicerId, productId, 0, ETH, quantity);
 
-        assertEq(ethPrice, quantity * baseEthPrice);
-        assertEq(currencyPrice, 0);
+        assertEq(price.eth, quantity * basePrice.eth);
+        assertEq(price.currency, 0);
 
         /// Buyer owns 2 NFTs, minQuantity is 2
         nftOne.mint(buyer);
 
         /// check product price
-        (uint256 secondEthPrice, uint256 secondCurrencyPrice) =
-            erc721GatedDiscount.productPrice(slicerId, productId, ETH, quantity, buyer, "");
+        Price memory secondPrice = erc721GatedDiscount.productPrice(slicerId, productId, 0, ETH, quantity, buyer, "");
 
-        assertEq(secondEthPrice, quantity * (baseEthPrice - (baseEthPrice * percentDiscountOne) / 1e4));
-        assertEq(secondCurrencyPrice, 0);
+        assertEq(secondPrice.eth, quantity * (basePrice.eth - (basePrice.eth * percentDiscountOne) / 1e4));
+        assertEq(secondPrice.currency, 0);
     }
 
     function testProductPrice__MultipleBoughtQuantity() public {
@@ -233,13 +227,12 @@ contract NFTDiscountTest is RegistryProductPriceTest {
         quantity = 6;
 
         /// check product price
-        (uint256 ethPrice, uint256 currencyPrice) =
-            erc721GatedDiscount.productPrice(slicerId, productId, ETH, quantity, buyer, "");
+        Price memory price = erc721GatedDiscount.productPrice(slicerId, productId, 0, ETH, quantity, buyer, "");
 
-        (uint256 baseEthPrice,) = PRODUCTS_MODULE.basePrice(slicerId, productId, ETH, quantity);
+        Price memory basePrice = PRODUCTS_MODULE.basePrice(slicerId, productId, 0, ETH, quantity);
 
-        assertEq(ethPrice, quantity * (baseEthPrice - (baseEthPrice * percentDiscountOne) / 1e4));
-        assertEq(currencyPrice, 0);
+        assertEq(price.eth, quantity * (basePrice.eth - (basePrice.eth * percentDiscountOne) / 1e4));
+        assertEq(price.currency, 0);
     }
 
     function testConfigureProduct__Edit_Add() public {
@@ -260,13 +253,12 @@ contract NFTDiscountTest is RegistryProductPriceTest {
         nftTwo.mint(buyer);
 
         /// check product price
-        (uint256 ethPrice, uint256 currencyPrice) =
-            erc721GatedDiscount.productPrice(slicerId, productId, ETH, quantity, buyer, "");
+        Price memory price = erc721GatedDiscount.productPrice(slicerId, productId, 0, ETH, quantity, buyer, "");
 
-        (uint256 baseEthPrice,) = PRODUCTS_MODULE.basePrice(slicerId, productId, ETH, quantity);
+        Price memory basePrice = PRODUCTS_MODULE.basePrice(slicerId, productId, 0, ETH, quantity);
 
-        assertEq(ethPrice, quantity * (baseEthPrice - (baseEthPrice * percentDiscountTwo) / 1e4));
-        assertEq(currencyPrice, 0);
+        assertEq(price.eth, quantity * (basePrice.eth - (basePrice.eth * percentDiscountTwo) / 1e4));
+        assertEq(price.currency, 0);
 
         discountParams = new DiscountParams[](2);
 
@@ -291,11 +283,10 @@ contract NFTDiscountTest is RegistryProductPriceTest {
         erc721GatedDiscount.configureProduct(slicerId, productId, abi.encode(discountParams));
 
         /// check product price
-        (uint256 secondEthPrice, uint256 secondCurrencyPrice) =
-            erc721GatedDiscount.productPrice(slicerId, productId, ETH, quantity, buyer, "");
+        Price memory secondPrice = erc721GatedDiscount.productPrice(slicerId, productId, 0, ETH, quantity, buyer, "");
 
-        assertEq(secondEthPrice, quantity * (baseEthPrice - (baseEthPrice * percentDiscountOne) / 1e4));
-        assertEq(secondCurrencyPrice, 0);
+        assertEq(secondPrice.eth, quantity * (basePrice.eth - (basePrice.eth * percentDiscountOne) / 1e4));
+        assertEq(secondPrice.currency, 0);
     }
 
     function testConfigureProduct__Edit_Remove() public {
@@ -325,13 +316,12 @@ contract NFTDiscountTest is RegistryProductPriceTest {
         erc721GatedDiscount.configureProduct(slicerId, productId, abi.encode(discountParams));
 
         /// check product price
-        (uint256 secondEthPrice, uint256 secondCurrencyPrice) =
-            erc721GatedDiscount.productPrice(slicerId, productId, ETH, quantity, buyer, "");
+        Price memory secondPrice = erc721GatedDiscount.productPrice(slicerId, productId, 0, ETH, quantity, buyer, "");
 
-        (uint256 baseEthPrice,) = PRODUCTS_MODULE.basePrice(slicerId, productId, ETH, quantity);
+        Price memory basePrice = PRODUCTS_MODULE.basePrice(slicerId, productId, 0, ETH, quantity);
 
-        assertEq(secondEthPrice, quantity * (baseEthPrice - (baseEthPrice * percentDiscountOne) / 1e4));
-        assertEq(secondCurrencyPrice, 0);
+        assertEq(secondPrice.eth, quantity * (basePrice.eth - (basePrice.eth * percentDiscountOne) / 1e4));
+        assertEq(secondPrice.currency, 0);
 
         discountParams = new DiscountParams[](0);
 
@@ -339,10 +329,9 @@ contract NFTDiscountTest is RegistryProductPriceTest {
         erc721GatedDiscount.configureProduct(slicerId, productId, abi.encode(discountParams));
 
         /// check product price
-        (uint256 ethPrice, uint256 currencyPrice) =
-            erc721GatedDiscount.productPrice(slicerId, productId, ETH, quantity, buyer, "");
+        Price memory price = erc721GatedDiscount.productPrice(slicerId, productId, 0, ETH, quantity, buyer, "");
 
-        assertEq(ethPrice, quantity * baseEthPrice);
-        assertEq(currencyPrice, 0);
+        assertEq(price.eth, quantity * basePrice.eth);
+        assertEq(price.currency, 0);
     }
 }

@@ -64,9 +64,9 @@ contract ERC20GatedTest is RegistryProductActionTest {
         vm.prank(productOwner);
         erc20Gated.configureProduct(slicerId, productId, abi.encode(gates));
 
-        assertFalse(erc20Gated.isPurchaseAllowed(slicerId, productId, buyer, 0, "", ""));
+        assertFalse(erc20Gated.isPurchaseAllowed(slicerId, productId, 0, buyer, 0, ""));
 
         token.mint(buyer, 100);
-        assertTrue(erc20Gated.isPurchaseAllowed(slicerId, productId, buyer, 0, "", ""));
+        assertTrue(erc20Gated.isPurchaseAllowed(slicerId, productId, 0, buyer, 0, ""));
     }
 }

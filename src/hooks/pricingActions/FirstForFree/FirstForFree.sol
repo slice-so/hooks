@@ -14,6 +14,7 @@ import {HookRegistry} from "@/utils/RegistryProductAction.sol";
 import {ProductParams, TokenCondition} from "./types/ProductParams.sol";
 import {TokenType} from "./types/TokenCondition.sol";
 import {ITokenERC1155} from "./utils/ITokenERC1155.sol";
+import {Price} from "slice/types/Price.sol";
 
 /**
  * @title   FirstForFree
@@ -42,12 +43,15 @@ contract FirstForFree is RegistryProductPriceAction {
      * @inheritdoc IProductPrice
      * @notice Applies discount only for first N purchases on a slicer.
      */
-    function productPrice(uint256 slicerId, uint256 productId, address, uint256 quantity, address buyer, bytes memory)
-        public
-        view
-        override
-        returns (uint256 ethPrice, uint256 currencyPrice)
-    {
+    function productPrice(
+        uint256 slicerId,
+        uint256 productId,
+        uint256,
+        address,
+        uint256 quantity,
+        address buyer,
+        bytes memory
+    ) public view override returns (Price memory price) {
         ProductParams memory productParams = usdcPrices[slicerId][productId];
 
         if (_isEligible(buyer, productParams.eligibleTokens)) {
@@ -56,15 +60,15 @@ contract FirstForFree is RegistryProductPriceAction {
                 unchecked {
                     uint256 freeUnitsLeft = productParams.freeUnits - totalPurchases;
                     if (quantity <= freeUnitsLeft) {
-                        return (0, 0);
+                        return (Price(0, 0));
                     } else {
-                        return (0, usdcPrices[slicerId][productId].usdcPrice * (quantity - freeUnitsLeft));
+                        return (Price(0, usdcPrices[slicerId][productId].usdcPrice * (quantity - freeUnitsLeft)));
                     }
                 }
             }
         }
 
-        return (0, usdcPrices[slicerId][productId].usdcPrice * quantity);
+        return (Price(0, usdcPrices[slicerId][productId].usdcPrice * quantity));
     }
 
     /**
@@ -74,9 +78,9 @@ contract FirstForFree is RegistryProductPriceAction {
     function _onProductPurchase(
         uint256 slicerId,
         uint256 productId,
+        uint256,
         address buyer,
         uint256 quantity,
-        bytes memory,
         bytes memory
     ) internal override {
         purchases[buyer][slicerId] += quantity;

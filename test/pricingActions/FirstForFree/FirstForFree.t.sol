@@ -2,7 +2,7 @@
 pragma solidity ^0.8.30;
 
 import {RegistryProductPriceActionTest} from "@test/utils/RegistryProductPriceActionTest.sol";
-import {FirstForFree} from "@/hooks/pricingActions/FirstForFree/FirstForFree.sol";
+import {Price, FirstForFree} from "@/hooks/pricingActions/FirstForFree/FirstForFree.sol";
 import {ProductParams} from "@/hooks/pricingActions/FirstForFree/types/ProductParams.sol";
 import {TokenCondition, TokenType} from "@/hooks/pricingActions/FirstForFree/types/TokenCondition.sol";
 import {ITokenERC1155} from "@/hooks/pricingActions/FirstForFree/utils/ITokenERC1155.sol";
@@ -179,41 +179,40 @@ contract FirstForFreeTest is RegistryProductPriceActionTest {
         );
 
         // First purchase - should be free
-        (uint256 ethPrice, uint256 currencyPrice) =
-            firstForFree.productPrice(slicerId, productIds[0], address(0), 1, buyer, "");
-        assertEq(ethPrice, 0);
-        assertEq(currencyPrice, 0);
+        Price memory price = firstForFree.productPrice(slicerId, productIds[0], 0, address(0), 1, buyer, "");
+        assertEq(price.eth, 0);
+        assertEq(price.currency, 0);
 
         // Second purchase - should be free
-        (ethPrice, currencyPrice) = firstForFree.productPrice(slicerId, productIds[0], address(0), 1, buyer, "");
-        assertEq(ethPrice, 0);
-        assertEq(currencyPrice, 0);
+        price = firstForFree.productPrice(slicerId, productIds[0], 0, address(0), 1, buyer, "");
+        assertEq(price.eth, 0);
+        assertEq(price.currency, 0);
 
         // Partial free purchase
-        (ethPrice, currencyPrice) = firstForFree.productPrice(slicerId, productIds[0], address(0), 2, buyer, "");
-        assertEq(ethPrice, 0);
-        assertEq(currencyPrice, 0);
+        price = firstForFree.productPrice(slicerId, productIds[0], 0, address(0), 2, buyer, "");
+        assertEq(price.eth, 0);
+        assertEq(price.currency, 0);
 
         // Purchase exceeding free units
-        (ethPrice, currencyPrice) = firstForFree.productPrice(slicerId, productIds[0], address(0), 3, buyer, "");
-        assertEq(ethPrice, 0);
-        assertEq(currencyPrice, USDC_PRICE); // 1 paid unit
+        price = firstForFree.productPrice(slicerId, productIds[0], 0, address(0), 3, buyer, "");
+        assertEq(price.eth, 0);
+        assertEq(price.currency, USDC_PRICE); // 1 paid unit
 
         // Purchase after using some free units (simulate 1 purchase made)
         vm.prank(address(PRODUCTS_MODULE));
-        firstForFree.onProductPurchase(slicerId, productIds[0], buyer, 1, "", "");
+        firstForFree.onProductPurchase(slicerId, productIds[0], 0, buyer, 1, "");
 
-        (ethPrice, currencyPrice) = firstForFree.productPrice(slicerId, productIds[0], address(0), 2, buyer, "");
-        assertEq(ethPrice, 0);
-        assertEq(currencyPrice, USDC_PRICE); // 1 free, 1 paid
+        price = firstForFree.productPrice(slicerId, productIds[0], 0, address(0), 2, buyer, "");
+        assertEq(price.eth, 0);
+        assertEq(price.currency, USDC_PRICE); // 1 free, 1 paid
 
         // Purchase after using all free units (simulate 2 total purchases made)
         vm.prank(address(PRODUCTS_MODULE));
-        firstForFree.onProductPurchase(slicerId, productIds[0], buyer, 1, "", "");
+        firstForFree.onProductPurchase(slicerId, productIds[0], 0, buyer, 1, "");
 
-        (ethPrice, currencyPrice) = firstForFree.productPrice(slicerId, productIds[0], address(0), 1, buyer, "");
-        assertEq(ethPrice, 0);
-        assertEq(currencyPrice, USDC_PRICE); // All paid
+        price = firstForFree.productPrice(slicerId, productIds[0], 0, address(0), 1, buyer, "");
+        assertEq(price.eth, 0);
+        assertEq(price.currency, USDC_PRICE); // All paid
     }
 
     function testProductPrice_ERC721Condition() public {
@@ -239,28 +238,27 @@ contract FirstForFreeTest is RegistryProductPriceActionTest {
         vm.stopPrank();
 
         // Buyer without required token - should pay full price
-        (uint256 ethPrice, uint256 currencyPrice) =
-            firstForFree.productPrice(slicerId, productIds[0], address(0), 1, buyer, "");
-        assertEq(ethPrice, 0);
-        assertEq(currencyPrice, USDC_PRICE);
+        Price memory price = firstForFree.productPrice(slicerId, productIds[0], 0, address(0), 1, buyer, "");
+        assertEq(price.eth, 0);
+        assertEq(price.currency, USDC_PRICE);
 
         // Give buyer the required ERC721 token
         mockERC721.mint(buyer);
 
         // Buyer with required token - should get free units
-        (ethPrice, currencyPrice) = firstForFree.productPrice(slicerId, productIds[0], address(0), 1, buyer, "");
-        assertEq(ethPrice, 0);
-        assertEq(currencyPrice, 0);
+        price = firstForFree.productPrice(slicerId, productIds[0], 0, address(0), 1, buyer, "");
+        assertEq(price.eth, 0);
+        assertEq(price.currency, 0);
 
         // Second free purchase
-        (ethPrice, currencyPrice) = firstForFree.productPrice(slicerId, productIds[0], address(0), 1, buyer, "");
-        assertEq(ethPrice, 0);
-        assertEq(currencyPrice, 0);
+        price = firstForFree.productPrice(slicerId, productIds[0], 0, address(0), 1, buyer, "");
+        assertEq(price.eth, 0);
+        assertEq(price.currency, 0);
 
         // Purchase exceeding free units
-        (ethPrice, currencyPrice) = firstForFree.productPrice(slicerId, productIds[0], address(0), 3, buyer, "");
-        assertEq(ethPrice, 0);
-        assertEq(currencyPrice, USDC_PRICE); // 2 free, 1 paid
+        price = firstForFree.productPrice(slicerId, productIds[0], 0, address(0), 3, buyer, "");
+        assertEq(price.eth, 0);
+        assertEq(price.currency, USDC_PRICE); // 2 free, 1 paid
     }
 
     function testProductPrice_ERC1155Condition() public {
@@ -291,24 +289,23 @@ contract FirstForFreeTest is RegistryProductPriceActionTest {
 
         // Buyer without sufficient tokens - should pay full price
         mockERC1155.setBalance(buyer, 5, 5); // Less than required
-        (uint256 ethPrice, uint256 currencyPrice) =
-            firstForFree.productPrice(slicerId, productIds[0], address(0), 1, buyer, "");
-        assertEq(ethPrice, 0);
-        assertEq(currencyPrice, USDC_PRICE);
+        Price memory price = firstForFree.productPrice(slicerId, productIds[0], 0, address(0), 1, buyer, "");
+        assertEq(price.eth, 0);
+        assertEq(price.currency, USDC_PRICE);
 
         // Give buyer sufficient tokens
         mockERC1155.setBalance(buyer, 5, 15); // More than required
 
         // Buyer with sufficient tokens - should get free units
-        (ethPrice, currencyPrice) = firstForFree.productPrice(slicerId, productIds[0], address(0), 2, buyer, "");
-        assertEq(ethPrice, 0);
-        assertEq(currencyPrice, 0);
+        price = firstForFree.productPrice(slicerId, productIds[0], 0, address(0), 2, buyer, "");
+        assertEq(price.eth, 0);
+        assertEq(price.currency, 0);
 
         // Purchase exactly at minimum requirement
         mockERC1155.setBalance(buyer, 5, 10); // Exactly required amount
-        (ethPrice, currencyPrice) = firstForFree.productPrice(slicerId, productIds[0], address(0), 1, buyer, "");
-        assertEq(ethPrice, 0);
-        assertEq(currencyPrice, 0);
+        price = firstForFree.productPrice(slicerId, productIds[0], 0, address(0), 1, buyer, "");
+        assertEq(price.eth, 0);
+        assertEq(price.currency, 0);
     }
 
     function testProductPrice_MultipleConditions() public {
@@ -341,29 +338,27 @@ contract FirstForFreeTest is RegistryProductPriceActionTest {
 
         // Buyer meets first condition only
         mockERC721.mint(buyer);
-        (uint256 ethPrice, uint256 currencyPrice) =
-            firstForFree.productPrice(slicerId, productIds[0], address(0), 1, buyer, "");
-        assertEq(ethPrice, 0);
-        assertEq(currencyPrice, 0);
+        Price memory price = firstForFree.productPrice(slicerId, productIds[0], 0, address(0), 1, buyer, "");
+        assertEq(price.eth, 0);
+        assertEq(price.currency, 0);
 
         // Buyer meets second condition only
         mockERC1155.setBalance(buyer2, 3, 10);
-        (ethPrice, currencyPrice) = firstForFree.productPrice(slicerId, productIds[0], address(0), 1, buyer2, "");
-        assertEq(ethPrice, 0);
-        assertEq(currencyPrice, 0);
+        price = firstForFree.productPrice(slicerId, productIds[0], 0, address(0), 1, buyer2, "");
+        assertEq(price.eth, 0);
+        assertEq(price.currency, 0);
 
         // Buyer meets both conditions
         mockERC721.mint(buyer3);
         mockERC1155.setBalance(buyer3, 3, 10);
-        (ethPrice, currencyPrice) = firstForFree.productPrice(slicerId, productIds[0], address(0), 1, buyer3, "");
-        assertEq(ethPrice, 0);
-        assertEq(currencyPrice, 0);
+        price = firstForFree.productPrice(slicerId, productIds[0], 0, address(0), 1, buyer3, "");
+        assertEq(price.eth, 0);
+        assertEq(price.currency, 0);
 
         // Buyer meets neither condition
-        (ethPrice, currencyPrice) =
-            firstForFree.productPrice(slicerId, productIds[0], address(0), 1, address(0x999), "");
-        assertEq(ethPrice, 0);
-        assertEq(currencyPrice, USDC_PRICE);
+        price = firstForFree.productPrice(slicerId, productIds[0], 0, address(0), 1, address(0x999), "");
+        assertEq(price.eth, 0);
+        assertEq(price.currency, USDC_PRICE);
     }
 
     function testOnProductPurchase_WithMinting() public {
@@ -389,7 +384,7 @@ contract FirstForFreeTest is RegistryProductPriceActionTest {
         assertEq(mockMintToken.balanceOf(buyer, 5), 0);
 
         vm.prank(address(PRODUCTS_MODULE));
-        firstForFree.onProductPurchase(slicerId, productIds[0], buyer, 3, "", "");
+        firstForFree.onProductPurchase(slicerId, productIds[0], 0, buyer, 3, "");
 
         // Check purchase tracking
         assertEq(firstForFree.purchases(buyer, slicerId), 3);
@@ -398,14 +393,14 @@ contract FirstForFreeTest is RegistryProductPriceActionTest {
 
         // Second purchase
         vm.prank(address(PRODUCTS_MODULE));
-        firstForFree.onProductPurchase(slicerId, productIds[0], buyer, 2, "", "");
+        firstForFree.onProductPurchase(slicerId, productIds[0], 0, buyer, 2, "");
 
         assertEq(firstForFree.purchases(buyer, slicerId), 5);
         assertEq(mockMintToken.balanceOf(buyer, 5), 5);
 
         // Different buyer should have separate tracking
         vm.prank(address(PRODUCTS_MODULE));
-        firstForFree.onProductPurchase(slicerId, productIds[0], buyer2, 1, "", "");
+        firstForFree.onProductPurchase(slicerId, productIds[0], 0, buyer2, 1, "");
 
         assertEq(firstForFree.purchases(buyer2, slicerId), 1);
         assertEq(mockMintToken.balanceOf(buyer2, 5), 1);
@@ -432,7 +427,7 @@ contract FirstForFreeTest is RegistryProductPriceActionTest {
         assertEq(firstForFree.purchases(buyer, slicerId), 0);
 
         vm.prank(address(PRODUCTS_MODULE));
-        firstForFree.onProductPurchase(slicerId, productIds[0], buyer, 2, "", "");
+        firstForFree.onProductPurchase(slicerId, productIds[0], 0, buyer, 2, "");
 
         // Only purchase tracking, no minting
         assertEq(firstForFree.purchases(buyer, slicerId), 2);
@@ -461,23 +456,22 @@ contract FirstForFreeTest is RegistryProductPriceActionTest {
 
         // Purchase on slicer 0
         vm.prank(address(PRODUCTS_MODULE));
-        firstForFree.onProductPurchase(0, productIds[0], buyer, 2, "", "");
+        firstForFree.onProductPurchase(0, productIds[0], 0, buyer, 2, "");
 
         // Purchase on slicer 1
         vm.prank(address(PRODUCTS_MODULE));
-        firstForFree.onProductPurchase(1, productIds[0], buyer, 1, "", "");
+        firstForFree.onProductPurchase(1, productIds[0], 0, buyer, 1, "");
 
         // Check separate tracking
         assertEq(firstForFree.purchases(buyer, 0), 2);
         assertEq(firstForFree.purchases(buyer, 1), 1);
 
         // Verify pricing considers separate tracking
-        (uint256 ethPrice, uint256 currencyPrice) =
-            firstForFree.productPrice(0, productIds[0], address(0), 1, buyer, "");
-        assertEq(currencyPrice, USDC_PRICE); // No free units left on slicer 0
+        Price memory price = firstForFree.productPrice(0, productIds[0], 0, address(0), 1, buyer, "");
+        assertEq(price.currency, USDC_PRICE); // No free units left on slicer 0
 
-        (ethPrice, currencyPrice) = firstForFree.productPrice(1, productIds[0], address(0), 1, buyer, "");
-        assertEq(currencyPrice, 0); // Still has free units on slicer 1
+        price = firstForFree.productPrice(1, productIds[0], 0, address(0), 1, buyer, "");
+        assertEq(price.currency, 0); // Still has free units on slicer 1
     }
 
     function testEdgeCases() public {
@@ -497,15 +491,14 @@ contract FirstForFreeTest is RegistryProductPriceActionTest {
         );
 
         // Zero free units - should always pay
-        (uint256 ethPrice, uint256 currencyPrice) =
-            firstForFree.productPrice(slicerId, productIds[0], address(0), 1, buyer, "");
-        assertEq(ethPrice, 0);
-        assertEq(currencyPrice, USDC_PRICE);
+        Price memory price = firstForFree.productPrice(slicerId, productIds[0], 0, address(0), 1, buyer, "");
+        assertEq(price.eth, 0);
+        assertEq(price.currency, USDC_PRICE);
 
         // Zero quantity - should return zero
-        (ethPrice, currencyPrice) = firstForFree.productPrice(slicerId, productIds[0], address(0), 0, buyer, "");
-        assertEq(ethPrice, 0);
-        assertEq(currencyPrice, 0);
+        price = firstForFree.productPrice(slicerId, productIds[0], 0, address(0), 0, buyer, "");
+        assertEq(price.eth, 0);
+        assertEq(price.currency, 0);
     }
 
     function testConfigureProduct_UpdateExisting() public {

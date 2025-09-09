@@ -2,6 +2,7 @@
 pragma solidity ^0.8.30;
 
 // import {IProductsModule} from "@/utils/ProductAction.sol";
+import {Price} from "slice/types.sol";
 import {Test} from "forge-std/Test.sol";
 
 contract MockProductsModule is
@@ -11,16 +12,12 @@ contract MockProductsModule is
         isAllowed = account == vm.addr(uint256(keccak256(abi.encodePacked("productOwner"))));
     }
 
-    function basePrice(uint256, uint256, address, uint256)
-        external
-        pure
-        returns (uint256 ethPrice, uint256 currencyPrice)
-    {
-        ethPrice = 1e16;
-        currencyPrice = 100e18;
+    function basePrice(uint256, uint256, uint256, address, uint256) external pure returns (Price memory price) {
+        price.eth = 1e16;
+        price.currency = 100e18;
     }
 
-    function availableUnits(uint256, uint256) external pure returns (uint256 units, bool isInfinite) {
+    function stockUnits(uint256, uint256, uint256) external pure returns (uint256 units, bool isInfinite) {
         units = 6392;
         isInfinite = false;
     }
