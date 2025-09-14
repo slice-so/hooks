@@ -15,7 +15,12 @@ abstract contract HookRegistryTest is HookTest {
     }
 
     function testConfigureProduct_AccessControl() public {
-        vm.expectRevert(abi.encodeWithSelector(SliceContext.NotAuthorized.selector, PRODUCT_MANAGER_ROLE));
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                SliceContext.NotAuthorized.selector,
+                bytes32(uint256(1 << 1 | 1 << 4)) /* Role.ADMIN.getMask() | Role.PRODUCT_MANAGER.getMask() */
+            )
+        );
 
         IHookRegistry(hook).configureProduct(0, 0, "");
     }
