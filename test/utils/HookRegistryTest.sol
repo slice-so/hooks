@@ -6,6 +6,8 @@ import {IHookRegistry} from "@/utils/RegistryProductPrice.sol";
 import {MockProductsModule} from "./mocks/MockProductsModule.sol";
 import {SliceContext} from "@/utils/RegistryProductAction.sol";
 
+bytes32 constant PRODUCT_MANAGER_ROLE = bytes32(uint256(0x04));
+
 abstract contract HookRegistryTest is HookTest {
     function testParamsSchema() public view {
         string memory schema = IHookRegistry(hook).paramsSchema();
@@ -13,7 +15,8 @@ abstract contract HookRegistryTest is HookTest {
     }
 
     function testConfigureProduct_AccessControl() public {
-        vm.expectRevert(abi.encodeWithSelector(SliceContext.NotProductOwner.selector));
+        vm.expectRevert(abi.encodeWithSelector(SliceContext.NotAuthorized.selector, PRODUCT_MANAGER_ROLE));
+
         IHookRegistry(hook).configureProduct(0, 0, "");
     }
 
