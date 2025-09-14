@@ -10,7 +10,7 @@ remappings = [
   "slice/=dependencies/slice-0.0.9/",
   "@openzeppelin-4.8.0/=dependencies/@openzeppelin-contracts-4.8.0/",
   "@openzeppelin-upgradeable-4.8.0/=dependencies/@openzeppelin-contracts-upgradeable-4.8.0/",
-  "solmate-6.8.0/=dependencies/solmate-6.8.0/",
+  "solady-0.1.26/=dependencies/solady-0.1.26/",
   "@erc721a/=dependencies/erc721a-4.3.0/contracts/",
   "forge-std/=dependencies/forge-std-1.9.7/src/",
   "@test/=test/",
@@ -50,7 +50,7 @@ forge-std = "1.9.7"
 "@openzeppelin-contracts" = "4.8.0"
 "@openzeppelin-contracts-upgradeable" = "4.8.0"
 erc721a = "4.3.0"
-solmate = "6.8.0"
+solady = "0.1.26"
 
 [lint]
 ignore = ["test/**/*.sol","script/**/*.sol", "src/interfaces/*.sol", "src/utils/*.sol", "src/hooks/actions/actions.sol", "src/hooks/pricing/pricing.sol", "src/hooks/pricingActions/pricingActions.sol"]
