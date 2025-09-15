@@ -8,7 +8,7 @@ import {Test} from "forge-std/Test.sol";
 contract MockProductsModule is
     Test // , IProductsModule
 {
-    error NotAuthorized(bytes32 requiredRolesMask);
+    error NotAuthorized(bytes32 rolesMask);
 
     function checkRoles(uint256, bytes32, address account) public pure {
         if (account != vm.addr(uint256(keccak256(abi.encodePacked("productOwner"))))) {
