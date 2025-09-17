@@ -44,14 +44,14 @@ contract LinearVRGDAPrices is VRGDAPrices {
 
         /// Get product availability and isInfinite
         /// @dev available units is a uint32
-        (uint256 availableUnits, bool isInfinite) = PRODUCTS_MODULE.stockUnits(slicerId, productId, 0);
+        (uint256 stockUnits, bool isInfinite) = PRODUCTS_MODULE.stockUnits(slicerId, productId, 0);
 
         // Product must not have infinite availability
         require(!isInfinite, "NOT_FINITE_AVAILABILITY");
 
         // Set product params
         _productParams[slicerId][productId].startTime = uint40(block.timestamp);
-        _productParams[slicerId][productId].startUnits = uint32(availableUnits);
+        _productParams[slicerId][productId].startUnits = uint32(stockUnits);
         _productParams[slicerId][productId].decayConstant = int184(decayConstant);
 
         // Set currency params
@@ -83,10 +83,10 @@ contract LinearVRGDAPrices is VRGDAPrices {
         require(productParams.startTime != 0, "PRODUCT_UNSET");
 
         // Get available units
-        (uint256 availableUnits,) = PRODUCTS_MODULE.stockUnits(slicerId, productId, variantId);
+        (uint256 stockUnits,) = PRODUCTS_MODULE.stockUnits(slicerId, productId, variantId);
 
-        // Calculate sold units from availableUnits
-        uint256 soldUnits = productParams.startUnits - availableUnits;
+        // Calculate sold units from stockUnits
+        uint256 soldUnits = productParams.startUnits - stockUnits;
 
         // Set ethPrice or currencyPrice based on chosen currency
         if (currency == address(0)) {
