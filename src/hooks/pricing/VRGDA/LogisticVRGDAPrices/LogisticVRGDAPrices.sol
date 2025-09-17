@@ -52,14 +52,14 @@ contract LogisticVRGDAPrices is VRGDAPrices {
         require(decayConstant >= type(int184).min, "MIN_DECAY_CONSTANT_EXCEEDED");
 
         // Get product availability and isInfinite
-        (uint256 availableUnits, bool isInfinite) = PRODUCTS_MODULE.stockUnits(slicerId, productId, 0);
+        (uint256 stockUnits, bool isInfinite) = PRODUCTS_MODULE.stockUnits(slicerId, productId, 0);
 
         // Product must not have infinite availability
         require(!isInfinite, "NON_FINITE_AVAILABILITY");
 
         // Set product params
         _productParams[slicerId][productId].startTime = uint40(block.timestamp);
-        _productParams[slicerId][productId].startUnits = uint32(availableUnits);
+        _productParams[slicerId][productId].startUnits = uint32(stockUnits);
         _productParams[slicerId][productId].decayConstant = int184(decayConstant);
 
         // Set currency params
@@ -91,7 +91,7 @@ contract LogisticVRGDAPrices is VRGDAPrices {
         require(productParams.startTime != 0, "PRODUCT_UNSET");
 
         // Get available units
-        (uint256 availableUnits,) = PRODUCTS_MODULE.stockUnits(slicerId, productId, variantId);
+        (uint256 stockUnits,) = PRODUCTS_MODULE.stockUnits(slicerId, productId, variantId);
 
         // Set ethPrice or currencyPrice based on chosen currency
         if (currency == address(0)) {
@@ -100,7 +100,7 @@ contract LogisticVRGDAPrices is VRGDAPrices {
                 productParams.decayConstant,
                 toDaysWadUnsafe(block.timestamp - productParams.startTime),
                 toWadUnsafe(productParams.startUnits + 1),
-                productParams.startUnits - availableUnits,
+                productParams.startUnits - stockUnits,
                 pricingParams.timeScale,
                 pricingParams.min,
                 quantity
@@ -111,7 +111,7 @@ contract LogisticVRGDAPrices is VRGDAPrices {
                 productParams.decayConstant,
                 toDaysWadUnsafe(block.timestamp - productParams.startTime),
                 toWadUnsafe(productParams.startUnits + 1),
-                productParams.startUnits - availableUnits,
+                productParams.startUnits - stockUnits,
                 pricingParams.timeScale,
                 pricingParams.min,
                 quantity

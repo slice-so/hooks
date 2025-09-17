@@ -36,16 +36,14 @@ contract Allowlisted is RegistryProductAction {
      * @inheritdoc IProductAction
      * @dev Checks if the account is in the allowlist.
      */
-    function isPurchaseAllowed(
-        uint256 slicerId,
-        uint256 productId,
-        uint256,
-        address buyer,
-        uint256,
-        bytes memory buyerCustomData
-    ) public view override returns (bool isAllowed) {
-        // Get Merkle proof from buyerCustomData
-        bytes32[] memory proof = abi.decode(buyerCustomData, (bytes32[]));
+    function isPurchaseAllowed(uint256 slicerId, uint256 productId, uint256, address buyer, uint256, bytes memory data)
+        public
+        view
+        override
+        returns (bool isAllowed)
+    {
+        // Get Merkle proof from data
+        bytes32[] memory proof = abi.decode(data, (bytes32[]));
 
         uint256 leafValue = uint256(uint160(buyer));
 
