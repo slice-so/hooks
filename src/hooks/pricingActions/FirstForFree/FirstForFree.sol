@@ -48,10 +48,11 @@ contract FirstForFree is RegistryProductPriceAction {
         uint256 productId,
         uint256,
         address,
+        uint256,
         uint256 quantity,
         address buyer,
         bytes memory
-    ) public view override returns (Price memory price) {
+    ) public view override returns (uint256) {
         ProductParams memory productParams = usdcPrices[slicerId][productId];
 
         if (_isEligible(buyer, productParams.eligibleTokens)) {
@@ -59,16 +60,17 @@ contract FirstForFree is RegistryProductPriceAction {
             if (totalPurchases < productParams.freeUnits) {
                 unchecked {
                     uint256 freeUnitsLeft = productParams.freeUnits - totalPurchases;
+
                     if (quantity <= freeUnitsLeft) {
-                        return (Price(0, 0));
+                        return 0;
                     } else {
-                        return (Price(0, usdcPrices[slicerId][productId].usdcPrice * (quantity - freeUnitsLeft)));
+                        return usdcPrices[slicerId][productId].usdcPrice * (quantity - freeUnitsLeft);
                     }
                 }
             }
         }
 
-        return (Price(0, usdcPrices[slicerId][productId].usdcPrice * quantity));
+        return usdcPrices[slicerId][productId].usdcPrice * quantity;
     }
 
     /**
