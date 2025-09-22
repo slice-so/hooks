@@ -80,22 +80,16 @@ contract NFTDiscount is TieredDiscount {
         uint256,
         uint256,
         uint256,
-        address currency,
+        address,
         uint256 quantity,
         address buyer,
         bytes memory,
-        uint256 basePrice,
+        uint256 basePriceAmount,
         DiscountParams[] memory discountParams
-    ) internal view virtual override returns (Price memory price) {
+    ) internal view virtual override returns (uint256 price) {
         uint256 discount = _getHighestDiscount(discountParams, buyer);
 
-        uint256 amount = discount != 0 ? _getDiscountedPrice(basePrice, discount, quantity) : quantity * basePrice;
-
-        if (currency == address(0)) {
-            price.eth = amount;
-        } else {
-            price.currency = amount;
-        }
+        price = discount != 0 ? _getDiscountedPrice(basePriceAmount, discount, quantity) : quantity * basePriceAmount;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -156,13 +150,13 @@ contract NFTDiscount is TieredDiscount {
     /**
      * @notice Calculate price based on `discountType`
      *
-     * @param basePrice Base price of the product
+     * @param basePriceAmount Base price of the product
      * @param discount Discount value based on `discountType`
      * @param quantity Number of units purchased
      *
      * @return price of product inclusive of discount.
      */
-    function _getDiscountedPrice(uint256 basePrice, uint256 discount, uint256 quantity)
+    function _getDiscountedPrice(uint256 basePriceAmount, uint256 discount, uint256 quantity)
         internal
         pure
         virtual
@@ -174,6 +168,6 @@ contract NFTDiscount is TieredDiscount {
             k = 1e4 - discount;
         }
 
-        price = (basePrice * k * quantity) / 1e4;
+        price = (basePriceAmount * k * quantity) / 1e4;
     }
 }

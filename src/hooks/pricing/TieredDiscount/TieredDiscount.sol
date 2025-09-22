@@ -45,25 +45,14 @@ abstract contract TieredDiscount is RegistryProductPrice {
         uint256 productId,
         uint256 variantId,
         address currency,
+        uint256 basePrice,
         uint256 quantity,
         address buyer,
         bytes memory data
-    ) public view override returns (Price memory) {
-        Price memory basePrice = PRODUCTS_MODULE.basePrice(slicerId, productId, variantId, currency, quantity);
-
+    ) public view override returns (uint256) {
         DiscountParams[] memory discountParams = discounts[slicerId][productId];
 
-        return _productPrice(
-            slicerId,
-            productId,
-            variantId,
-            currency,
-            quantity,
-            buyer,
-            data,
-            currency == address(0) ? basePrice.eth : basePrice.currency,
-            discountParams
-        );
+        return _productPrice(slicerId, productId, variantId, currency, quantity, buyer, data, basePrice, discountParams);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -79,10 +68,10 @@ abstract contract TieredDiscount is RegistryProductPrice {
      * @param quantity Number of units purchased
      * @param buyer Address of the buyer.
      * @param data Data passed to the productPrice function.
-     * @param basePrice Base price of the product.
+     * @param basePrice Base price of the product in selected currency.
      * @param discountParams Array of discount parameters.
      *
-     * @return ethPrice and currencyPrice of product.
+     * @return Price of product in selected currency.
      */
     function _productPrice(
         uint256 slicerId,
@@ -94,5 +83,5 @@ abstract contract TieredDiscount is RegistryProductPrice {
         bytes memory data,
         uint256 basePrice,
         DiscountParams[] memory discountParams
-    ) internal view virtual returns (Price memory);
+    ) internal view virtual returns (uint256);
 }

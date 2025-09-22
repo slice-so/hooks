@@ -3,8 +3,7 @@ pragma solidity ^0.8.30;
 
 import {HookRegistry, IProductPrice, IHookRegistry, IProductsModule} from "@/utils/RegistryProductPrice.sol";
 import {wadLn, unsafeWadDiv, toDaysWadUnsafe} from "@/utils/math/SignedWadMath.sol";
-import {LinearProductParams} from "../types/LinearProductParams.sol";
-import {LinearVRGDAParams} from "../types/LinearVRGDAParams.sol";
+import {LinearProduct} from "../types/LinearProduct.sol";
 import {VRGDAPrices} from "../VRGDAPrices.sol";
 import {Price} from "slice/types/Price.sol";
 
@@ -17,7 +16,7 @@ contract LinearVRGDAPrices is VRGDAPrices {
     //////////////////////////////////////////////////////////////*/
 
     // Mapping from slicerId to productId to ProductParams
-    mapping(uint256 => mapping(uint256 => LinearProductParams)) private _productParams;
+    mapping(uint256 => mapping(uint256 => LinearProduct)) private _productParams;
 
     /*//////////////////////////////////////////////////////////////
         CONSTRUCTOR
@@ -34,8 +33,7 @@ contract LinearVRGDAPrices is VRGDAPrices {
      * @notice Set LinearVRGDAParams for a product.
      */
     function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) internal override {
-        (LinearVRGDAParams[] memory linearParams, int256 priceDecayPercent) =
-            abi.decode(params, (LinearVRGDAParams[], int256));
+        (int184 priceDecayPercent, uint16 min, int256 perTimeUnit) = abi.decode(params, (int184, uint16, int256));
 
         int256 decayConstant = wadLn(1e18 - priceDecayPercent);
         // The decay constant must be negative for VRGDAs to work.
@@ -43,25 +41,19 @@ contract LinearVRGDAPrices is VRGDAPrices {
         require(decayConstant >= type(int184).min, "MIN_DECAY_CONSTANT_EXCEEDED");
 
         /// Get product availability and isInfinite
-        /// @dev available units is a uint32
-        (uint256 stockUnits, bool isInfinite) = PRODUCTS_MODULE.stockUnits(slicerId, productId, 0);
+        (uint256 stockUnits_, bool isInfinite) = stockUnits(slicerId, productId, 0);
 
         // Product must not have infinite availability
         require(!isInfinite, "NOT_FINITE_AVAILABILITY");
 
         // Set product params
-        _productParams[slicerId][productId].startTime = uint40(block.timestamp);
-        _productParams[slicerId][productId].startUnits = uint32(stockUnits);
-        _productParams[slicerId][productId].decayConstant = int184(decayConstant);
-
-        // Set currency params
-        for (uint256 i; i < linearParams.length;) {
-            _productParams[slicerId][productId].pricingParams[linearParams[i].currency] = linearParams[i];
-
-            unchecked {
-                ++i;
-            }
-        }
+        _productParams[slicerId][productId] = LinearProduct({
+            startTime: uint40(block.timestamp),
+            startUnits: uint32(stockUnits_),
+            decayConstant: int184(decayConstant),
+            min: min,
+            perTimeUnit: perTimeUnit
+        });
     }
 
     /**
@@ -72,52 +64,38 @@ contract LinearVRGDAPrices is VRGDAPrices {
         uint256 productId,
         uint256 variantId,
         address currency,
+        uint256,
         uint256 quantity,
         address,
         bytes memory
-    ) public view override returns (Price memory price) {
-        // Add reference for product and pricing params
-        LinearProductParams storage productParams = _productParams[slicerId][productId];
-        LinearVRGDAParams memory pricingParams = productParams.pricingParams[currency];
+    ) public view override returns (uint256 price) {
+        LinearProduct storage productParams = _productParams[slicerId][productId];
 
         require(productParams.startTime != 0, "PRODUCT_UNSET");
 
-        // Get available units
-        (uint256 stockUnits,) = PRODUCTS_MODULE.stockUnits(slicerId, productId, variantId);
+        // Get available units and base price
+        (uint256 stockUnits_,) = stockUnits(slicerId, productId, variantId);
+        uint256 basePrice_ = basePrice(slicerId, productId, variantId, currency, 1);
 
         // Calculate sold units from stockUnits
-        uint256 soldUnits = productParams.startUnits - stockUnits;
+        uint256 soldUnits = productParams.startUnits - stockUnits_;
 
-        // Set ethPrice or currencyPrice based on chosen currency
-        if (currency == address(0)) {
-            price.eth = getAdjustedVRGDAPrice(
-                pricingParams.targetPrice,
-                productParams.decayConstant,
-                toDaysWadUnsafe(block.timestamp - productParams.startTime),
-                soldUnits,
-                pricingParams.perTimeUnit,
-                pricingParams.min,
-                quantity
-            );
-        } else {
-            price.currency = getAdjustedVRGDAPrice(
-                pricingParams.targetPrice,
-                productParams.decayConstant,
-                toDaysWadUnsafe(block.timestamp - productParams.startTime),
-                soldUnits,
-                pricingParams.perTimeUnit,
-                pricingParams.min,
-                quantity
-            );
-        }
+        price = getAdjustedVRGDAPrice(
+            int256(basePrice_),
+            productParams.decayConstant,
+            toDaysWadUnsafe(block.timestamp - productParams.startTime),
+            soldUnits,
+            productParams.perTimeUnit,
+            basePrice_ * productParams.min / 1e5,
+            quantity
+        );
     }
 
     /**
      * @inheritdoc IHookRegistry
      */
     function paramsSchema() external pure override returns (string memory) {
-        return
-        "(address currency,int128 targetPrice,uint128 min,int256 perTimeUnit)[] linearParams,int256 priceDecayPercent";
+        return "int184 priceDecayPercent,uint16 min,int256 perTimeUnit";
     }
 
     /*//////////////////////////////////////////////////////////////
