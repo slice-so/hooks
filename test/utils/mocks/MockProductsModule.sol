@@ -12,7 +12,7 @@ contract MockProductsModule is
 
     function checkRoles(uint256, bytes32, address account) public pure {
         if (account != vm.addr(uint256(keccak256(abi.encodePacked("productOwner"))))) {
-            revert NotAuthorized(bytes32(uint256(1 << 1 | 1 << 4)));
+            revert NotAuthorized(bytes32(uint256(1 << 1 | 1 << 3)));
         }
     }
 
