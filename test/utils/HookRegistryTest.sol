@@ -18,7 +18,7 @@ abstract contract HookRegistryTest is HookTest {
         vm.expectRevert(
             abi.encodeWithSelector(
                 SliceContext.NotAuthorized.selector,
-                bytes32(uint256(1 << 1 | 1 << 4)) /* Role.ADMIN.getMask() | Role.PRODUCT_MANAGER.getMask() */
+                bytes32(uint256(1 << 1 | 1 << 3)) /* Role.ADMIN.getMask() | Role.PRODUCT_MANAGER.getMask() */
             )
         );
 
