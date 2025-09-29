@@ -3,9 +3,7 @@ pragma solidity ^0.8.30;
 
 import {RegistryProductPriceTest} from "@test/utils/RegistryProductPriceTest.sol";
 import {unsafeDiv, wadLn, toWadUnsafe, toDaysWadUnsafe, fromDaysWadUnsafe} from "@/utils/math/SignedWadMath.sol";
-
 import "./mocks/MockLogisticVRGDAPrices.sol";
-import "forge-std/console2.sol";
 
 uint256 constant ONE_THOUSAND_YEARS = 356 days * 1000;
 

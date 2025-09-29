@@ -3,13 +3,14 @@ pragma solidity ^0.8.30;
 
 import {RegistryProductActionTest} from "@test/utils/RegistryProductActionTest.sol";
 import {MockNFTGated} from "./mocks/MockNFTGated.sol";
-import {NFTGates, NFTGate, NftType} from "@/hooks/actions/NFTGated/NFTGated.sol";
+import {NFTGate, NftType} from "@/hooks/actions/NFTGated/NFTGated.sol";
+import {NFTGates} from "@/hooks/actions/NFTGated/types/NFTGate.sol";
 import {MockERC721} from "@test/utils/mocks/MockERC721.sol";
 import {MockERC1155} from "@test/utils/mocks/MockERC1155.sol";
 
-import {console2} from "forge-std/console2.sol";
-
 uint256 constant slicerId = 0;
+uint256 constant variantId = 0;
+uint256 constant variantIdAlt = 1;
 
 contract NFTGatedTest is RegistryProductActionTest {
     MockNFTGated nftGated;
@@ -17,7 +18,6 @@ contract NFTGatedTest is RegistryProductActionTest {
     MockERC1155 nft1155 = new MockERC1155();
 
     uint256[] productIds = [1, 2, 3, 4];
-    uint256 variantId = 0;
 
     function setUp() public {
         nftGated = new MockNFTGated(PRODUCTS_MODULE);
@@ -29,7 +29,7 @@ contract NFTGatedTest is RegistryProductActionTest {
 
         vm.startPrank(productOwner);
         for (uint256 i = 0; i < productIds.length; i++) {
-            nftGated.configureProduct(slicerId, productIds[i], variantId, abi.encode(nftGates[i]));
+            nftGated.configureProduct(slicerId, productIds[i], variantId, encodeNFTGates(nftGates[i]));
             assertEq(nftGated.nftGates(slicerId, productIds[i], variantId), nftGates[i].minOwned);
         }
         vm.stopPrank();
@@ -40,12 +40,12 @@ contract NFTGatedTest is RegistryProductActionTest {
 
         vm.startPrank(productOwner);
 
-        nftGated.configureProduct(slicerId, productIds[2], variantId, abi.encode(nftGates[2]));
+        nftGated.configureProduct(slicerId, productIds[2], variantId, encodeNFTGates(nftGates[2]));
         assertEq(nftGated.gates(slicerId, productIds[2], variantId)[0].nft, address(nft721));
         assertEq(nftGated.gates(slicerId, productIds[2], variantId)[1].nft, address(nft1155));
         assertEq(nftGated.gates(slicerId, productIds[2], variantId).length, 2);
 
-        nftGated.configureProduct(slicerId, productIds[2], variantId, abi.encode(nftGates[1]));
+        nftGated.configureProduct(slicerId, productIds[2], variantId, encodeNFTGates(nftGates[1]));
         assertEq(nftGated.gates(slicerId, productIds[2], variantId)[0].nft, address(nft1155));
         assertEq(nftGated.gates(slicerId, productIds[2], variantId).length, 1);
 
@@ -57,7 +57,7 @@ contract NFTGatedTest is RegistryProductActionTest {
 
         vm.startPrank(productOwner);
         for (uint256 i = 0; i < productIds.length; i++) {
-            nftGated.configureProduct(slicerId, productIds[i], variantId, abi.encode(nftGates[i]));
+            nftGated.configureProduct(slicerId, productIds[i], variantId, encodeNFTGates(nftGates[i]));
         }
         vm.stopPrank();
 
@@ -84,6 +84,31 @@ contract NFTGatedTest is RegistryProductActionTest {
         assertTrue(nftGated.isPurchaseAllowed(slicerId, productIds[1], variantId, buyer3, 0, ""));
         assertTrue(nftGated.isPurchaseAllowed(slicerId, productIds[2], variantId, buyer3, 0, ""));
         assertFalse(nftGated.isPurchaseAllowed(slicerId, productIds[3], variantId, buyer3, 0, ""));
+    }
+
+    function testIsPurchaseAllowed_variantSpecificConfiguration() public {
+        NFTGate[] memory productVariantGates = new NFTGate[](1);
+        productVariantGates[0] = NFTGate(address(nft721), NftType.ERC721, 1, 1);
+        NFTGate[] memory variantSpecificGates = new NFTGate[](1);
+        variantSpecificGates[0] = NFTGate(address(nft1155), NftType.ERC1155, 1, 1);
+
+        vm.startPrank(productOwner);
+        nftGated.configureProduct(slicerId, productIds[0], variantId, encodeNFTGates(NFTGates(productVariantGates, 1)));
+        nftGated.configureProduct(
+            slicerId, productIds[0], variantIdAlt, encodeNFTGates(NFTGates(variantSpecificGates, 1))
+        );
+        vm.stopPrank();
+
+        nft721.mint(buyer);
+        assertTrue(nftGated.isPurchaseAllowed(slicerId, productIds[0], variantId, buyer, 0, ""));
+        assertFalse(nftGated.isPurchaseAllowed(slicerId, productIds[0], variantIdAlt, buyer, 0, ""));
+
+        nft1155.mint(buyer);
+        assertTrue(nftGated.isPurchaseAllowed(slicerId, productIds[0], variantIdAlt, buyer, 0, ""));
+
+        nft1155.mint(buyer2);
+        assertFalse(nftGated.isPurchaseAllowed(slicerId, productIds[0], variantId, buyer2, 0, ""));
+        assertTrue(nftGated.isPurchaseAllowed(slicerId, productIds[0], variantIdAlt, buyer2, 0, ""));
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -117,5 +142,9 @@ contract NFTGatedTest is RegistryProductActionTest {
         gates4[0] = gate721;
         gates4[1] = gate1155;
         nftGates[3] = NFTGates(gates4, 2);
+    }
+
+    function encodeNFTGates(NFTGates memory nftGates_) internal pure returns (bytes memory) {
+        return abi.encode(nftGates_.gates, nftGates_.minOwned);
     }
 }

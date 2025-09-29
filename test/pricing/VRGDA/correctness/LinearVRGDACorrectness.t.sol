@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
-import {console} from "forge-std/console.sol";
 import {Vm} from "forge-std/Vm.sol";
 import {RegistryProductPriceTest} from "@test/utils/RegistryProductPriceTest.sol";
 import {wadLn, toWadUnsafe} from "@/utils/math/SignedWadMath.sol";
@@ -45,9 +44,6 @@ contract LinearVRGDACorrectnessTest is RegistryProductPriceTest {
 
         uint256 expectedPrice =
             calculatePrice(targetPriceConstant, priceDecayPercent, perTimeUnit, timeSinceStart, numSold);
-
-        console.log("actual price", actualPrice);
-        console.log("expected price", expectedPrice);
 
         // Check approximate equality.
         assertApproxEqAbs(expectedPrice, actualPrice, 0.00001e18);

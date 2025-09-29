@@ -8,8 +8,6 @@ import {TokenCondition, TokenType} from "@/hooks/pricingActions/FirstForFree/typ
 import {ITokenERC1155} from "@/hooks/pricingActions/FirstForFree/utils/ITokenERC1155.sol";
 import {MockERC721} from "@test/utils/mocks/MockERC721.sol";
 
-import {console2} from "forge-std/console2.sol";
-
 contract MockERC1155Token is ITokenERC1155 {
     mapping(address => mapping(uint256 => uint256)) public balanceOf;
     mapping(address => uint256) public mintedAmounts;
@@ -32,10 +30,19 @@ contract FirstForFreeTest is RegistryProductPriceActionTest {
 
     uint256 slicerId = 0;
     uint256[] productIds = [1, 2, 3, 4];
-    uint256 variantId = 0;
+    uint256 constant variantId = 0;
+    uint256 constant variantIdAlt = 1;
 
     function _basePrice(uint256 slicerId_, uint256 productId_, uint256 quantity) internal view returns (uint256) {
-        return PRODUCTS_MODULE.basePrice(slicerId_, productId_, variantId, ETH, quantity);
+        return _basePriceForVariant(slicerId_, productId_, variantId, quantity);
+    }
+
+    function _basePriceForVariant(uint256 slicerId_, uint256 productId_, uint256 variantId_, uint256 quantity)
+        internal
+        view
+        returns (uint256)
+    {
+        return PRODUCTS_MODULE.basePrice(slicerId_, productId_, variantId_, ETH, quantity);
     }
 
     function setUp() public {
@@ -160,6 +167,31 @@ contract FirstForFreeTest is RegistryProductPriceActionTest {
         assertEq(freeUnits4, 5);
     }
 
+    function testConfigureProduct_variantSpecific() public {
+        TokenCondition[] memory noConditions = new TokenCondition[](0);
+
+        vm.startPrank(productOwner);
+        firstForFree.configureProduct(
+            slicerId, productIds[0], variantId, abi.encode(noConditions, address(0), uint88(0), uint8(1))
+        );
+        firstForFree.configureProduct(
+            slicerId, productIds[0], variantIdAlt, abi.encode(noConditions, address(mockMintToken), uint88(7), uint8(2))
+        );
+        vm.stopPrank();
+
+        (address mintTokenBase, uint88 mintTokenIdBase, uint8 freeUnitsBase) =
+            firstForFree.productParams(slicerId, productIds[0], variantId);
+        assertEq(mintTokenBase, address(0));
+        assertEq(mintTokenIdBase, 0);
+        assertEq(freeUnitsBase, 1);
+
+        (address mintTokenAlt, uint88 mintTokenIdAlt, uint8 freeUnitsAlt) =
+            firstForFree.productParams(slicerId, productIds[0], variantIdAlt);
+        assertEq(mintTokenAlt, address(mockMintToken));
+        assertEq(mintTokenIdAlt, 7);
+        assertEq(freeUnitsAlt, 2);
+    }
+
     function testProductPrice_NoConditions() public {
         vm.prank(productOwner);
 
@@ -212,6 +244,52 @@ contract FirstForFreeTest is RegistryProductPriceActionTest {
         );
         price = firstForFree.productPrice(slicerId, productIds[0], variantId, ETH, basePrice, 1, buyer, "");
         assertEq(price, basePrice);
+    }
+
+    function testProductPrice_variantSpecificConfiguration() public {
+        TokenCondition[] memory noConditions = new TokenCondition[](0);
+
+        vm.startPrank(productOwner);
+        firstForFree.configureProduct(
+            slicerId, productIds[0], variantId, abi.encode(noConditions, address(0), uint88(0), uint8(1))
+        );
+        firstForFree.configureProduct(
+            slicerId, productIds[0], variantIdAlt, abi.encode(noConditions, address(0), uint88(0), uint8(2))
+        );
+        vm.stopPrank();
+
+        uint256 basePriceVariant0 = _basePrice(slicerId, productIds[0], 1);
+        uint256 priceVariant0 =
+            firstForFree.productPrice(slicerId, productIds[0], variantId, ETH, basePriceVariant0, 1, buyer, "");
+        assertEq(priceVariant0, 0);
+
+        vm.mockCall(
+            address(PRODUCTS_MODULE),
+            abi.encodeWithSelector(PRODUCTS_MODULE.getPurchases.selector, buyer, slicerId, productIds[0], variantId),
+            abi.encode(1, "")
+        );
+        priceVariant0 =
+            firstForFree.productPrice(slicerId, productIds[0], variantId, ETH, basePriceVariant0, 1, buyer, "");
+        assertEq(priceVariant0, basePriceVariant0);
+
+        uint256 basePriceVariantAlt = _basePriceForVariant(slicerId, productIds[0], variantIdAlt, 1);
+        uint256 priceVariantAlt =
+            firstForFree.productPrice(slicerId, productIds[0], variantIdAlt, ETH, basePriceVariantAlt, 1, buyer, "");
+        assertEq(priceVariantAlt, 0);
+
+        uint256 twoUnitBasePriceAlt = _basePriceForVariant(slicerId, productIds[0], variantIdAlt, 2);
+        priceVariantAlt =
+            firstForFree.productPrice(slicerId, productIds[0], variantIdAlt, ETH, twoUnitBasePriceAlt, 2, buyer, "");
+        assertEq(priceVariantAlt, 0);
+
+        vm.mockCall(
+            address(PRODUCTS_MODULE),
+            abi.encodeWithSelector(PRODUCTS_MODULE.getPurchases.selector, buyer, slicerId, productIds[0], variantIdAlt),
+            abi.encode(2, "")
+        );
+        priceVariantAlt =
+            firstForFree.productPrice(slicerId, productIds[0], variantIdAlt, ETH, basePriceVariantAlt, 1, buyer, "");
+        assertEq(priceVariantAlt, basePriceVariantAlt);
     }
 
     function testProductPrice_ERC721Condition() public {

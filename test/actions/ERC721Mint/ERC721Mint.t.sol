@@ -6,10 +6,9 @@ import {ERC721Mint} from "@/hooks/actions/ERC721Mint/ERC721Mint.sol";
 import {ERC721Data} from "@/hooks/actions/ERC721Mint/types/ERC721Data.sol";
 import {ERC721Mint_BaseToken, MAX_ROYALTY} from "@/hooks/actions/ERC721Mint/utils/ERC721Mint_BaseToken.sol";
 
-import {console2} from "forge-std/console2.sol";
-
 uint256 constant slicerId = 0;
 uint256 constant variantId = 0;
+uint256 constant variantIdAlt = 1;
 
 contract ERC721MintTest is RegistryProductActionTest {
     ERC721Mint erc721Mint;
@@ -396,6 +395,63 @@ contract ERC721MintTest is RegistryProductActionTest {
 
         // Test token URI for product 2 (fallback tokenURI)
         assertEq(token2.tokenURI(0), "https://single-token.json");
+    }
+
+    function testVariantSpecificTokenConfiguration() public {
+        vm.startPrank(productOwner);
+
+        erc721Mint.configureProduct(
+            slicerId,
+            productIds[0],
+            variantId,
+            abi.encode(
+                "Variant Zero", // name
+                "V0", // symbol
+                productOwner, // royaltyReceiver
+                500, // royaltyFraction (5%)
+                "ipfs://base0/", // baseURI
+                "", // tokenURI
+                true, // revertOnMaxSupplyReached
+                100 // maxSupply
+            )
+        );
+
+        erc721Mint.configureProduct(
+            slicerId,
+            productIds[0],
+            variantIdAlt,
+            abi.encode(
+                "Variant One", // name
+                "V1", // symbol
+                buyer, // royaltyReceiver
+                0, // royaltyFraction (0%)
+                "", // baseURI
+                "https://static.example/token.json", // tokenURI
+                false, // revertOnMaxSupplyReached
+                0 // maxSupply (unlimited)
+            )
+        );
+
+        vm.stopPrank();
+
+        (ERC721Mint_BaseToken productToken, bool revertProduct) =
+            erc721Mint.tokenData(slicerId, productIds[0], variantId);
+        (ERC721Mint_BaseToken variantToken, bool revertVariant) =
+            erc721Mint.tokenData(slicerId, productIds[0], variantIdAlt);
+
+        assertTrue(address(productToken) != address(variantToken));
+        assertTrue(revertProduct);
+        assertFalse(revertVariant);
+        assertEq(productToken.royaltyReceiver(), productOwner);
+        assertEq(variantToken.royaltyReceiver(), buyer);
+        assertEq(productToken.baseURI_(), "ipfs://base0/");
+        assertEq(variantToken.tokenURI_(), "https://static.example/token.json");
+
+        vm.prank(address(PRODUCTS_MODULE));
+        erc721Mint.onProductPurchase(slicerId, productIds[0], variantIdAlt, buyer2, 2, "");
+
+        assertEq(variantToken.balanceOf(buyer2), 2);
+        assertEq(productToken.balanceOf(buyer2), 0);
     }
 
     function testRoyaltyInfo() public {
