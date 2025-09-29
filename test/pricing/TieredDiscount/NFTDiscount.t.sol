@@ -2,7 +2,6 @@
 pragma solidity ^0.8.30;
 
 import {RegistryProductPriceTest} from "@test/utils/RegistryProductPriceTest.sol";
-import {console2} from "forge-std/console2.sol";
 import {
     IProductsModule,
     NFTDiscount,

@@ -9,6 +9,7 @@ import {IERC20, MockERC20} from "@test/utils/mocks/MockERC20.sol";
 uint256 constant slicerId = 0;
 uint256 constant productId = 1;
 uint256 constant variantId = 0;
+uint256 constant variantIdAlt = 1;
 
 contract ERC20GatedTest is RegistryProductActionTest {
     MockERC20Gated erc20Gated;
@@ -69,5 +70,37 @@ contract ERC20GatedTest is RegistryProductActionTest {
 
         token.mint(buyer, 100);
         assertTrue(erc20Gated.isPurchaseAllowed(slicerId, productId, variantId, buyer, 0, ""));
+    }
+
+    function testIsPurchaseAllowed_variantSpecificConfiguration() public {
+        ERC20Gate[] memory productGates = new ERC20Gate[](1);
+        productGates[0] = ERC20Gate(token, 100);
+
+        ERC20Gate[] memory variantGates = new ERC20Gate[](1);
+        variantGates[0] = ERC20Gate(token2, 200);
+
+        vm.startPrank(productOwner);
+        erc20Gated.configureProduct(slicerId, productId, variantId, abi.encode(productGates));
+        erc20Gated.configureProduct(slicerId, productId, variantIdAlt, abi.encode(variantGates));
+        vm.stopPrank();
+
+        assertFalse(erc20Gated.isPurchaseAllowed(slicerId, productId, variantId, buyer, 0, ""));
+        assertFalse(erc20Gated.isPurchaseAllowed(slicerId, productId, variantIdAlt, buyer, 0, ""));
+
+        token.mint(buyer, 100);
+        assertTrue(erc20Gated.isPurchaseAllowed(slicerId, productId, variantId, buyer, 0, ""));
+        // Variant gate still unmet as it requires a different token
+        assertFalse(erc20Gated.isPurchaseAllowed(slicerId, productId, variantIdAlt, buyer, 0, ""));
+
+        token2.mint(buyer, 200);
+        assertTrue(erc20Gated.isPurchaseAllowed(slicerId, productId, variantIdAlt, buyer, 0, ""));
+
+        (IERC20 tokenAddrDefault, uint256 amountDefault) = erc20Gated.tokenGates(slicerId, productId, variantId, 0);
+        (IERC20 tokenAddrVariant, uint256 amountVariant) = erc20Gated.tokenGates(slicerId, productId, variantIdAlt, 0);
+
+        assertEq(address(tokenAddrDefault), address(token));
+        assertEq(amountDefault, 100);
+        assertEq(address(tokenAddrVariant), address(token2));
+        assertEq(amountVariant, 200);
     }
 }

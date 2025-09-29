@@ -6,10 +6,9 @@ import {ERC20Mint} from "@/hooks/actions/ERC20Mint/ERC20Mint.sol";
 import {ERC20Data} from "@/hooks/actions/ERC20Mint/types/ERC20Data.sol";
 import {ERC20Mint_BaseToken} from "@/hooks/actions/ERC20Mint/utils/ERC20Mint_BaseToken.sol";
 
-import {console2} from "forge-std/console2.sol";
-
 uint256 constant slicerId = 0;
 uint256 constant variantId = 0;
+uint256 constant variantIdAlt = 1;
 
 contract ERC20MintTest is RegistryProductActionTest {
     ERC20Mint erc20Mint;
@@ -362,5 +361,62 @@ contract ERC20MintTest is RegistryProductActionTest {
         vm.expectRevert(RegistryProductAction.NotAllowed.selector);
         vm.prank(address(PRODUCTS_MODULE));
         erc20Mint.onProductPurchase(slicerId, productIds[0], variantId, buyer, 1, "");
+    }
+
+    function testVariantSpecificTokenConfiguration() public {
+        vm.startPrank(productOwner);
+
+        erc20Mint.configureProduct(
+            slicerId,
+            productIds[0],
+            variantId,
+            abi.encode(
+                "Product Token", // name
+                "PT0", // symbol
+                0, // premintAmount
+                address(0), // premintReceiver
+                true, // revertOnMaxSupplyReached
+                1000, // maxSupply
+                10 // tokensPerUnit
+            )
+        );
+
+        erc20Mint.configureProduct(
+            slicerId,
+            productIds[0],
+            variantIdAlt,
+            abi.encode(
+                "Variant Token", // name
+                "VT1", // symbol
+                0, // premintAmount
+                address(0), // premintReceiver
+                false, // revertOnMaxSupplyReached
+                0, // maxSupply (unlimited)
+                5 // tokensPerUnit
+            )
+        );
+
+        vm.stopPrank();
+
+        (ERC20Mint_BaseToken productToken, bool revertProduct, uint256 tokensPerUnitProduct) =
+            erc20Mint.tokenData(slicerId, productIds[0], variantId);
+        (ERC20Mint_BaseToken variantToken, bool revertVariant, uint256 tokensPerUnitVariant) =
+            erc20Mint.tokenData(slicerId, productIds[0], variantIdAlt);
+
+        assertTrue(address(productToken) != address(variantToken));
+        assertTrue(revertProduct);
+        assertFalse(revertVariant);
+        assertEq(tokensPerUnitProduct, 10);
+        assertEq(tokensPerUnitVariant, 5);
+
+        vm.prank(address(PRODUCTS_MODULE));
+        erc20Mint.onProductPurchase(slicerId, productIds[0], variantId, buyer, 2, "");
+
+        vm.prank(address(PRODUCTS_MODULE));
+        erc20Mint.onProductPurchase(slicerId, productIds[0], variantIdAlt, buyer2, 3, "");
+
+        assertEq(productToken.balanceOf(buyer), 20);
+        assertEq(variantToken.balanceOf(buyer2), 15);
+        assertEq(variantToken.balanceOf(buyer), 0);
     }
 }
