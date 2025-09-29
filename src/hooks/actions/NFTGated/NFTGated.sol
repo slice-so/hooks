@@ -77,13 +77,13 @@ contract NFTGated is RegistryProductAction {
         internal
         override
     {
-        (NFTGates memory nftGates_) = abi.decode(params, (NFTGates));
+        (NFTGate[] memory gates, uint256 minOwned) = abi.decode(params, (NFTGate[], uint256));
 
         delete nftGates[slicerId][productId][variantId].gates;
 
-        nftGates[slicerId][productId][variantId].minOwned = nftGates_.minOwned;
-        for (uint256 i = 0; i < nftGates_.gates.length; i++) {
-            nftGates[slicerId][productId][variantId].gates.push(nftGates_.gates[i]);
+        nftGates[slicerId][productId][variantId].minOwned = minOwned;
+        for (uint256 i = 0; i < gates.length; i++) {
+            nftGates[slicerId][productId][variantId].gates.push(gates[i]);
         }
     }
 
@@ -91,6 +91,6 @@ contract NFTGated is RegistryProductAction {
      * @inheritdoc IHookRegistry
      */
     function configureProductSchema() external pure override returns (string memory) {
-        return "(address nft,uint8 nftType,uint80 id,uint8 minQuantity)[] nftGates,uint256 minOwned";
+        return "(address nft,uint8 nftType,uint80 id,uint8 minQuantity)[] gates,uint256 minOwned";
     }
 }
