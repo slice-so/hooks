@@ -20,13 +20,32 @@ contract MockProductsModule is
         isAllowed = account == vm.addr(uint256(keccak256(abi.encodePacked("productOwner"))));
     }
 
-    function basePrice(uint256, uint256, uint256, address, uint256) external pure returns (Price memory price) {
-        price.eth = 1e16;
-        price.currency = 100e18;
+    function basePrice(uint256, uint256, uint256, address currency, uint256 quantity)
+        external
+        pure
+        returns (uint256 amount)
+    {
+        if (currency == address(0)) {
+            amount = 1e16 * quantity;
+        } else {
+            // USDC
+            amount = 100e6 * quantity;
+        }
     }
 
     function stockUnits(uint256, uint256, uint256) external pure returns (uint256 units, bool isInfinite) {
         units = 6392;
         isInfinite = false;
     }
+
+    function getPurchases(address, uint256, uint256, uint256)
+        external
+        pure
+        returns (uint256 purchasedUnits, bytes memory purchaseData)
+    {
+        purchasedUnits = 0;
+        purchaseData = "";
+    }
+
+    function productExists(uint256 slicerId, uint256 productId) external view {}
 }

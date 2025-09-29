@@ -9,6 +9,7 @@ import {ERC20Mint_BaseToken} from "@/hooks/actions/ERC20Mint/utils/ERC20Mint_Bas
 import {console2} from "forge-std/console2.sol";
 
 uint256 constant slicerId = 0;
+uint256 constant variantId = 0;
 
 contract ERC20MintTest is RegistryProductActionTest {
     ERC20Mint erc20Mint;
@@ -27,6 +28,7 @@ contract ERC20MintTest is RegistryProductActionTest {
         erc20Mint.configureProduct(
             slicerId,
             productIds[0],
+            variantId,
             abi.encode(
                 "Test Token 1", // name
                 "TT1", // symbol
@@ -42,6 +44,7 @@ contract ERC20MintTest is RegistryProductActionTest {
         erc20Mint.configureProduct(
             slicerId,
             productIds[1],
+            variantId,
             abi.encode(
                 "Test Token 2", // name
                 "TT2", // symbol
@@ -57,6 +60,7 @@ contract ERC20MintTest is RegistryProductActionTest {
         erc20Mint.configureProduct(
             slicerId,
             productIds[2],
+            variantId,
             abi.encode(
                 "Test Token 3", // name
                 "TT3", // symbol
@@ -72,7 +76,7 @@ contract ERC20MintTest is RegistryProductActionTest {
 
         // Verify tokenData is set correctly
         (ERC20Mint_BaseToken token1, bool revertOnMaxSupply1, uint256 tokensPerUnit1) =
-            erc20Mint.tokenData(slicerId, productIds[0]);
+            erc20Mint.tokenData(slicerId, productIds[0], variantId);
         assertEq(revertOnMaxSupply1, true);
         assertEq(tokensPerUnit1, 100);
         assertEq(token1.name(), "Test Token 1");
@@ -82,7 +86,7 @@ contract ERC20MintTest is RegistryProductActionTest {
         assertEq(token1.balanceOf(productOwner), 1000);
 
         (ERC20Mint_BaseToken token2, bool revertOnMaxSupply2, uint256 tokensPerUnit2) =
-            erc20Mint.tokenData(slicerId, productIds[1]);
+            erc20Mint.tokenData(slicerId, productIds[1], variantId);
         assertEq(revertOnMaxSupply2, false);
         assertEq(tokensPerUnit2, 50);
         assertEq(token2.name(), "Test Token 2");
@@ -91,7 +95,7 @@ contract ERC20MintTest is RegistryProductActionTest {
         assertEq(token2.totalSupply(), 0); // no premint
 
         (ERC20Mint_BaseToken token3, bool revertOnMaxSupply3, uint256 tokensPerUnit3) =
-            erc20Mint.tokenData(slicerId, productIds[2]);
+            erc20Mint.tokenData(slicerId, productIds[2], variantId);
         assertEq(revertOnMaxSupply3, true);
         assertEq(tokensPerUnit3, 1);
         assertEq(token3.totalSupply(), 500); // premint amount
@@ -105,6 +109,7 @@ contract ERC20MintTest is RegistryProductActionTest {
         erc20Mint.configureProduct(
             slicerId,
             productIds[0],
+            variantId,
             abi.encode(
                 "Test Token", // name
                 "TT", // symbol
@@ -116,13 +121,14 @@ contract ERC20MintTest is RegistryProductActionTest {
             )
         );
 
-        (ERC20Mint_BaseToken token1,,) = erc20Mint.tokenData(slicerId, productIds[0]);
+        (ERC20Mint_BaseToken token1,,) = erc20Mint.tokenData(slicerId, productIds[0], variantId);
         address tokenAddress = address(token1);
 
         // Second configuration - should update existing token
         erc20Mint.configureProduct(
             slicerId,
             productIds[0],
+            variantId,
             abi.encode(
                 "Updated Token", // name (ignored for existing token)
                 "UT", // symbol (ignored for existing token)
@@ -135,7 +141,7 @@ contract ERC20MintTest is RegistryProductActionTest {
         );
 
         (ERC20Mint_BaseToken token2, bool revertOnMaxSupply2, uint256 tokensPerUnit2) =
-            erc20Mint.tokenData(slicerId, productIds[0]);
+            erc20Mint.tokenData(slicerId, productIds[0], variantId);
 
         // Token address should be the same
         assertEq(address(token2), tokenAddress);
@@ -157,6 +163,7 @@ contract ERC20MintTest is RegistryProductActionTest {
         erc20Mint.configureProduct(
             slicerId,
             productIds[0],
+            variantId,
             abi.encode(
                 "Test Token", // name
                 "TT", // symbol
@@ -178,6 +185,7 @@ contract ERC20MintTest is RegistryProductActionTest {
         erc20Mint.configureProduct(
             slicerId,
             productIds[0],
+            variantId,
             abi.encode(
                 "Test Token", // name
                 "TT", // symbol
@@ -193,6 +201,7 @@ contract ERC20MintTest is RegistryProductActionTest {
         erc20Mint.configureProduct(
             slicerId,
             productIds[1],
+            variantId,
             abi.encode(
                 "Test Token 2", // name
                 "TT2", // symbol
@@ -228,6 +237,7 @@ contract ERC20MintTest is RegistryProductActionTest {
         erc20Mint.configureProduct(
             slicerId,
             productIds[0],
+            variantId,
             abi.encode(
                 "Test Token 1", // name
                 "TT1", // symbol
@@ -242,6 +252,7 @@ contract ERC20MintTest is RegistryProductActionTest {
         erc20Mint.configureProduct(
             slicerId,
             productIds[1],
+            variantId,
             abi.encode(
                 "Test Token 2", // name
                 "TT2", // symbol
@@ -255,15 +266,15 @@ contract ERC20MintTest is RegistryProductActionTest {
 
         vm.stopPrank();
 
-        (ERC20Mint_BaseToken token1,,) = erc20Mint.tokenData(slicerId, productIds[0]);
-        (ERC20Mint_BaseToken token2,,) = erc20Mint.tokenData(slicerId, productIds[1]);
+        (ERC20Mint_BaseToken token1,,) = erc20Mint.tokenData(slicerId, productIds[0], variantId);
+        (ERC20Mint_BaseToken token2,,) = erc20Mint.tokenData(slicerId, productIds[1], variantId);
 
         // Test minting for product 1
         uint256 initialBalance1 = token1.balanceOf(buyer);
         uint256 initialSupply1 = token1.totalSupply();
 
         vm.prank(address(PRODUCTS_MODULE));
-        erc20Mint.onProductPurchase(slicerId, productIds[0], 0, buyer, 3, "");
+        erc20Mint.onProductPurchase(slicerId, productIds[0], variantId, buyer, 3, "");
 
         assertEq(token1.balanceOf(buyer), initialBalance1 + 300); // 3 * 100
         assertEq(token1.totalSupply(), initialSupply1 + 300);
@@ -273,14 +284,14 @@ contract ERC20MintTest is RegistryProductActionTest {
         uint256 initialSupply2 = token2.totalSupply();
 
         vm.prank(address(PRODUCTS_MODULE));
-        erc20Mint.onProductPurchase(slicerId, productIds[1], 0, buyer2, 5, "");
+        erc20Mint.onProductPurchase(slicerId, productIds[1], variantId, buyer2, 5, "");
 
         assertEq(token2.balanceOf(buyer2), initialBalance2 + 250); // 5 * 50
         assertEq(token2.totalSupply(), initialSupply2 + 250);
 
         // Test multiple purchases
         vm.prank(address(PRODUCTS_MODULE));
-        erc20Mint.onProductPurchase(slicerId, productIds[0], 0, buyer3, 2, "");
+        erc20Mint.onProductPurchase(slicerId, productIds[0], variantId, buyer3, 2, "");
         assertEq(token1.balanceOf(buyer3), 200); // 2 * 100
         assertEq(token1.totalSupply(), initialSupply1 + 500); // 300 + 200
     }
@@ -292,6 +303,7 @@ contract ERC20MintTest is RegistryProductActionTest {
         erc20Mint.configureProduct(
             slicerId,
             productIds[0],
+            variantId,
             abi.encode(
                 "Test Token", // name
                 "TT", // symbol
@@ -306,12 +318,12 @@ contract ERC20MintTest is RegistryProductActionTest {
         vm.stopPrank();
 
         // This should succeed but not mint tokens (exceeds max supply)
-        (ERC20Mint_BaseToken token,,) = erc20Mint.tokenData(slicerId, productIds[0]);
+        (ERC20Mint_BaseToken token,,) = erc20Mint.tokenData(slicerId, productIds[0], variantId);
         uint256 initialBalance = token.balanceOf(buyer);
         uint256 initialSupply = token.totalSupply();
 
         vm.prank(address(PRODUCTS_MODULE));
-        erc20Mint.onProductPurchase(slicerId, productIds[0], 0, buyer, 2, "");
+        erc20Mint.onProductPurchase(slicerId, productIds[0], variantId, buyer, 2, "");
 
         // Balance and supply should remain unchanged (mint failed silently)
         assertEq(token.balanceOf(buyer), initialBalance);
@@ -325,6 +337,7 @@ contract ERC20MintTest is RegistryProductActionTest {
         erc20Mint.configureProduct(
             slicerId,
             productIds[0],
+            variantId,
             abi.encode(
                 "Test Token", // name
                 "TT", // symbol
@@ -342,12 +355,12 @@ contract ERC20MintTest is RegistryProductActionTest {
         vm.prank(address(PRODUCTS_MODULE));
         erc20Mint.onProductPurchase(slicerId, productIds[0], 0, buyer, 5, "");
 
-        (ERC20Mint_BaseToken token,,) = erc20Mint.tokenData(slicerId, productIds[0]);
+        (ERC20Mint_BaseToken token,,) = erc20Mint.tokenData(slicerId, productIds[0], variantId);
         assertEq(token.totalSupply(), 1000); // at max supply
 
         // This should revert (no tokens available)
         vm.expectRevert(RegistryProductAction.NotAllowed.selector);
         vm.prank(address(PRODUCTS_MODULE));
-        erc20Mint.onProductPurchase(slicerId, productIds[0], 0, buyer, 1, "");
+        erc20Mint.onProductPurchase(slicerId, productIds[0], variantId, buyer, 1, "");
     }
 }

@@ -16,7 +16,8 @@ contract LinearVRGDAPrices is VRGDAPrices {
     //////////////////////////////////////////////////////////////*/
 
     // Mapping from slicerId to productId to ProductParams
-    mapping(uint256 => mapping(uint256 => LinearProduct)) private _productParams;
+    mapping(uint256 slicerId => mapping(uint256 productId => mapping(uint256 variantId => LinearProduct))) private
+        _productParams;
 
     /*//////////////////////////////////////////////////////////////
         CONSTRUCTOR
@@ -30,9 +31,12 @@ contract LinearVRGDAPrices is VRGDAPrices {
 
     /**
      * @inheritdoc HookRegistry
-     * @notice Set LinearVRGDAParams for a product.
+     * @notice Set LinearProduct for a product.
      */
-    function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) internal override {
+    function _configureProduct(uint256 slicerId, uint256 productId, uint256 variantId, bytes memory params)
+        internal
+        override
+    {
         (int184 priceDecayPercent, uint16 min, int256 perTimeUnit) = abi.decode(params, (int184, uint16, int256));
 
         int256 decayConstant = wadLn(1e18 - priceDecayPercent);
@@ -41,13 +45,13 @@ contract LinearVRGDAPrices is VRGDAPrices {
         require(decayConstant >= type(int184).min, "MIN_DECAY_CONSTANT_EXCEEDED");
 
         /// Get product availability and isInfinite
-        (uint256 stockUnits_, bool isInfinite) = stockUnits(slicerId, productId, 0);
+        (uint256 stockUnits_, bool isInfinite) = getStockUnits(slicerId, productId, 0);
 
         // Product must not have infinite availability
         require(!isInfinite, "NOT_FINITE_AVAILABILITY");
 
         // Set product params
-        _productParams[slicerId][productId] = LinearProduct({
+        _productParams[slicerId][productId][variantId] = LinearProduct({
             startTime: uint40(block.timestamp),
             startUnits: uint32(stockUnits_),
             decayConstant: int184(decayConstant),
@@ -69,13 +73,13 @@ contract LinearVRGDAPrices is VRGDAPrices {
         address,
         bytes memory
     ) public view override returns (uint256 price) {
-        LinearProduct storage productParams = _productParams[slicerId][productId];
+        LinearProduct storage productParams = _productParams[slicerId][productId][variantId];
 
         require(productParams.startTime != 0, "PRODUCT_UNSET");
 
         // Get available units and base price
-        (uint256 stockUnits_,) = stockUnits(slicerId, productId, variantId);
-        uint256 basePrice_ = basePrice(slicerId, productId, variantId, currency, 1);
+        (uint256 stockUnits_,) = getStockUnits(slicerId, productId, variantId);
+        uint256 basePrice_ = getBasePrice(slicerId, productId, variantId, currency, 1);
 
         // Calculate sold units from stockUnits
         uint256 soldUnits = productParams.startUnits - stockUnits_;
@@ -94,7 +98,7 @@ contract LinearVRGDAPrices is VRGDAPrices {
     /**
      * @inheritdoc IHookRegistry
      */
-    function paramsSchema() external pure override returns (string memory) {
+    function configureProductSchema() external pure override returns (string memory) {
         return "int184 priceDecayPercent,uint16 min,int256 perTimeUnit";
     }
 

@@ -17,6 +17,7 @@ contract NFTGatedTest is RegistryProductActionTest {
     MockERC1155 nft1155 = new MockERC1155();
 
     uint256[] productIds = [1, 2, 3, 4];
+    uint256 variantId = 0;
 
     function setUp() public {
         nftGated = new MockNFTGated(PRODUCTS_MODULE);
@@ -28,8 +29,8 @@ contract NFTGatedTest is RegistryProductActionTest {
 
         vm.startPrank(productOwner);
         for (uint256 i = 0; i < productIds.length; i++) {
-            nftGated.configureProduct(slicerId, productIds[i], abi.encode(nftGates[i]));
-            assertEq(nftGated.nftGates(slicerId, productIds[i]), nftGates[i].minOwned);
+            nftGated.configureProduct(slicerId, productIds[i], variantId, abi.encode(nftGates[i]));
+            assertEq(nftGated.nftGates(slicerId, productIds[i], variantId), nftGates[i].minOwned);
         }
         vm.stopPrank();
     }
@@ -39,14 +40,14 @@ contract NFTGatedTest is RegistryProductActionTest {
 
         vm.startPrank(productOwner);
 
-        nftGated.configureProduct(slicerId, productIds[2], abi.encode(nftGates[2]));
-        assertEq(nftGated.gates(slicerId, productIds[2])[0].nft, address(nft721));
-        assertEq(nftGated.gates(slicerId, productIds[2])[1].nft, address(nft1155));
-        assertEq(nftGated.gates(slicerId, productIds[2]).length, 2);
+        nftGated.configureProduct(slicerId, productIds[2], variantId, abi.encode(nftGates[2]));
+        assertEq(nftGated.gates(slicerId, productIds[2], variantId)[0].nft, address(nft721));
+        assertEq(nftGated.gates(slicerId, productIds[2], variantId)[1].nft, address(nft1155));
+        assertEq(nftGated.gates(slicerId, productIds[2], variantId).length, 2);
 
-        nftGated.configureProduct(slicerId, productIds[2], abi.encode(nftGates[1]));
-        assertEq(nftGated.gates(slicerId, productIds[2])[0].nft, address(nft1155));
-        assertEq(nftGated.gates(slicerId, productIds[2]).length, 1);
+        nftGated.configureProduct(slicerId, productIds[2], variantId, abi.encode(nftGates[1]));
+        assertEq(nftGated.gates(slicerId, productIds[2], variantId)[0].nft, address(nft1155));
+        assertEq(nftGated.gates(slicerId, productIds[2], variantId).length, 1);
 
         vm.stopPrank();
     }
@@ -56,7 +57,7 @@ contract NFTGatedTest is RegistryProductActionTest {
 
         vm.startPrank(productOwner);
         for (uint256 i = 0; i < productIds.length; i++) {
-            nftGated.configureProduct(slicerId, productIds[i], abi.encode(nftGates[i]));
+            nftGated.configureProduct(slicerId, productIds[i], variantId, abi.encode(nftGates[i]));
         }
         vm.stopPrank();
 
@@ -67,22 +68,22 @@ contract NFTGatedTest is RegistryProductActionTest {
         nft1155.mint(buyer3);
 
         // buyer should be able to purchase all products
-        assertTrue(nftGated.isPurchaseAllowed(slicerId, productIds[0], 0, buyer, 0, ""));
-        assertTrue(nftGated.isPurchaseAllowed(slicerId, productIds[1], 0, buyer, 0, ""));
-        assertTrue(nftGated.isPurchaseAllowed(slicerId, productIds[2], 0, buyer, 0, ""));
-        assertTrue(nftGated.isPurchaseAllowed(slicerId, productIds[3], 0, buyer, 0, ""));
+        assertTrue(nftGated.isPurchaseAllowed(slicerId, productIds[0], variantId, buyer, 0, ""));
+        assertTrue(nftGated.isPurchaseAllowed(slicerId, productIds[1], variantId, buyer, 0, ""));
+        assertTrue(nftGated.isPurchaseAllowed(slicerId, productIds[2], variantId, buyer, 0, ""));
+        assertTrue(nftGated.isPurchaseAllowed(slicerId, productIds[3], variantId, buyer, 0, ""));
 
         // buyer2 should be able to purchase all products except product 2 and 4
-        assertTrue(nftGated.isPurchaseAllowed(slicerId, productIds[0], 0, buyer2, 0, ""));
-        assertFalse(nftGated.isPurchaseAllowed(slicerId, productIds[1], 0, buyer2, 0, ""));
-        assertTrue(nftGated.isPurchaseAllowed(slicerId, productIds[2], 0, buyer2, 0, ""));
-        assertFalse(nftGated.isPurchaseAllowed(slicerId, productIds[3], 0, buyer2, 0, ""));
+        assertTrue(nftGated.isPurchaseAllowed(slicerId, productIds[0], variantId, buyer2, 0, ""));
+        assertFalse(nftGated.isPurchaseAllowed(slicerId, productIds[1], variantId, buyer2, 0, ""));
+        assertTrue(nftGated.isPurchaseAllowed(slicerId, productIds[2], variantId, buyer2, 0, ""));
+        assertFalse(nftGated.isPurchaseAllowed(slicerId, productIds[3], variantId, buyer2, 0, ""));
 
         // buyer3 should be able to purchase all products except product 1 and 4
-        assertFalse(nftGated.isPurchaseAllowed(slicerId, productIds[0], 0, buyer3, 0, ""));
-        assertTrue(nftGated.isPurchaseAllowed(slicerId, productIds[1], 0, buyer3, 0, ""));
-        assertTrue(nftGated.isPurchaseAllowed(slicerId, productIds[2], 0, buyer3, 0, ""));
-        assertFalse(nftGated.isPurchaseAllowed(slicerId, productIds[3], 0, buyer3, 0, ""));
+        assertFalse(nftGated.isPurchaseAllowed(slicerId, productIds[0], variantId, buyer3, 0, ""));
+        assertTrue(nftGated.isPurchaseAllowed(slicerId, productIds[1], variantId, buyer3, 0, ""));
+        assertTrue(nftGated.isPurchaseAllowed(slicerId, productIds[2], variantId, buyer3, 0, ""));
+        assertFalse(nftGated.isPurchaseAllowed(slicerId, productIds[3], variantId, buyer3, 0, ""));
     }
 
     /*//////////////////////////////////////////////////////////////

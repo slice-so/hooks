@@ -9,6 +9,7 @@ import {ERC721Mint_BaseToken, MAX_ROYALTY} from "@/hooks/actions/ERC721Mint/util
 import {console2} from "forge-std/console2.sol";
 
 uint256 constant slicerId = 0;
+uint256 constant variantId = 0;
 
 contract ERC721MintTest is RegistryProductActionTest {
     ERC721Mint erc721Mint;
@@ -27,6 +28,7 @@ contract ERC721MintTest is RegistryProductActionTest {
         erc721Mint.configureProduct(
             slicerId,
             productIds[0],
+            variantId,
             abi.encode(
                 "Test NFT 1", // name
                 "TNT1", // symbol
@@ -43,6 +45,7 @@ contract ERC721MintTest is RegistryProductActionTest {
         erc721Mint.configureProduct(
             slicerId,
             productIds[1],
+            variantId,
             abi.encode(
                 "Test NFT 2", // name
                 "TNT2", // symbol
@@ -59,6 +62,7 @@ contract ERC721MintTest is RegistryProductActionTest {
         erc721Mint.configureProduct(
             slicerId,
             productIds[2],
+            variantId,
             abi.encode(
                 "Test NFT 3", // name
                 "TNT3", // symbol
@@ -74,7 +78,8 @@ contract ERC721MintTest is RegistryProductActionTest {
         vm.stopPrank();
 
         // Verify tokenData is set correctly
-        (ERC721Mint_BaseToken token1, bool revertOnMaxSupply1) = erc721Mint.tokenData(slicerId, productIds[0]);
+        (ERC721Mint_BaseToken token1, bool revertOnMaxSupply1) =
+            erc721Mint.tokenData(slicerId, productIds[0], variantId);
         assertEq(revertOnMaxSupply1, true);
         assertEq(token1.name(), "Test NFT 1");
         assertEq(token1.symbol(), "TNT1");
@@ -85,7 +90,8 @@ contract ERC721MintTest is RegistryProductActionTest {
         assertEq(token1.baseURI_(), "https://api.example.com/metadata/");
         assertEq(token1.tokenURI_(), "https://api.example.com/fallback.json");
 
-        (ERC721Mint_BaseToken token2, bool revertOnMaxSupply2) = erc721Mint.tokenData(slicerId, productIds[1]);
+        (ERC721Mint_BaseToken token2, bool revertOnMaxSupply2) =
+            erc721Mint.tokenData(slicerId, productIds[1], variantId);
         assertEq(revertOnMaxSupply2, false);
         assertEq(token2.name(), "Test NFT 2");
         assertEq(token2.symbol(), "TNT2");
@@ -96,7 +102,8 @@ contract ERC721MintTest is RegistryProductActionTest {
         assertEq(token2.baseURI_(), "");
         assertEq(token2.tokenURI_(), "https://api.example.com/single.json");
 
-        (ERC721Mint_BaseToken token3, bool revertOnMaxSupply3) = erc721Mint.tokenData(slicerId, productIds[2]);
+        (ERC721Mint_BaseToken token3, bool revertOnMaxSupply3) =
+            erc721Mint.tokenData(slicerId, productIds[2], variantId);
         assertEq(revertOnMaxSupply3, true);
         assertEq(token3.maxSupply(), 100);
         assertEq(token3.royaltyReceiver(), buyer);
@@ -112,6 +119,7 @@ contract ERC721MintTest is RegistryProductActionTest {
         erc721Mint.configureProduct(
             slicerId,
             productIds[0],
+            variantId,
             abi.encode(
                 "Test NFT", // name
                 "TNT", // symbol
@@ -124,13 +132,14 @@ contract ERC721MintTest is RegistryProductActionTest {
             )
         );
 
-        (ERC721Mint_BaseToken token1,) = erc721Mint.tokenData(slicerId, productIds[0]);
+        (ERC721Mint_BaseToken token1,) = erc721Mint.tokenData(slicerId, productIds[0], variantId);
         address tokenAddress = address(token1);
 
         // Second configuration - should update existing token
         erc721Mint.configureProduct(
             slicerId,
             productIds[0],
+            variantId,
             abi.encode(
                 "Updated NFT", // name (ignored for existing token)
                 "UNT", // symbol (ignored for existing token)
@@ -143,7 +152,8 @@ contract ERC721MintTest is RegistryProductActionTest {
             )
         );
 
-        (ERC721Mint_BaseToken token2, bool revertOnMaxSupply2) = erc721Mint.tokenData(slicerId, productIds[0]);
+        (ERC721Mint_BaseToken token2, bool revertOnMaxSupply2) =
+            erc721Mint.tokenData(slicerId, productIds[0], variantId);
 
         // Token address should be the same
         assertEq(address(token2), tokenAddress);
@@ -167,6 +177,7 @@ contract ERC721MintTest is RegistryProductActionTest {
         erc721Mint.configureProduct(
             slicerId,
             productIds[0],
+            variantId,
             abi.encode(
                 "Test NFT", // name
                 "TNT", // symbol
@@ -187,6 +198,7 @@ contract ERC721MintTest is RegistryProductActionTest {
         erc721Mint.configureProduct(
             slicerId,
             productIds[0],
+            variantId,
             abi.encode(
                 "Test NFT 1", // name
                 "TNT1", // symbol
@@ -202,6 +214,7 @@ contract ERC721MintTest is RegistryProductActionTest {
         erc721Mint.configureProduct(
             slicerId,
             productIds[1],
+            variantId,
             abi.encode(
                 "Test NFT 2", // name
                 "TNT2", // symbol
@@ -216,15 +229,15 @@ contract ERC721MintTest is RegistryProductActionTest {
 
         vm.stopPrank();
 
-        (ERC721Mint_BaseToken token1,) = erc721Mint.tokenData(slicerId, productIds[0]);
-        (ERC721Mint_BaseToken token2,) = erc721Mint.tokenData(slicerId, productIds[1]);
+        (ERC721Mint_BaseToken token1,) = erc721Mint.tokenData(slicerId, productIds[0], variantId);
+        (ERC721Mint_BaseToken token2,) = erc721Mint.tokenData(slicerId, productIds[1], variantId);
 
         // Test minting for product 1
         uint256 initialBalance1 = token1.balanceOf(buyer);
         uint256 initialSupply1 = token1.totalSupply();
 
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[0], 0, buyer, 3, "");
+        erc721Mint.onProductPurchase(slicerId, productIds[0], variantId, buyer, 3, "");
 
         assertEq(token1.balanceOf(buyer), initialBalance1 + 3);
         assertEq(token1.totalSupply(), initialSupply1 + 3);
@@ -234,14 +247,14 @@ contract ERC721MintTest is RegistryProductActionTest {
         uint256 initialSupply2 = token2.totalSupply();
 
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[1], 0, buyer2, 5, "");
+        erc721Mint.onProductPurchase(slicerId, productIds[1], variantId, buyer2, 5, "");
 
         assertEq(token2.balanceOf(buyer2), initialBalance2 + 5);
         assertEq(token2.totalSupply(), initialSupply2 + 5);
 
         // Test multiple purchases
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[0], 0, buyer3, 2, "");
+        erc721Mint.onProductPurchase(slicerId, productIds[0], variantId, buyer3, 2, "");
         assertEq(token1.balanceOf(buyer3), 2);
         assertEq(token1.totalSupply(), initialSupply1 + 5); // 3 + 2
     }
@@ -253,6 +266,7 @@ contract ERC721MintTest is RegistryProductActionTest {
         erc721Mint.configureProduct(
             slicerId,
             productIds[0],
+            variantId,
             abi.encode(
                 "Test NFT", // name
                 "TNT", // symbol
@@ -265,16 +279,16 @@ contract ERC721MintTest is RegistryProductActionTest {
             )
         );
 
-        (ERC721Mint_BaseToken token,) = erc721Mint.tokenData(slicerId, productIds[0]);
+        (ERC721Mint_BaseToken token,) = erc721Mint.tokenData(slicerId, productIds[0], variantId);
 
         // First purchase - should succeed
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[0], 0, buyer, 3, "");
+        erc721Mint.onProductPurchase(slicerId, productIds[0], variantId, buyer, 3, "");
         assertEq(token.totalSupply(), 3);
 
         // Second purchase - should succeed
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[0], 0, buyer2, 2, "");
+        erc721Mint.onProductPurchase(slicerId, productIds[0], variantId, buyer2, 2, "");
         assertEq(token.totalSupply(), 5);
 
         // Third purchase - exceeds max supply but should not revert (mint will fail silently)
@@ -282,7 +296,7 @@ contract ERC721MintTest is RegistryProductActionTest {
         uint256 supplyBefore = token.totalSupply();
 
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[0], 0, buyer3, 2, "");
+        erc721Mint.onProductPurchase(slicerId, productIds[0], variantId, buyer3, 2, "");
 
         // Balance and supply should remain unchanged (mint failed silently)
         assertEq(token.balanceOf(buyer3), balanceBefore);
@@ -296,6 +310,7 @@ contract ERC721MintTest is RegistryProductActionTest {
         erc721Mint.configureProduct(
             slicerId,
             productIds[0],
+            variantId,
             abi.encode(
                 "Test NFT", // name
                 "TNT", // symbol
@@ -312,18 +327,18 @@ contract ERC721MintTest is RegistryProductActionTest {
         vm.prank(address(PRODUCTS_MODULE));
         erc721Mint.onProductPurchase(slicerId, productIds[0], 0, buyer, 3, "");
 
-        (ERC721Mint_BaseToken token,) = erc721Mint.tokenData(slicerId, productIds[0]);
+        (ERC721Mint_BaseToken token,) = erc721Mint.tokenData(slicerId, productIds[0], variantId);
         assertEq(token.totalSupply(), 3);
 
         // Second purchase - should succeed (exactly at max supply)
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[0], 0, buyer2, 2, "");
+        erc721Mint.onProductPurchase(slicerId, productIds[0], variantId, buyer2, 2, "");
         assertEq(token.totalSupply(), 5);
 
         // Third purchase - should revert (exceeds max supply)
         vm.expectRevert(ERC721Mint.MaxSupplyExceeded.selector);
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[0], 0, buyer3, 1, "");
+        erc721Mint.onProductPurchase(slicerId, productIds[0], variantId, buyer3, 1, "");
     }
 
     function testTokenURI() public {
@@ -333,6 +348,7 @@ contract ERC721MintTest is RegistryProductActionTest {
         erc721Mint.configureProduct(
             slicerId,
             productIds[0],
+            variantId,
             abi.encode(
                 "Test NFT", // name
                 "TNT", // symbol
@@ -349,6 +365,7 @@ contract ERC721MintTest is RegistryProductActionTest {
         erc721Mint.configureProduct(
             slicerId,
             productIds[1],
+            variantId,
             abi.encode(
                 "Test NFT 2", // name
                 "TNT2", // symbol
@@ -363,15 +380,15 @@ contract ERC721MintTest is RegistryProductActionTest {
 
         vm.stopPrank();
 
-        (ERC721Mint_BaseToken token1,) = erc721Mint.tokenData(slicerId, productIds[0]);
-        (ERC721Mint_BaseToken token2,) = erc721Mint.tokenData(slicerId, productIds[1]);
+        (ERC721Mint_BaseToken token1,) = erc721Mint.tokenData(slicerId, productIds[0], variantId);
+        (ERC721Mint_BaseToken token2,) = erc721Mint.tokenData(slicerId, productIds[1], variantId);
 
         // Mint some tokens
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[0], 0, buyer, 2, "");
+        erc721Mint.onProductPurchase(slicerId, productIds[0], variantId, buyer, 2, "");
 
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[1], 0, buyer, 1, "");
+        erc721Mint.onProductPurchase(slicerId, productIds[1], variantId, buyer, 1, "");
 
         // Test token URIs for product 1 (with baseURI)
         assertEq(token1.tokenURI(0), "https://api.example.com/metadata/0");
@@ -386,6 +403,7 @@ contract ERC721MintTest is RegistryProductActionTest {
         erc721Mint.configureProduct(
             slicerId,
             productIds[0],
+            variantId,
             abi.encode(
                 "Test NFT", // name
                 "TNT", // symbol
@@ -398,7 +416,7 @@ contract ERC721MintTest is RegistryProductActionTest {
             )
         );
 
-        (ERC721Mint_BaseToken token,) = erc721Mint.tokenData(slicerId, productIds[0]);
+        (ERC721Mint_BaseToken token,) = erc721Mint.tokenData(slicerId, productIds[0], variantId);
 
         // Test royalty calculation
         (address receiver, uint256 royaltyAmount) = token.royaltyInfo(0, 1000);

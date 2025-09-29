@@ -23,7 +23,8 @@ contract ERC721Mint is RegistryProductAction {
         MUTABLE STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    mapping(uint256 slicerId => mapping(uint256 productId => ERC721Data tokenData)) public tokenData;
+    mapping(uint256 slicerId => mapping(uint256 productId => mapping(uint256 variantId => ERC721Data tokenData))) public
+        tokenData;
 
     /*//////////////////////////////////////////////////////////////
         CONSTRUCTOR
@@ -43,12 +44,12 @@ contract ERC721Mint is RegistryProductAction {
     function _onProductPurchase(
         uint256 slicerId,
         uint256 productId,
-        uint256,
+        uint256 variantId,
         address buyer,
         uint256 quantity,
         bytes memory
     ) internal override {
-        ERC721Data memory tokenData_ = tokenData[slicerId][productId];
+        ERC721Data memory tokenData_ = tokenData[slicerId][productId][variantId];
 
         (bool success,) =
             address(tokenData_.token).call(abi.encodeWithSelector(tokenData_.token.mint.selector, buyer, quantity));
@@ -62,7 +63,10 @@ contract ERC721Mint is RegistryProductAction {
      * @inheritdoc HookRegistry
      * @dev Set the ERC721 data for a product.
      */
-    function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) internal override {
+    function _configureProduct(uint256 slicerId, uint256 productId, uint256 variantId, bytes memory params)
+        internal
+        override
+    {
         (
             string memory name_,
             string memory symbol_,
@@ -76,7 +80,7 @@ contract ERC721Mint is RegistryProductAction {
 
         if (royaltyFraction_ > MAX_ROYALTY) revert InvalidRoyaltyFraction();
 
-        ERC721Mint_BaseToken token = tokenData[slicerId][productId].token;
+        ERC721Mint_BaseToken token = tokenData[slicerId][productId][variantId].token;
 
         if (address(token) == address(0)) {
             token = new ERC721Mint_BaseToken(
@@ -86,13 +90,13 @@ contract ERC721Mint is RegistryProductAction {
             token.setParams(maxSupply, royaltyReceiver_, royaltyFraction_, baseURI__, tokenURI__);
         }
 
-        tokenData[slicerId][productId] = ERC721Data(token, revertOnMaxSupplyReached);
+        tokenData[slicerId][productId][variantId] = ERC721Data(token, revertOnMaxSupplyReached);
     }
 
     /**
      * @inheritdoc IHookRegistry
      */
-    function paramsSchema() external pure override returns (string memory) {
+    function configureProductSchema() external pure override returns (string memory) {
         return
         "string name,string symbol,address royaltyReceiver,uint256 royaltyFraction,string baseURI,string tokenURI,bool revertOnMaxSupplyReached,uint256 maxSupply";
     }

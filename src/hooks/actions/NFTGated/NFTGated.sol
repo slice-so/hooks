@@ -22,7 +22,8 @@ contract NFTGated is RegistryProductAction {
         MUTABLE STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    mapping(uint256 slicerId => mapping(uint256 productId => NFTGates gates)) public nftGates;
+    mapping(uint256 slicerId => mapping(uint256 productId => mapping(uint256 variantId => NFTGates gates))) public
+        nftGates;
 
     /*//////////////////////////////////////////////////////////////
         CONSTRUCTOR
@@ -38,13 +39,15 @@ contract NFTGated is RegistryProductAction {
      * @inheritdoc IProductAction
      * @dev Checks if `account` owns the required amount of NFT tokens.
      */
-    function isPurchaseAllowed(uint256 slicerId, uint256 productId, uint256, address buyer, uint256, bytes memory)
-        public
-        view
-        override
-        returns (bool isAllowed)
-    {
-        NFTGates memory nftGates_ = nftGates[slicerId][productId];
+    function isPurchaseAllowed(
+        uint256 slicerId,
+        uint256 productId,
+        uint256 variantId,
+        address buyer,
+        uint256,
+        bytes memory
+    ) public view override returns (bool isAllowed) {
+        NFTGates memory nftGates_ = nftGates[slicerId][productId][variantId];
 
         uint256 totalOwned;
         unchecked {
@@ -70,21 +73,24 @@ contract NFTGated is RegistryProductAction {
      * @inheritdoc HookRegistry
      * @dev Set the NFT gates for a product.
      */
-    function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) internal override {
+    function _configureProduct(uint256 slicerId, uint256 productId, uint256 variantId, bytes memory params)
+        internal
+        override
+    {
         (NFTGates memory nftGates_) = abi.decode(params, (NFTGates));
 
-        delete nftGates[slicerId][productId].gates;
+        delete nftGates[slicerId][productId][variantId].gates;
 
-        nftGates[slicerId][productId].minOwned = nftGates_.minOwned;
+        nftGates[slicerId][productId][variantId].minOwned = nftGates_.minOwned;
         for (uint256 i = 0; i < nftGates_.gates.length; i++) {
-            nftGates[slicerId][productId].gates.push(nftGates_.gates[i]);
+            nftGates[slicerId][productId][variantId].gates.push(nftGates_.gates[i]);
         }
     }
 
     /**
      * @inheritdoc IHookRegistry
      */
-    function paramsSchema() external pure override returns (string memory) {
+    function configureProductSchema() external pure override returns (string memory) {
         return "(address nft,uint8 nftType,uint80 id,uint8 minQuantity)[] nftGates,uint256 minOwned";
     }
 }

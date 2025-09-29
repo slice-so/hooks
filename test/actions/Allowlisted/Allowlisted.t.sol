@@ -7,6 +7,7 @@ import {Allowlisted} from "@/hooks/actions/Allowlisted/Allowlisted.sol";
 
 uint256 constant slicerId = 0;
 uint256 constant productId = 1;
+uint256 constant variantId = 0;
 
 contract AllowlistedTest is RegistryProductActionTest {
     Allowlisted allowlisted;
@@ -29,28 +30,28 @@ contract AllowlistedTest is RegistryProductActionTest {
         bytes32 root = m.getRoot(data);
 
         vm.prank(productOwner);
-        allowlisted.configureProduct(slicerId, productId, abi.encode(root));
+        allowlisted.configureProduct(slicerId, productId, variantId, abi.encode(root));
 
-        assertTrue(allowlisted.merkleRoots(slicerId, productId) == root);
+        assertTrue(allowlisted.merkleRoots(slicerId, productId, variantId) == root);
     }
 
     function testIsPurchaseAllowed() public {
         bytes32 root = m.getRoot(data);
 
         vm.prank(productOwner);
-        allowlisted.configureProduct(slicerId, productId, abi.encode(root));
+        allowlisted.configureProduct(slicerId, productId, variantId, abi.encode(root));
 
         bytes32[] memory proof = m.getProof(data, 0);
-        assertTrue(allowlisted.isPurchaseAllowed(slicerId, productId, 0, buyer, 0, abi.encode(proof)));
+        assertTrue(allowlisted.isPurchaseAllowed(slicerId, productId, variantId, buyer, 0, abi.encode(proof)));
     }
 
     function testIsPurchaseAllowed_wrongProof() public {
         bytes32 root = m.getRoot(data);
 
         vm.prank(productOwner);
-        allowlisted.configureProduct(slicerId, productId, abi.encode(root));
+        allowlisted.configureProduct(slicerId, productId, variantId, abi.encode(root));
 
         bytes32[] memory wrongProof = m.getProof(data, 1);
-        assertFalse(allowlisted.isPurchaseAllowed(slicerId, productId, 0, buyer, 0, abi.encode(wrongProof)));
+        assertFalse(allowlisted.isPurchaseAllowed(slicerId, productId, variantId, buyer, 0, abi.encode(wrongProof)));
     }
 }

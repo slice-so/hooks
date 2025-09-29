@@ -6,7 +6,7 @@ import {IProductsModule, NFTGated, NFTGate} from "@/hooks/actions/NFTGated/NFTGa
 contract MockNFTGated is NFTGated {
     constructor(IProductsModule productsModuleAddress) NFTGated(productsModuleAddress) {}
 
-    function gates(uint256 slicerId, uint256 productId) public view returns (NFTGate[] memory) {
-        return nftGates[slicerId][productId].gates;
+    function gates(uint256 slicerId, uint256 productId, uint256 variantId) public view returns (NFTGate[] memory) {
+        return nftGates[slicerId][productId][variantId].gates;
     }
 }

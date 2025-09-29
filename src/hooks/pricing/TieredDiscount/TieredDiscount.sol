@@ -25,7 +25,8 @@ abstract contract TieredDiscount is RegistryProductPrice {
         MUTABLE STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    mapping(uint256 slicerId => mapping(uint256 productId => DiscountParams[])) public discounts;
+    mapping(uint256 slicerId => mapping(uint256 productId => mapping(uint256 variantId => DiscountParams[]))) public
+        discounts;
 
     /*//////////////////////////////////////////////////////////////
         CONSTRUCTOR
@@ -50,7 +51,7 @@ abstract contract TieredDiscount is RegistryProductPrice {
         address buyer,
         bytes memory data
     ) public view override returns (uint256) {
-        DiscountParams[] memory discountParams = discounts[slicerId][productId];
+        DiscountParams[] memory discountParams = discounts[slicerId][productId][variantId];
 
         return _productPrice(slicerId, productId, variantId, currency, quantity, buyer, data, basePrice, discountParams);
     }
