@@ -213,7 +213,7 @@ abstract contract SetUpContractsList is Script {
             json = new string[](existingContractAddresses.length + 1);
             vm.serializeAddress("0", "address", transaction.contractAddress);
             vm.serializeUint("0", "blockNumber", receipt.blockNumber);
-            vm.serializeString("0", "paramsSchema", IHookRegistry(transaction.contractAddress).paramsSchema());
+            vm.serializeString("0", "paramsSchema", IHookRegistry(transaction.contractAddress).configureProductSchema());
             json[0] = vm.serializeBytes32("0", "transactionHash", transaction.hash);
 
             for (uint256 i = 0; i < existingContractAddresses.length; i++) {
@@ -229,7 +229,7 @@ abstract contract SetUpContractsList is Script {
             json = new string[](1);
             vm.serializeAddress("0", "address", transaction.contractAddress);
             vm.serializeUint("0", "blockNumber", receipt.blockNumber);
-            vm.serializeString("0", "paramsSchema", IHookRegistry(transaction.contractAddress).paramsSchema());
+            vm.serializeString("0", "paramsSchema", IHookRegistry(transaction.contractAddress).configureProductSchema());
             json[0] = vm.serializeBytes32("0", "transactionHash", transaction.hash);
         }
     }

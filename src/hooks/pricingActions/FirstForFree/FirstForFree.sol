@@ -26,8 +26,8 @@ contract FirstForFree is RegistryProductPriceAction {
         MUTABLE STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    mapping(uint256 slicerId => mapping(uint256 productId => ProductParams price)) public usdcPrices;
-    mapping(address buyer => mapping(uint256 slicerId => uint256 purchases)) public purchases;
+    mapping(uint256 slicerId => mapping(uint256 productId => mapping(uint256 variantId => ProductParams price))) public
+        productParams;
 
     /*//////////////////////////////////////////////////////////////
         CONSTRUCTOR
@@ -46,50 +46,48 @@ contract FirstForFree is RegistryProductPriceAction {
     function productPrice(
         uint256 slicerId,
         uint256 productId,
-        uint256,
+        uint256 variantId,
         address,
-        uint256,
+        uint256 basePrice,
         uint256 quantity,
         address buyer,
         bytes memory
     ) public view override returns (uint256) {
-        ProductParams memory productParams = usdcPrices[slicerId][productId];
+        ProductParams memory params = productParams[slicerId][productId][variantId];
 
-        if (_isEligible(buyer, productParams.eligibleTokens)) {
-            uint256 totalPurchases = purchases[buyer][slicerId];
-            if (totalPurchases < productParams.freeUnits) {
+        if (_isEligible(buyer, params.eligibleTokens)) {
+            uint256 totalPurchases = getPurchases(buyer, slicerId, productId, variantId);
+            if (totalPurchases < params.freeUnits) {
                 unchecked {
-                    uint256 freeUnitsLeft = productParams.freeUnits - totalPurchases;
+                    uint256 freeUnitsLeft = params.freeUnits - totalPurchases;
 
                     if (quantity <= freeUnitsLeft) {
                         return 0;
                     } else {
-                        return usdcPrices[slicerId][productId].usdcPrice * (quantity - freeUnitsLeft);
+                        return getBasePrice(slicerId, productId, variantId, address(0), quantity - freeUnitsLeft);
                     }
                 }
             }
         }
 
-        return usdcPrices[slicerId][productId].usdcPrice * quantity;
+        return basePrice;
     }
 
     /**
      * @inheritdoc RegistryProductAction
-     * @notice Mint `quantity` NFTs to `account` on purchase. Keeps track of total purchases.
+     * @notice Mint `quantity` NFTs to `account` on purchase.
      */
     function _onProductPurchase(
         uint256 slicerId,
         uint256 productId,
-        uint256,
+        uint256 variantId,
         address buyer,
         uint256 quantity,
         bytes memory
     ) internal override {
-        purchases[buyer][slicerId] += quantity;
-
-        ProductParams memory productParams = usdcPrices[slicerId][productId];
-        if (productParams.mintToken != address(0)) {
-            ITokenERC1155(productParams.mintToken).mintTo(buyer, productParams.mintTokenId, "", quantity);
+        ProductParams memory params = productParams[slicerId][productId][variantId];
+        if (params.mintToken != address(0)) {
+            ITokenERC1155(params.mintToken).mintTo(buyer, params.mintTokenId, "", quantity);
         }
     }
 
@@ -97,27 +95,24 @@ contract FirstForFree is RegistryProductPriceAction {
      * @inheritdoc HookRegistry
      * @notice Sets the product parameters.
      */
-    function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) internal override {
-        (
-            uint256 usdcPrice,
-            TokenCondition[] memory eligibleTokens,
-            address mintToken,
-            uint88 mintTokenId,
-            uint8 freeUnits
-        ) = abi.decode(params, (uint256, TokenCondition[], address, uint88, uint8));
+    function _configureProduct(uint256 slicerId, uint256 productId, uint256 variantId, bytes memory params)
+        internal
+        override
+    {
+        (TokenCondition[] memory eligibleTokens, address mintToken, uint88 mintTokenId, uint8 freeUnits) =
+            abi.decode(params, (TokenCondition[], address, uint88, uint8));
 
-        ProductParams storage productParams = usdcPrices[slicerId][productId];
+        ProductParams storage productParams_ = productParams[slicerId][productId][variantId];
 
-        productParams.usdcPrice = usdcPrice;
-        productParams.mintToken = mintToken;
-        productParams.mintTokenId = mintTokenId;
-        productParams.freeUnits = freeUnits;
+        productParams_.mintToken = mintToken;
+        productParams_.mintTokenId = mintTokenId;
+        productParams_.freeUnits = freeUnits;
 
         // Remove all discount tokens
-        delete productParams.eligibleTokens;
+        delete productParams_.eligibleTokens;
 
         for (uint256 i = 0; i < eligibleTokens.length;) {
-            productParams.eligibleTokens.push(eligibleTokens[i]);
+            productParams_.eligibleTokens.push(eligibleTokens[i]);
 
             unchecked {
                 ++i;
@@ -128,9 +123,9 @@ contract FirstForFree is RegistryProductPriceAction {
     /**
      * @inheritdoc IHookRegistry
      */
-    function paramsSchema() external pure override returns (string memory) {
+    function configureProductSchema() external pure override returns (string memory) {
         return
-        "uint256 usdcPrice,(address tokenAddress,uint8 tokenType,uint88 tokenId,uint8 minQuantity)[] eligibleTokens,address mintToken,uint88 mintTokenId,uint8 freeUnits";
+        "(address tokenAddress,uint8 tokenType,uint88 tokenId,uint8 minQuantity)[] eligibleTokens,address mintToken,uint88 mintTokenId,uint8 freeUnits";
     }
 
     /*//////////////////////////////////////////////////////////////

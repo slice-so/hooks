@@ -10,7 +10,7 @@ bytes32 constant PRODUCT_MANAGER_ROLE = bytes32(uint256(0x04));
 
 abstract contract HookRegistryTest is HookTest {
     function testParamsSchema() public view {
-        string memory schema = IHookRegistry(hook).paramsSchema();
+        string memory schema = IHookRegistry(hook).configureProductSchema();
         assertTrue(bytes(schema).length > 0);
     }
 
@@ -22,10 +22,10 @@ abstract contract HookRegistryTest is HookTest {
             )
         );
 
-        IHookRegistry(hook).configureProduct(0, 0, "");
+        IHookRegistry(hook).configureProduct(0, 0, 0, "");
     }
 
-    // TODO: verify paramsSchema effectively corresponds to the params
+    // TODO: verify configureProductSchema effectively corresponds to the params
 
     // Blocker: generate bytes params based on a generic string schema
     // function generateParamsFromSchema(string memory schema) public returns (bytes memory) {

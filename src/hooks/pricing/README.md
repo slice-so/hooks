@@ -31,7 +31,7 @@ The script will create your contract file with the proper template and add it to
 
 Strategies inheriting from `RegistryProductPrice` automatically support frontend integration through:
 - **Product configuration** via `configureProduct()`
-- **Parameter validation** via `paramsSchema()`
+- **Parameter validation** via `configureProductSchema()`
 
 ### Testing
 

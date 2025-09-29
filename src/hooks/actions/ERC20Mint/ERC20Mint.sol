@@ -28,7 +28,8 @@ contract ERC20Mint is RegistryProductAction {
         MUTABLE STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    mapping(uint256 slicerId => mapping(uint256 productId => ERC20Data tokenData)) public tokenData;
+    mapping(uint256 slicerId => mapping(uint256 productId => mapping(uint256 variantId => ERC20Data tokenData))) public
+        tokenData;
 
     /*//////////////////////////////////////////////////////////////
         CONSTRUCTOR
@@ -44,14 +45,15 @@ contract ERC20Mint is RegistryProductAction {
      * @inheritdoc IProductAction
      * @dev If `revertOnMaxSupplyReached` is set to true, returns false when max supply is exceeded.
      */
-    function isPurchaseAllowed(uint256 slicerId, uint256 productId, uint256, address, uint256 quantity, bytes memory)
-        public
-        view
-        virtual
-        override
-        returns (bool isAllowed)
-    {
-        ERC20Data memory tokenData_ = tokenData[slicerId][productId];
+    function isPurchaseAllowed(
+        uint256 slicerId,
+        uint256 productId,
+        uint256 variantId,
+        address,
+        uint256 quantity,
+        bytes memory
+    ) public view virtual override returns (bool isAllowed) {
+        ERC20Data memory tokenData_ = tokenData[slicerId][productId][variantId];
 
         if (tokenData_.revertOnMaxSupplyReached) {
             return
@@ -69,12 +71,12 @@ contract ERC20Mint is RegistryProductAction {
     function _onProductPurchase(
         uint256 slicerId,
         uint256 productId,
-        uint256,
+        uint256 variantId,
         address buyer,
         uint256 quantity,
         bytes memory
     ) internal override {
-        ERC20Data memory tokenData_ = tokenData[slicerId][productId];
+        ERC20Data memory tokenData_ = tokenData[slicerId][productId][variantId];
 
         uint256 tokensToMint = quantity * tokenData_.tokensPerUnit;
 
@@ -90,7 +92,10 @@ contract ERC20Mint is RegistryProductAction {
      * @inheritdoc HookRegistry
      * @dev Set the ERC20 data for a product.
      */
-    function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) internal override {
+    function _configureProduct(uint256 slicerId, uint256 productId, uint256 variantId, bytes memory params)
+        internal
+        override
+    {
         (
             string memory name,
             string memory symbol,
@@ -103,7 +108,7 @@ contract ERC20Mint is RegistryProductAction {
 
         if (tokensPerUnit == 0) revert InvalidTokensPerUnit();
 
-        ERC20Mint_BaseToken token = tokenData[slicerId][productId].token;
+        ERC20Mint_BaseToken token = tokenData[slicerId][productId][variantId].token;
         if (address(token) == address(0)) {
             token = new ERC20Mint_BaseToken(name, symbol, maxSupply);
 
@@ -114,13 +119,13 @@ contract ERC20Mint is RegistryProductAction {
             token.setMaxSupply(maxSupply);
         }
 
-        tokenData[slicerId][productId] = ERC20Data(token, revertOnMaxSupplyReached, tokensPerUnit);
+        tokenData[slicerId][productId][variantId] = ERC20Data(token, revertOnMaxSupplyReached, tokensPerUnit);
     }
 
     /**
      * @inheritdoc IHookRegistry
      */
-    function paramsSchema() external pure override returns (string memory) {
+    function configureProductSchema() external pure override returns (string memory) {
         return
         "string name,string symbol,uint256 premintAmount,address premintReceiver,bool revertOnMaxSupplyReached,uint256 maxSupply,uint256 tokensPerUnit";
     }

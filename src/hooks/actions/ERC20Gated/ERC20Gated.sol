@@ -20,7 +20,8 @@ contract ERC20Gated is RegistryProductAction {
         MUTABLE STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    mapping(uint256 slicerId => mapping(uint256 productId => ERC20Gate[] gates)) public tokenGates;
+    mapping(uint256 slicerId => mapping(uint256 productId => mapping(uint256 variantId => ERC20Gate[] gates))) public
+        tokenGates;
 
     /*//////////////////////////////////////////////////////////////
         CONSTRUCTOR
@@ -36,13 +37,15 @@ contract ERC20Gated is RegistryProductAction {
      * @inheritdoc IProductAction
      * @dev Checks if `account` owns the required amount of all ERC20 tokens.
      */
-    function isPurchaseAllowed(uint256 slicerId, uint256 productId, uint256, address buyer, uint256, bytes memory)
-        public
-        view
-        override
-        returns (bool)
-    {
-        ERC20Gate[] memory gates = tokenGates[slicerId][productId];
+    function isPurchaseAllowed(
+        uint256 slicerId,
+        uint256 productId,
+        uint256 variantId,
+        address buyer,
+        uint256,
+        bytes memory
+    ) public view override returns (bool) {
+        ERC20Gate[] memory gates = tokenGates[slicerId][productId][variantId];
 
         for (uint256 i = 0; i < gates.length; i++) {
             ERC20Gate memory gate = gates[i];
@@ -59,20 +62,23 @@ contract ERC20Gated is RegistryProductAction {
      * @inheritdoc HookRegistry
      * @dev Sets the ERC20 gates for a product.
      */
-    function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) internal override {
+    function _configureProduct(uint256 slicerId, uint256 productId, uint256 variantId, bytes memory params)
+        internal
+        override
+    {
         (ERC20Gate[] memory gates) = abi.decode(params, (ERC20Gate[]));
 
-        delete tokenGates[slicerId][productId];
+        delete tokenGates[slicerId][productId][variantId];
 
         for (uint256 i = 0; i < gates.length; i++) {
-            tokenGates[slicerId][productId].push(gates[i]);
+            tokenGates[slicerId][productId][variantId].push(gates[i]);
         }
     }
 
     /**
      * @inheritdoc IHookRegistry
      */
-    function paramsSchema() external pure override returns (string memory) {
+    function configureProductSchema() external pure override returns (string memory) {
         return "(address erc20,uint256 amount)[] erc20Gates";
     }
 }

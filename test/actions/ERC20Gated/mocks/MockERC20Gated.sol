@@ -6,7 +6,7 @@ import {IProductsModule, ERC20Gated, ERC20Gate} from "@/hooks/actions/ERC20Gated
 contract MockERC20Gated is ERC20Gated {
     constructor(IProductsModule productsModuleAddress) ERC20Gated(productsModuleAddress) {}
 
-    function gates(uint256 slicerId, uint256 productId) public view returns (ERC20Gate[] memory) {
-        return tokenGates[slicerId][productId];
+    function gates(uint256 slicerId, uint256 productId, uint256 variantId) public view returns (ERC20Gate[] memory) {
+        return tokenGates[slicerId][productId][variantId];
     }
 }

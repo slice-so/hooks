@@ -20,7 +20,8 @@ contract Allowlisted is RegistryProductAction {
         MUTABLE STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    mapping(uint256 slicerId => mapping(uint256 productId => bytes32 merkleRoot)) public merkleRoots;
+    mapping(uint256 slicerId => mapping(uint256 productId => mapping(uint256 variantId => bytes32 merkleRoot))) public
+        merkleRoots;
 
     /*//////////////////////////////////////////////////////////////
         CONSTRUCTOR
@@ -36,12 +37,14 @@ contract Allowlisted is RegistryProductAction {
      * @inheritdoc IProductAction
      * @dev Checks if the account is in the allowlist.
      */
-    function isPurchaseAllowed(uint256 slicerId, uint256 productId, uint256, address buyer, uint256, bytes memory data)
-        public
-        view
-        override
-        returns (bool isAllowed)
-    {
+    function isPurchaseAllowed(
+        uint256 slicerId,
+        uint256 productId,
+        uint256 variantId,
+        address buyer,
+        uint256,
+        bytes memory data
+    ) public view override returns (bool isAllowed) {
         // Get Merkle proof from data
         bytes32[] memory proof = abi.decode(data, (bytes32[]));
 
@@ -55,7 +58,7 @@ contract Allowlisted is RegistryProductAction {
             leaf := keccak256(0x00, 0x20)
         }
 
-        bytes32 root = merkleRoots[slicerId][productId];
+        bytes32 root = merkleRoots[slicerId][productId][variantId];
 
         // Check if Merkle proof is valid
         isAllowed = MerkleProof.verify(proof, root, leaf);
@@ -65,15 +68,18 @@ contract Allowlisted is RegistryProductAction {
      * @inheritdoc HookRegistry
      * @dev Sets the Merkle root for the allowlist.
      */
-    function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) internal override {
+    function _configureProduct(uint256 slicerId, uint256 productId, uint256 variantId, bytes memory params)
+        internal
+        override
+    {
         (bytes32 merkleRoot) = abi.decode(params, (bytes32));
-        merkleRoots[slicerId][productId] = merkleRoot;
+        merkleRoots[slicerId][productId][variantId] = merkleRoot;
     }
 
     /**
      * @inheritdoc IHookRegistry
      */
-    function paramsSchema() external pure override returns (string memory) {
+    function configureProductSchema() external pure override returns (string memory) {
         return "bytes32 merkleRoot";
     }
 }
