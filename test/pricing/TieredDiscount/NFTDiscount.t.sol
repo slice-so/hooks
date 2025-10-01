@@ -5,7 +5,6 @@ import {RegistryProductPriceTest} from "@test/utils/RegistryProductPriceTest.sol
 import {
     IProductsModule,
     NFTDiscount,
-    Price,
     DiscountParams,
     NFTType
 } from "@/hooks/pricing/TieredDiscount/NFTDiscount/NFTDiscount.sol";

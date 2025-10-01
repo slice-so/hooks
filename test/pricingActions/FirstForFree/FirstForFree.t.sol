@@ -2,7 +2,7 @@
 pragma solidity ^0.8.30;
 
 import {RegistryProductPriceActionTest} from "@test/utils/RegistryProductPriceActionTest.sol";
-import {Price, FirstForFree} from "@/hooks/pricingActions/FirstForFree/FirstForFree.sol";
+import {FirstForFree} from "@/hooks/pricingActions/FirstForFree/FirstForFree.sol";
 import {ProductParams} from "@/hooks/pricingActions/FirstForFree/types/ProductParams.sol";
 import {TokenCondition, TokenType} from "@/hooks/pricingActions/FirstForFree/types/TokenCondition.sol";
 import {ITokenERC1155} from "@/hooks/pricingActions/FirstForFree/utils/ITokenERC1155.sol";

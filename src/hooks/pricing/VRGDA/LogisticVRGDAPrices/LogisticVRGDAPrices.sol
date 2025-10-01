@@ -14,7 +14,6 @@ import {
 } from "@/utils/math/SignedWadMath.sol";
 import {LogisticProduct} from "../types/LogisticProduct.sol";
 import {IProductsModule, VRGDAPrices} from "../VRGDAPrices.sol";
-import {Price} from "slice/types/Price.sol";
 
 /// @title   LogisticVRGDAPrices
 /// @notice  VRGDA with a logistic issuance curve - Price library with different params for each Slice product.

@@ -14,7 +14,6 @@ import {HookRegistry} from "@/utils/RegistryProductAction.sol";
 import {ProductParams, TokenCondition} from "./types/ProductParams.sol";
 import {TokenType} from "./types/TokenCondition.sol";
 import {ITokenERC1155} from "./utils/ITokenERC1155.sol";
-import {Price} from "slice/types/Price.sol";
 
 /**
  * @title   FirstForFree
