@@ -5,7 +5,6 @@ import {HookRegistry, IProductPrice, IHookRegistry, IProductsModule} from "@/uti
 import {wadLn, unsafeWadDiv, toDaysWadUnsafe} from "@/utils/math/SignedWadMath.sol";
 import {LinearProduct} from "../types/LinearProduct.sol";
 import {VRGDAPrices} from "../VRGDAPrices.sol";
-import {Price} from "slice/types/Price.sol";
 
 /// @title   LinearVRGDAPrices
 /// @notice  VRGDA with a linear issuance curve - Price library with different params for each Slice product.
