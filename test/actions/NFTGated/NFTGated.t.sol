@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
+import {ERC20} from "@openzeppelin-4.8.0/token/ERC20/ERC20.sol";
 import {RegistryProductActionTest} from "@test/utils/RegistryProductActionTest.sol";
-import {MockNFTGated} from "./mocks/MockNFTGated.sol";
+import {MockNFTGated, NFTGated} from "./mocks/MockNFTGated.sol";
 import {NFTGate, NftType} from "@/hooks/actions/NFTGated/NFTGated.sol";
 import {NFTGates} from "@/hooks/actions/NFTGated/types/NFTGate.sol";
 import {MockERC721} from "@test/utils/mocks/MockERC721.sol";
@@ -111,6 +112,22 @@ contract NFTGatedTest is RegistryProductActionTest {
         assertTrue(nftGated.isPurchaseAllowed(slicerId, productIds[0], variantIdAlt, buyer2, 0, ""));
     }
 
+    function testRevert_ConfigureProduct_InvalidNFT() public {
+        NFTGates[] memory nftGates = new NFTGates[](1);
+
+        // Only 721 is required
+        NFTGate[] memory gates1 = new NFTGate[](1);
+        gates1[0] = NFTGate(address(new TestERC20()), NftType.ERC721, 1, 1);
+        nftGates[0] = NFTGates(gates1, 1);
+
+        vm.startPrank(productOwner);
+
+        vm.expectRevert(NFTGated.InvalidNFT.selector);
+        nftGated.configureProduct(slicerId, productIds[0], variantId, encodeNFTGates(nftGates[0]));
+
+        vm.stopPrank();
+    }
+
     /*//////////////////////////////////////////////////////////////
         INTERNAL
     //////////////////////////////////////////////////////////////*/
@@ -146,5 +163,13 @@ contract NFTGatedTest is RegistryProductActionTest {
 
     function encodeNFTGates(NFTGates memory nftGates_) internal pure returns (bytes memory) {
         return abi.encode(nftGates_.gates, nftGates_.minOwned);
+    }
+}
+
+contract TestERC20 is ERC20 {
+    constructor() ERC20("Test", "TST") {}
+
+    function supportsInterface(bytes4 interfaceId) public pure returns (bool) {
+        return false;
     }
 }

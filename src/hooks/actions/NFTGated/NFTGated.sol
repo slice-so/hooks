@@ -18,6 +18,8 @@ import {NftType, NFTGate, NFTGates} from "./types/NFTGate.sol";
  * @author  Slice <jacopo.eth>
  */
 contract NFTGated is RegistryProductAction {
+    error InvalidNFT();
+
     /*//////////////////////////////////////////////////////////////
         MUTABLE STORAGE
     //////////////////////////////////////////////////////////////*/
@@ -83,6 +85,13 @@ contract NFTGated is RegistryProductAction {
 
         nftGates[slicerId][productId][variantId].minOwned = minOwned;
         for (uint256 i = 0; i < gates.length; i++) {
+            if (gates[i].nftType == NftType.ERC721) {
+                if (!IERC721(gates[i].nft).supportsInterface(type(IERC721).interfaceId)) {
+                    revert InvalidNFT();
+                }
+            } else if (!IERC1155(gates[i].nft).supportsInterface(type(IERC1155).interfaceId)) {
+                revert InvalidNFT();
+            }
             nftGates[slicerId][productId][variantId].gates.push(gates[i]);
         }
     }
