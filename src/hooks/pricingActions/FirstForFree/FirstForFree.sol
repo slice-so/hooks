@@ -124,7 +124,7 @@ contract FirstForFree is RegistryProductPriceAction {
      */
     function configureProductSchema() external pure override returns (string memory) {
         return
-        "(address tokenAddress,uint8 tokenType,uint88 tokenId,uint8 minQuantity)[] eligibleTokens,address mintToken,uint88 mintTokenId,uint8 freeUnits";
+        "(address tokenAddress,uint8 tokenType,uint80 tokenId,uint8 minQuantity)[] eligibleTokens,address mintToken,uint88 mintTokenId,uint8 freeUnits";
     }
 
     /*//////////////////////////////////////////////////////////////
