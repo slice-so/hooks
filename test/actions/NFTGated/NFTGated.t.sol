@@ -169,7 +169,7 @@ contract NFTGatedTest is RegistryProductActionTest {
 contract TestERC20 is ERC20 {
     constructor() ERC20("Test", "TST") {}
 
-    function supportsInterface(bytes4 interfaceId) public pure returns (bool) {
+    function supportsInterface(bytes4) public pure returns (bool) {
         return false;
     }
 }
