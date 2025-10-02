@@ -57,7 +57,7 @@ contract SeedHooksScript is Script {
             code: address(new LogisticVRGDAPrices(Contracts.PRODUCTS_MODULE)).code
         });
         hooks[8] = Hook({
-            hookAddress: 0xEC68E30182F4298b7032400B7ce809da613e4449,
+            hookAddress: 0x2C18D37b8229233F672bF406bCe8799BCfD43B5A,
             code: address(new FirstForFree(Contracts.PRODUCTS_MODULE)).code
         });
 
