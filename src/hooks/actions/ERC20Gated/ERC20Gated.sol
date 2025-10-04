@@ -5,9 +5,9 @@ import {ERC20Gate} from "./types/ERC20Gate.sol";
 import {
     IProductsModule,
     RegistryProductAction,
-    HookRegistry,
+    ProductHookRegistry,
     IProductAction,
-    IHookRegistry
+    IProductHookRegistry
 } from "@/utils/RegistryProductAction.sol";
 
 /**
@@ -59,7 +59,7 @@ contract ERC20Gated is RegistryProductAction {
     }
 
     /**
-     * @inheritdoc HookRegistry
+     * @inheritdoc ProductHookRegistry
      * @dev Sets the ERC20 gates for a product.
      */
     function _configureProduct(uint256 slicerId, uint256 productId, uint256 variantId, bytes memory params)
@@ -76,9 +76,9 @@ contract ERC20Gated is RegistryProductAction {
     }
 
     /**
-     * @inheritdoc IHookRegistry
+     * @inheritdoc IProductHookRegistry
      */
-    function configureProductSchema() external pure override returns (string memory) {
+    function configureProductSchema() public pure override returns (string memory) {
         return "(address erc20,uint256 amount)[] erc20Gates";
     }
 }

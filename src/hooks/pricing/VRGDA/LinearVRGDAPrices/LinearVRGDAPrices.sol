@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
-import {HookRegistry, IProductPrice, IHookRegistry, IProductsModule} from "@/utils/RegistryProductPrice.sol";
+import {
+    ProductHookRegistry, IProductPrice, IProductHookRegistry, IProductsModule
+} from "@/utils/RegistryProductPrice.sol";
 import {wadLn, unsafeWadDiv, toDaysWadUnsafe} from "@/utils/math/SignedWadMath.sol";
 import {LinearProduct} from "../types/LinearProduct.sol";
 import {VRGDAPrices} from "../VRGDAPrices.sol";
@@ -29,7 +31,7 @@ contract LinearVRGDAPrices is VRGDAPrices {
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @inheritdoc HookRegistry
+     * @inheritdoc ProductHookRegistry
      * @notice Set LinearProduct for a product.
      */
     function _configureProduct(uint256 slicerId, uint256 productId, uint256 variantId, bytes memory params)
@@ -95,9 +97,9 @@ contract LinearVRGDAPrices is VRGDAPrices {
     }
 
     /**
-     * @inheritdoc IHookRegistry
+     * @inheritdoc IProductHookRegistry
      */
-    function configureProductSchema() external pure override returns (string memory) {
+    function configureProductSchema() public pure override returns (string memory) {
         return "int184 priceDecayPercent,uint16 min,int256 perTimeUnit";
     }
 

@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
-import {HookRegistry, IProductPrice, IHookRegistry, IProductsModule} from "@/utils/RegistryProductPrice.sol";
+import {
+    ProductHookRegistry, IProductPrice, IProductHookRegistry, IProductsModule
+} from "@/utils/RegistryProductPrice.sol";
 import {
     wadMul,
     toWadUnsafe,
@@ -38,7 +40,7 @@ contract LogisticVRGDAPrices is VRGDAPrices {
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @inheritdoc HookRegistry
+     * @inheritdoc ProductHookRegistry
      * @notice Set LogisticVRGDAParams for a product.
      */
     function _configureProduct(uint256 slicerId, uint256 productId, uint256 variantId, bytes memory params)
@@ -105,9 +107,9 @@ contract LogisticVRGDAPrices is VRGDAPrices {
     }
 
     /**
-     * @inheritdoc IHookRegistry
+     * @inheritdoc IProductHookRegistry
      */
-    function configureProductSchema() external pure override returns (string memory) {
+    function configureProductSchema() public pure override returns (string memory) {
         return "int184 priceDecayPercent,uint16 min,int256 timescale";
     }
 

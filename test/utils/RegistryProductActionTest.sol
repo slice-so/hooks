@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
-import {HookRegistryTest} from "./HookRegistryTest.sol";
-import {RegistryProductAction, IHookRegistry, IProductAction} from "@/utils/RegistryProductAction.sol";
+import {ProductHookRegistryTest} from "./ProductHookRegistryTest.sol";
+import {RegistryProductAction, IProductHookRegistry, IProductAction} from "@/utils/RegistryProductAction.sol";
 
-abstract contract RegistryProductActionTest is HookRegistryTest {
+abstract contract RegistryProductActionTest is ProductHookRegistryTest {
     function testSupportsInterface_RegistryProductAction() public view {
         assertTrue(IProductAction(hook).supportsInterface(type(IProductAction).interfaceId));
-        assertTrue(IProductAction(hook).supportsInterface(type(IHookRegistry).interfaceId));
+        assertTrue(IProductAction(hook).supportsInterface(type(IProductHookRegistry).interfaceId));
     }
 
     function testRevert_onProductPurchase_NotPurchase() public {

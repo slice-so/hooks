@@ -7,7 +7,7 @@ import {VmSafe} from "forge-std/Vm.sol";
 import {ISliceCore} from "slice/interfaces/ISliceCore.sol";
 import {IProductsModule} from "slice/interfaces/IProductsModule.sol";
 import {IFundsModule} from "slice/interfaces/IFundsModule.sol";
-import {IHookRegistry} from "slice/interfaces/hooks/IHookRegistry.sol";
+import {IProductHookRegistry} from "slice/interfaces/hooks/IHookRegistry/IProductHookRegistry.sol";
 
 /**
  * Helper contract to enforce correct chain selection in scripts
@@ -85,7 +85,8 @@ abstract contract SetUpContractsList is Script {
     struct ContractDeploymentData {
         address contractAddress;
         uint256 blockNumber;
-        string paramsSchema;
+        // TODO: Add other params to the json? such as configure[ProductType/Slicer]Schema and [product/productType/slicer]PriceSchema
+        string configureProductSchema;
         bytes32 transactionHash;
     }
 
@@ -136,7 +137,9 @@ abstract contract SetUpContractsList is Script {
                                 string memory idx = vm.toString(j);
                                 vm.serializeAddress(idx, "address", existingData[j].contractAddress);
                                 vm.serializeUint(idx, "blockNumber", existingData[j].blockNumber);
-                                vm.serializeString(idx, "paramsSchema", existingData[j].paramsSchema);
+                                vm.serializeString(
+                                    idx, "configureProductSchema", existingData[j].configureProductSchema
+                                );
                                 arrStrings[j] =
                                     vm.serializeBytes32(idx, "transactionHash", existingData[j].transactionHash);
                             }
@@ -213,7 +216,12 @@ abstract contract SetUpContractsList is Script {
             json = new string[](existingContractAddresses.length + 1);
             vm.serializeAddress("0", "address", transaction.contractAddress);
             vm.serializeUint("0", "blockNumber", receipt.blockNumber);
-            vm.serializeString("0", "paramsSchema", IHookRegistry(transaction.contractAddress).configureProductSchema());
+            vm.serializeString(
+                "0",
+                "configureProductSchema",
+                IProductHookRegistry(transaction.contractAddress).configureProductSchema()
+            );
+            // TODO: Add other params to the json? such as configure[ProductType/Slicer]Schema and [product/productType/slicer]PriceSchema
             json[0] = vm.serializeBytes32("0", "transactionHash", transaction.hash);
 
             for (uint256 i = 0; i < existingContractAddresses.length; i++) {
@@ -222,14 +230,18 @@ abstract contract SetUpContractsList is Script {
 
                 vm.serializeAddress(index, "address", existingContractAddress.contractAddress);
                 vm.serializeUint(index, "blockNumber", existingContractAddress.blockNumber);
-                vm.serializeString(index, "paramsSchema", existingContractAddress.paramsSchema);
+                vm.serializeString(index, "configureProductSchema", existingContractAddress.configureProductSchema);
                 json[i + 1] = vm.serializeBytes32(index, "transactionHash", existingContractAddress.transactionHash);
             }
         } else {
             json = new string[](1);
             vm.serializeAddress("0", "address", transaction.contractAddress);
             vm.serializeUint("0", "blockNumber", receipt.blockNumber);
-            vm.serializeString("0", "paramsSchema", IHookRegistry(transaction.contractAddress).configureProductSchema());
+            vm.serializeString(
+                "0",
+                "configureProductSchema",
+                IProductHookRegistry(transaction.contractAddress).configureProductSchema()
+            );
             json[0] = vm.serializeBytes32("0", "transactionHash", transaction.hash);
         }
     }

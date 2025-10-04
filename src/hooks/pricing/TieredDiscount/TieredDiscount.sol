@@ -2,7 +2,7 @@
 pragma solidity ^0.8.30;
 
 import {IProductsModule} from "slice/interfaces/IProductsModule.sol";
-import {RegistryProductPrice, IProductPrice} from "@/utils/RegistryProductPrice.sol";
+import {RegistryPrice, IProductPrice, IProductTypePrice, ISlicerProductPrice} from "@/utils/RegistryPrice.sol";
 import {DiscountParams} from "./types/DiscountParams.sol";
 
 /**
@@ -10,7 +10,7 @@ import {DiscountParams} from "./types/DiscountParams.sol";
  * @notice  Tiered discounts based on asset ownership
  * @author  Slice <jacopo.eth>
  */
-abstract contract TieredDiscount is RegistryProductPrice {
+abstract contract TieredDiscount is RegistryPrice {
     /*//////////////////////////////////////////////////////////////
         ERRORS
     //////////////////////////////////////////////////////////////*/
@@ -26,12 +26,14 @@ abstract contract TieredDiscount is RegistryProductPrice {
 
     mapping(uint256 slicerId => mapping(uint256 productId => mapping(uint256 variantId => DiscountParams[]))) public
         discounts;
+    mapping(uint256 slicerId => mapping(uint256 productTypeId => DiscountParams[])) public productTypeDiscounts;
+    mapping(uint256 slicerId => DiscountParams[]) public slicerDiscounts;
 
     /*//////////////////////////////////////////////////////////////
         CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(IProductsModule productsModuleAddress) RegistryProductPrice(productsModuleAddress) {}
+    constructor(IProductsModule productsModuleAddress) RegistryPrice(productsModuleAddress) {}
 
     /*//////////////////////////////////////////////////////////////
         FUNCTIONS
@@ -44,15 +46,46 @@ abstract contract TieredDiscount is RegistryProductPrice {
         uint256 slicerId,
         uint256 productId,
         uint256 variantId,
-        address currency,
+        address,
         uint256 basePrice,
-        uint256 quantity,
+        uint256,
         address buyer,
-        bytes memory data
+        bytes memory
     ) public view override returns (uint256) {
         DiscountParams[] memory discountParams = discounts[slicerId][productId][variantId];
 
-        return _productPrice(slicerId, productId, variantId, currency, quantity, buyer, data, basePrice, discountParams);
+        return _productPrice(buyer, basePrice, discountParams);
+    }
+
+    /**
+     * @inheritdoc IProductTypePrice
+     */
+    function productTypePrice(
+        uint256 slicerId,
+        uint256 productTypeId,
+        address,
+        uint256 basePrice,
+        uint256,
+        address buyer,
+        bytes memory
+    ) public view override returns (uint256) {
+        DiscountParams[] memory discountParams = productTypeDiscounts[slicerId][productTypeId];
+
+        return _productPrice(buyer, basePrice, discountParams);
+    }
+
+    /**
+     * @inheritdoc ISlicerProductPrice
+     */
+    function slicerProductPrice(uint256 slicerId, address, uint256 basePrice, uint256, address buyer, bytes memory)
+        public
+        view
+        override
+        returns (uint256)
+    {
+        DiscountParams[] memory discountParams = slicerDiscounts[slicerId];
+
+        return _productPrice(buyer, basePrice, discountParams);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -62,26 +95,15 @@ abstract contract TieredDiscount is RegistryProductPrice {
     /**
      * @notice Logic for calculating product price. To be implemented by child contracts.
      *
-     * @param slicerId ID of the slicer to set the price params for.
-     * @param productId ID of the product to set the price params for.
-     * @param currency Currency chosen for the purchase
-     * @param quantity Number of units purchased
      * @param buyer Address of the buyer.
-     * @param data Data passed to the productPrice function.
      * @param basePrice Base price of the product in selected currency.
      * @param discountParams Array of discount parameters.
      *
      * @return Price of product in selected currency.
      */
-    function _productPrice(
-        uint256 slicerId,
-        uint256 productId,
-        uint256 variantId,
-        address currency,
-        uint256 quantity,
-        address buyer,
-        bytes memory data,
-        uint256 basePrice,
-        DiscountParams[] memory discountParams
-    ) internal view virtual returns (uint256);
+    function _productPrice(address buyer, uint256 basePrice, DiscountParams[] memory discountParams)
+        internal
+        view
+        virtual
+        returns (uint256);
 }
