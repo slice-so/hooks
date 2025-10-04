@@ -5,9 +5,9 @@ import {MerkleProof} from "@openzeppelin-4.8.0/utils/cryptography/MerkleProof.so
 import {
     IProductsModule,
     RegistryProductAction,
-    HookRegistry,
+    ProductHookRegistry,
     IProductAction,
-    IHookRegistry
+    IProductHookRegistry
 } from "@/utils/RegistryProductAction.sol";
 
 /**
@@ -65,7 +65,7 @@ contract Allowlisted is RegistryProductAction {
     }
 
     /**
-     * @inheritdoc HookRegistry
+     * @inheritdoc ProductHookRegistry
      * @dev Sets the Merkle root for the allowlist.
      */
     function _configureProduct(uint256 slicerId, uint256 productId, uint256 variantId, bytes memory params)
@@ -77,9 +77,9 @@ contract Allowlisted is RegistryProductAction {
     }
 
     /**
-     * @inheritdoc IHookRegistry
+     * @inheritdoc IProductHookRegistry
      */
-    function configureProductSchema() external pure override returns (string memory) {
+    function configureProductSchema() public pure override returns (string memory) {
         return "bytes32 merkleRoot";
     }
 }

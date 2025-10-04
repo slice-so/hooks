@@ -6,9 +6,9 @@ import {IERC1155} from "@openzeppelin-4.8.0/interfaces/IERC1155.sol";
 import {
     IProductsModule,
     RegistryProductAction,
-    HookRegistry,
+    ProductHookRegistry,
     IProductAction,
-    IHookRegistry
+    IProductHookRegistry
 } from "@/utils/RegistryProductAction.sol";
 import {NftType, NFTGate, NFTGates} from "./types/NFTGate.sol";
 
@@ -72,7 +72,7 @@ contract NFTGated is RegistryProductAction {
     }
 
     /**
-     * @inheritdoc HookRegistry
+     * @inheritdoc ProductHookRegistry
      * @dev Set the NFT gates for a product.
      */
     function _configureProduct(uint256 slicerId, uint256 productId, uint256 variantId, bytes memory params)
@@ -97,9 +97,9 @@ contract NFTGated is RegistryProductAction {
     }
 
     /**
-     * @inheritdoc IHookRegistry
+     * @inheritdoc IProductHookRegistry
      */
-    function configureProductSchema() external pure override returns (string memory) {
+    function configureProductSchema() public pure override returns (string memory) {
         return "(address nft,uint8 nftType,uint80 id,uint8 minQuantity)[] gates,uint256 minOwned";
     }
 }

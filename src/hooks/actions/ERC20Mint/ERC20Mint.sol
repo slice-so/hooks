@@ -4,9 +4,9 @@ pragma solidity ^0.8.30;
 import {
     IProductsModule,
     RegistryProductAction,
-    HookRegistry,
+    ProductHookRegistry,
     IProductAction,
-    IHookRegistry
+    IProductHookRegistry
 } from "@/utils/RegistryProductAction.sol";
 import {ERC20Data} from "./types/ERC20Data.sol";
 import {ERC20Mint_BaseToken} from "./utils/ERC20Mint_BaseToken.sol";
@@ -89,7 +89,7 @@ contract ERC20Mint is RegistryProductAction {
     }
 
     /**
-     * @inheritdoc HookRegistry
+     * @inheritdoc ProductHookRegistry
      * @dev Set the ERC20 data for a product.
      */
     function _configureProduct(uint256 slicerId, uint256 productId, uint256 variantId, bytes memory params)
@@ -123,9 +123,9 @@ contract ERC20Mint is RegistryProductAction {
     }
 
     /**
-     * @inheritdoc IHookRegistry
+     * @inheritdoc IProductHookRegistry
      */
-    function configureProductSchema() external pure override returns (string memory) {
+    function configureProductSchema() public pure override returns (string memory) {
         return
         "string name,string symbol,uint256 premintAmount,address premintReceiver,bool revertOnMaxSupplyReached,uint256 maxSupply,uint256 tokensPerUnit";
     }

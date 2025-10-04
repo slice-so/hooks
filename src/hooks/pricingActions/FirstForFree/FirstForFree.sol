@@ -7,10 +7,10 @@ import {
     IProductPrice,
     RegistryProductAction,
     RegistryProductPriceAction,
-    IHookRegistry,
+    IProductHookRegistry,
     IProductsModule
 } from "@/utils/RegistryProductPriceAction.sol";
-import {HookRegistry} from "@/utils/RegistryProductAction.sol";
+import {ProductHookRegistry} from "@/utils/RegistryProductAction.sol";
 import {ProductParams, TokenCondition} from "./types/ProductParams.sol";
 import {TokenType} from "./types/TokenCondition.sol";
 import {ITokenERC1155} from "./utils/ITokenERC1155.sol";
@@ -91,7 +91,7 @@ contract FirstForFree is RegistryProductPriceAction {
     }
 
     /**
-     * @inheritdoc HookRegistry
+     * @inheritdoc ProductHookRegistry
      * @notice Sets the product parameters.
      */
     function _configureProduct(uint256 slicerId, uint256 productId, uint256 variantId, bytes memory params)
@@ -120,9 +120,9 @@ contract FirstForFree is RegistryProductPriceAction {
     }
 
     /**
-     * @inheritdoc IHookRegistry
+     * @inheritdoc IProductHookRegistry
      */
-    function configureProductSchema() external pure override returns (string memory) {
+    function configureProductSchema() public pure override returns (string memory) {
         return
         "(address tokenAddress,uint8 tokenType,uint80 tokenId,uint8 minQuantity)[] eligibleTokens,address mintToken,uint88 mintTokenId,uint8 freeUnits";
     }

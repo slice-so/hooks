@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
-import {IProductsModule, RegistryProductAction, HookRegistry, IHookRegistry} from "@/utils/RegistryProductAction.sol";
+import {
+    IProductsModule,
+    RegistryProductAction,
+    ProductHookRegistry,
+    IProductHookRegistry
+} from "@/utils/RegistryProductAction.sol";
 import {MAX_ROYALTY, ERC721Mint_BaseToken} from "./utils/ERC721Mint_BaseToken.sol";
 import {ERC721Data} from "./types/ERC721Data.sol";
 
@@ -60,7 +65,7 @@ contract ERC721Mint is RegistryProductAction {
     }
 
     /**
-     * @inheritdoc HookRegistry
+     * @inheritdoc ProductHookRegistry
      * @dev Set the ERC721 data for a product.
      */
     function _configureProduct(uint256 slicerId, uint256 productId, uint256 variantId, bytes memory params)
@@ -94,9 +99,9 @@ contract ERC721Mint is RegistryProductAction {
     }
 
     /**
-     * @inheritdoc IHookRegistry
+     * @inheritdoc IProductHookRegistry
      */
-    function configureProductSchema() external pure override returns (string memory) {
+    function configureProductSchema() public pure override returns (string memory) {
         return
         "string name,string symbol,address royaltyReceiver,uint256 royaltyFraction,string baseURI,string tokenURI,bool revertOnMaxSupplyReached,uint256 maxSupply";
     }

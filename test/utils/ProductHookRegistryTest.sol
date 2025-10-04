@@ -2,15 +2,15 @@
 pragma solidity ^0.8.30;
 
 import {HookTest} from "./HookTest.sol";
-import {IHookRegistry} from "@/utils/RegistryProductPrice.sol";
+import {IProductHookRegistry} from "@/utils/RegistryProductPrice.sol";
 import {MockProductsModule} from "./mocks/MockProductsModule.sol";
 import {SliceContext} from "@/utils/RegistryProductAction.sol";
 
 bytes32 constant PRODUCT_MANAGER_ROLE = bytes32(uint256(0x04));
 
-abstract contract HookRegistryTest is HookTest {
+abstract contract ProductHookRegistryTest is HookTest {
     function testParamsSchema() public view {
-        string memory schema = IHookRegistry(hook).configureProductSchema();
+        string memory schema = IProductHookRegistry(hook).configureProductSchema();
         assertTrue(bytes(schema).length > 0);
     }
 
@@ -22,7 +22,7 @@ abstract contract HookRegistryTest is HookTest {
             )
         );
 
-        IHookRegistry(hook).configureProduct(0, 0, 0, "");
+        IProductHookRegistry(hook).configureProduct(0, 0, 0, "");
     }
 
     // TODO: verify configureProductSchema effectively corresponds to the params
