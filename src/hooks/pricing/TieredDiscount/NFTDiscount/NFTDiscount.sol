@@ -3,14 +3,8 @@ pragma solidity ^0.8.30;
 
 import {IERC721} from "@openzeppelin-4.8.0/token/ERC721/IERC721.sol";
 import {IERC1155} from "@openzeppelin-4.8.0/token/ERC1155/IERC1155.sol";
-import {
-    HookRegistry,
-    ProductHookRegistry,
-    IProductHookRegistry,
-    IProductTypeHookRegistry,
-    ISlicerHookRegistry,
-    IProductsModule
-} from "@/utils/RegistryPrice.sol";
+import {HookRegistry, IProductsModule} from "@/utils/RegistryPrice.sol";
+import {ProductHookRegistry, IProductHookRegistry} from "@/utils/RegistryProductPrice.sol";
 import {DiscountParams, TieredDiscount} from "../TieredDiscount.sol";
 import {NFTType} from "../types/DiscountParams.sol";
 

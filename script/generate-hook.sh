@@ -165,10 +165,10 @@ pragma solidity ^0.8.30;
 
 import {
     RegistryProductAction,
-    HookRegistry,
+    ProductHookRegistry,
     IProductsModule,
     IProductAction,
-    IHookRegistry
+    IProductHookRegistry
 } from "@/utils/RegistryProductAction.sol";
 
 /**
@@ -193,15 +193,15 @@ contract CONTRACT_NAME is RegistryProductAction {
     function isPurchaseAllowed(
         uint256 slicerId,
         uint256 productId,
-        address account,
+        uint256 variantId,
+        address buyer,
         uint256 quantity,
-        bytes memory slicerCustomData,
-        bytes memory buyerCustomData
-    ) public view override returns (bool) {
+        bytes memory data
+    ) public view override returns (bool isAllowed) {
         // Your eligibility logic. Return true if eligible, false otherwise.
         // Returns true by default.
 
-        return true;
+        isAllowed = true;
     }
 
     /**
@@ -210,25 +210,25 @@ contract CONTRACT_NAME is RegistryProductAction {
     function _onProductPurchase(
         uint256 slicerId,
         uint256 productId,
+        uint256 variantId,
         address buyer,
         uint256 quantity,
-        bytes memory slicerCustomData,
-        bytes memory buyerCustomData
+        bytes memory data
     ) internal override {
         // Your logic to be executed after product purchase.
     }
 
     /**
-     * @inheritdoc HookRegistry
+     * @inheritdoc ProductHookRegistry
      */
-    function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) internal override {
-        // Decode params according to `paramsSchema` and store any data required for your logic.
+    function _configureProduct(uint256 slicerId, uint256 productId, uint256 variantId, bytes memory params) internal override {
+        // Decode params according to `configureProductSchema` and store any data required for your logic.
     }
 
     /**
-     * @inheritdoc IHookRegistry
+     * @inheritdoc IProductHookRegistry
      */
-    function paramsSchema() external pure override returns (string memory) {
+    function configureProductSchema() public pure override returns (string memory) {
         // Define the schema for the parameters that will be passed to `_configureProduct`.
         return "";
     }
@@ -266,11 +266,11 @@ contract CONTRACT_NAME is ProductAction {
     function isPurchaseAllowed(
         uint256 slicerId,
         uint256 productId,
+        uint256 variantId,
         address buyer,
         uint256 quantity,
-        bytes memory slicerCustomData,
-        bytes memory buyerCustomData
-    ) public view override returns (bool) {
+        bytes memory data
+    ) public view override returns (bool isAllowed) {
         // Your eligibility logic. Return true if eligible, false otherwise.
         return true;
     }
@@ -281,10 +281,10 @@ contract CONTRACT_NAME is ProductAction {
     function _onProductPurchase(
         uint256 slicerId,
         uint256 productId,
+        uint256 variantId,
         address buyer,
         uint256 quantity,
-        bytes memory slicerCustomData,
-        bytes memory buyerCustomData
+        bytes memory data
     ) internal override {
         // Your logic to be executed after product purchase.
     }
@@ -298,10 +298,10 @@ pragma solidity ^0.8.30;
 
 import {
     RegistryProductPrice,
-    HookRegistry,
+    ProductHookRegistry,
     IProductsModule,
     IProductPrice,
-    IHookRegistry
+    IProductHookRegistry
 } from "@/utils/RegistryProductPrice.sol";
 
 /**
@@ -326,25 +326,27 @@ contract CONTRACT_NAME is RegistryProductPrice {
     function productPrice(
         uint256 slicerId,
         uint256 productId,
+        uint256 variantId,
         address currency,
+        uint256 basePrice,
         uint256 quantity,
         address buyer,
         bytes memory data
-    ) public view override returns (uint256 ethPrice, uint256 currencyPrice) {
+    ) public view override returns (uint256 price) {
         // Your pricing logic. Calculate and return the total price, depending on the passed quantity.
     }
 
     /**
-     * @inheritdoc HookRegistry
+     * @inheritdoc ProductHookRegistry
      */
-    function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) internal override {
-        // Decode params according to `paramsSchema` and store any data required for your pricing logic.
+    function _configureProduct(uint256 slicerId, uint256 productId, uint256 variantId, bytes memory params) internal override {
+        // Decode params according to `configureProductSchema` and store any data required for your pricing logic.
     }
 
     /**
-     * @inheritdoc IHookRegistry
+     * @inheritdoc IProductHookRegistry
      */
-    function paramsSchema() external pure override returns (string memory) {
+    function configureProductSchema() public pure override returns (string memory) {
         // Define the schema for the parameters that will be passed to `_configureProduct`.
         return "";
     }
@@ -382,11 +384,13 @@ contract CONTRACT_NAME is ProductPrice {
     function productPrice(
         uint256 slicerId,
         uint256 productId,
+        uint256 variantId,
         address currency,
+        uint256 basePrice,
         uint256 quantity,
         address buyer,
         bytes memory data
-    ) external view returns (uint256 ethPrice, uint256 currencyPrice) {
+    ) external view returns (uint256 price) {
         // Your pricing logic. Calculate and return the total price.
     }
 }
@@ -400,12 +404,14 @@ pragma solidity ^0.8.30;
 import {
     RegistryProductPriceAction,
     RegistryProductAction,
-    HookRegistry,
     IProductsModule,
     IProductAction,
-    IProductPrice,
-    IHookRegistry
+    IProductPrice
 } from "@/utils/RegistryProductPriceAction.sol";
+import {
+    ProductHookRegistry,
+    IProductHookRegistry
+} from "@/utils/RegistryProductAction.sol";
 
 /**
  * @title   CONTRACT_NAME
@@ -429,11 +435,13 @@ contract CONTRACT_NAME is RegistryProductPriceAction {
     function productPrice(
         uint256 slicerId,
         uint256 productId,
+        uint256 variantId,
         address currency,
+        uint256 basePrice,
         uint256 quantity,
         address buyer,
         bytes memory data
-    ) public view override returns (uint256 ethPrice, uint256 currencyPrice) {
+    ) public view override returns (uint256 price) {
         // Your pricing logic. Calculate and return the total price, depending on the passed quantity.
     }
 
@@ -443,15 +451,15 @@ contract CONTRACT_NAME is RegistryProductPriceAction {
     function isPurchaseAllowed(
         uint256 slicerId,
         uint256 productId,
-        address account,
+        uint256 variantId,
+        address buyer,
         uint256 quantity,
-        bytes memory slicerCustomData,
-        bytes memory buyerCustomData
-    ) public view override returns (bool) {
+        bytes memory data
+    ) public view override returns (bool isAllowed) {
         // Your eligibility logic. Return true if eligible, false otherwise.
         // Returns true by default.
 
-        return true;
+        isAllowed = true;
     }
 
     /**
@@ -460,25 +468,25 @@ contract CONTRACT_NAME is RegistryProductPriceAction {
     function _onProductPurchase(
         uint256 slicerId,
         uint256 productId,
+        uint256 variantId,
         address buyer,
         uint256 quantity,
-        bytes memory slicerCustomData,
-        bytes memory buyerCustomData
+        bytes memory data
     ) internal override {
         // Your logic to be executed after product purchase.
     }
 
     /**
-     * @inheritdoc HookRegistry
+     * @inheritdoc ProductHookRegistry
      */
-    function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) internal override {
-        // Decode params according to `paramsSchema` and store any data required for your logic.
+    function _configureProduct(uint256 slicerId, uint256 productId, uint256 variantId, bytes memory params) internal override {
+        // Decode params according to `configureProductSchema` and store any data required for your logic.
     }
 
     /**
-     * @inheritdoc IHookRegistry
+     * @inheritdoc IProductHookRegistry
      */
-    function paramsSchema() external pure override returns (string memory) {
+    function configureProductSchema() public pure override returns (string memory) {
         // Define the schema for the parameters that will be passed to `_configureProduct`.
         return "";
     }
@@ -522,11 +530,13 @@ contract CONTRACT_NAME is ProductPriceAction {
     function productPrice(
         uint256 slicerId,
         uint256 productId,
+        uint256 variantId,
         address currency,
+        uint256 basePrice,
         uint256 quantity,
         address buyer,
         bytes memory data
-    ) external view returns (uint256 ethPrice, uint256 currencyPrice) {
+    ) external view returns (uint256 price) {
         // Your pricing logic. Calculate and return the total price.
     }
 
@@ -536,11 +546,11 @@ contract CONTRACT_NAME is ProductPriceAction {
     function isPurchaseAllowed(
         uint256 slicerId,
         uint256 productId,
+        uint256 variantId,
         address buyer,
         uint256 quantity,
-        bytes memory slicerCustomData,
-        bytes memory buyerCustomData
-    ) public view override returns (bool) {
+        bytes memory data
+    ) public view override returns (bool isAllowed) {
         // Your eligibility logic. Return true if eligible, false otherwise.
         return true;
     }
@@ -551,10 +561,10 @@ contract CONTRACT_NAME is ProductPriceAction {
     function _onProductPurchase(
         uint256 slicerId,
         uint256 productId,
+        uint256 variantId,
         address buyer,
         uint256 quantity,
-        bytes memory slicerCustomData,
-        bytes memory buyerCustomData
+        bytes memory data
     ) internal override {
         // Your logic to be executed after product purchase.
     }
@@ -671,6 +681,7 @@ contract CONTRACT_NAMETest is RegistryProductActionTest {
     CONTRACT_NAME CONTRACT_VAR;
     uint256 slicerId = 1;
     uint256 productId = 1;
+    uint256 variantId = 0;
 
     function setUp() public {
         CONTRACT_VAR = new CONTRACT_NAME(PRODUCTS_MODULE);
@@ -684,6 +695,7 @@ contract CONTRACT_NAMETest is RegistryProductActionTest {
         CONTRACT_VAR.configureProduct(
             slicerId,
             productId,
+            variantId,
             abi.encode(
                 // Your params here
             )
@@ -701,6 +713,7 @@ contract CONTRACT_NAMETest is RegistryProductActionTest {
         CONTRACT_VAR.configureProduct(
             slicerId,
             productId,
+            variantId,
             abi.encode(
                 // Your params here
             )
@@ -708,7 +721,7 @@ contract CONTRACT_NAMETest is RegistryProductActionTest {
 
         vm.stopPrank();
 
-        bool isAllowed = CONTRACT_VAR.isPurchaseAllowed(slicerId, productId, buyer, 1, "", "");
+        bool isAllowed = CONTRACT_VAR.isPurchaseAllowed(slicerId, productId, variantId, buyer, 1, "");
     
         // Verify isAllowed value based on conditions
     }
@@ -720,6 +733,7 @@ contract CONTRACT_NAMETest is RegistryProductActionTest {
         CONTRACT_VAR.configureProduct(
             slicerId,
             productId,
+            variantId,
             abi.encode(
                 // Your params here
             )
@@ -728,7 +742,7 @@ contract CONTRACT_NAMETest is RegistryProductActionTest {
         vm.stopPrank();
 
         vm.prank(address(PRODUCTS_MODULE));
-        CONTRACT_VAR.onProductPurchase(slicerId, productId, buyer, 1, "", "");
+        CONTRACT_VAR.onProductPurchase(slicerId, productId, variantId, buyer, 1, "");
 
         // Verify after purchase logic
     }
@@ -746,6 +760,7 @@ contract CONTRACT_NAMETest is RegistryProductPriceTest {
     CONTRACT_NAME CONTRACT_VAR;
     uint256 slicerId = 1;
     uint256 productId = 1;
+    uint256 variantId = 0;
 
     function setUp() public {
         CONTRACT_VAR = new CONTRACT_NAME(PRODUCTS_MODULE);
@@ -759,6 +774,7 @@ contract CONTRACT_NAMETest is RegistryProductPriceTest {
         CONTRACT_VAR.configureProduct(
             slicerId,
             productId,
+            variantId,
             abi.encode(
                 // Your params here
             )
@@ -776,6 +792,7 @@ contract CONTRACT_NAMETest is RegistryProductPriceTest {
         CONTRACT_VAR.configureProduct(
             slicerId,
             productId,
+            variantId,
             abi.encode(
                 // Your params here
             )
@@ -783,7 +800,7 @@ contract CONTRACT_NAMETest is RegistryProductPriceTest {
 
         vm.stopPrank();
 
-        (uint256 ethPrice, uint256 currencyPrice) = CONTRACT_VAR.productPrice(slicerId, productId, ETH, 1, buyer, "");
+        (uint256 price) = CONTRACT_VAR.productPrice(slicerId, productId, variantId, ETH, 0, 1, buyer, "");
 
         // Verify product price
     }
@@ -801,6 +818,7 @@ contract CONTRACT_NAMETest is RegistryProductPriceActionTest {
     CONTRACT_NAME CONTRACT_VAR;
     uint256 slicerId = 1;
     uint256 productId = 1;
+    uint256 variantId = 0;
 
     function setUp() public {
         CONTRACT_VAR = new CONTRACT_NAME(PRODUCTS_MODULE);
@@ -814,6 +832,7 @@ contract CONTRACT_NAMETest is RegistryProductPriceActionTest {
         CONTRACT_VAR.configureProduct(
             slicerId,
             productId,
+            variantId,
             abi.encode(
                 // Your params here
             )
@@ -831,6 +850,7 @@ contract CONTRACT_NAMETest is RegistryProductPriceActionTest {
         CONTRACT_VAR.configureProduct(
             slicerId,
             productId,
+            variantId,
             abi.encode(
                 // Your params here
             )
@@ -838,7 +858,7 @@ contract CONTRACT_NAMETest is RegistryProductPriceActionTest {
 
         vm.stopPrank();
 
-        (uint256 ethPrice, uint256 currencyPrice) = CONTRACT_VAR.productPrice(slicerId, productId, ETH, 1, buyer, "");
+        (uint256 price) = CONTRACT_VAR.productPrice(slicerId, productId, variantId, ETH, 0, 1, buyer, "");
 
         // Verify product price
     }
@@ -850,6 +870,7 @@ contract CONTRACT_NAMETest is RegistryProductPriceActionTest {
         CONTRACT_VAR.configureProduct(
             slicerId,
             productId,
+            variantId,
             abi.encode(
                 // Your params here
             )
@@ -857,7 +878,7 @@ contract CONTRACT_NAMETest is RegistryProductPriceActionTest {
 
         vm.stopPrank();
 
-        bool isAllowed = CONTRACT_VAR.isPurchaseAllowed(slicerId, productId, buyer, 1, "", "");
+        bool isAllowed = CONTRACT_VAR.isPurchaseAllowed(slicerId, productId, variantId, buyer, 1, "");
     
         // Verify isAllowed value based on conditions
     }
@@ -869,6 +890,7 @@ contract CONTRACT_NAMETest is RegistryProductPriceActionTest {
         CONTRACT_VAR.configureProduct(
             slicerId,
             productId,
+            variantId,
             abi.encode(
                 // Your params here
             )
@@ -877,7 +899,7 @@ contract CONTRACT_NAMETest is RegistryProductPriceActionTest {
         vm.stopPrank();
 
         vm.prank(address(PRODUCTS_MODULE));
-        CONTRACT_VAR.onProductPurchase(slicerId, productId, buyer, 1, "", "");
+        CONTRACT_VAR.onProductPurchase(slicerId, productId, variantId, buyer, 1, "");
 
         // Verify after purchase logic
     }
