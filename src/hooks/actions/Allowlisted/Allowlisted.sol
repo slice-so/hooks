@@ -3,9 +3,9 @@ pragma solidity ^0.8.30;
 
 import {MerkleProof} from "@openzeppelin-4.8.0/utils/cryptography/MerkleProof.sol";
 import {
-    IProductsModule,
     RegistryProductAction,
     ProductHookRegistry,
+    IProductsModule,
     IProductAction,
     IProductHookRegistry
 } from "@/utils/RegistryProductAction.sol";

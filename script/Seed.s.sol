@@ -23,41 +23,42 @@ contract SeedHooksScript is Script {
     function run() external {
         vm.startBroadcast();
 
+        string memory json = vm.readFile("./deployments/addresses.json");
         Hook[] memory hooks = new Hook[](9);
         hooks[0] = Hook({
-            hookAddress: 0x157428DD791E03c20880D22C3dA2B66A36B5cF26,
+            hookAddress: vm.parseJsonAddress(json, ".actions.Allowlisted.[0].address"),
             code: address(new Allowlisted(Contracts.PRODUCTS_MODULE)).code
         });
         hooks[1] = Hook({
-            hookAddress: 0x26A1C86B555013995Fc72864D261fDe984752E7c,
+            hookAddress: vm.parseJsonAddress(json, ".actions.ERC20Gated.[0].address"),
             code: address(new ERC20Gated(Contracts.PRODUCTS_MODULE)).code
         });
         hooks[2] = Hook({
-            hookAddress: 0x67f9799FaC1D53C63217BEE47f553150F5BB0836,
+            hookAddress: vm.parseJsonAddress(json, ".actions.ERC20Mint.[0].address"),
             code: address(new ERC20Mint(Contracts.PRODUCTS_MODULE)).code
         });
         hooks[3] = Hook({
-            hookAddress: 0x2b6488115FAa50142E140172CbCd60e6370675F7,
+            hookAddress: vm.parseJsonAddress(json, ".actions.ERC721Mint.[0].address"),
             code: address(new ERC721Mint(Contracts.PRODUCTS_MODULE)).code
         });
         hooks[4] = Hook({
-            hookAddress: 0xD4eF7A46bF4c58036eaCA886119F5230e5a2C25d,
+            hookAddress: vm.parseJsonAddress(json, ".actions.NFTGated.[0].address"),
             code: address(new NFTGated(Contracts.PRODUCTS_MODULE)).code
         });
         hooks[5] = Hook({
-            hookAddress: 0xb830a457d2f51d4cA1136b97FB30DF6366CFe2f5,
+            hookAddress: vm.parseJsonAddress(json, ".pricing.NFTDiscount.[0].address"),
             code: address(new NFTDiscount(Contracts.PRODUCTS_MODULE)).code
         });
         hooks[6] = Hook({
-            hookAddress: 0xEC68E30182F4298b7032400B7ce809da613e4449,
+            hookAddress: vm.parseJsonAddress(json, ".pricing.LinearVRGDAPrices.[0].address"),
             code: address(new LinearVRGDAPrices(Contracts.PRODUCTS_MODULE)).code
         });
         hooks[7] = Hook({
-            hookAddress: 0x2b02cC8528EF18abf8185543CEC29A94F0542c8F,
+            hookAddress: vm.parseJsonAddress(json, ".pricing.LogisticVRGDAPrices.[0].address"),
             code: address(new LogisticVRGDAPrices(Contracts.PRODUCTS_MODULE)).code
         });
         hooks[8] = Hook({
-            hookAddress: 0x2C18D37b8229233F672bF406bCe8799BCfD43B5A,
+            hookAddress: vm.parseJsonAddress(json, ".pricingActions.FirstForFree.[0].address"),
             code: address(new FirstForFree(Contracts.PRODUCTS_MODULE)).code
         });
 

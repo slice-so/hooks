@@ -9,7 +9,7 @@ import {SliceContext} from "@/utils/RegistryProductAction.sol";
 bytes32 constant PRODUCT_MANAGER_ROLE = bytes32(uint256(0x04));
 
 abstract contract ProductHookRegistryTest is HookTest {
-    function testParamsSchema() public view {
+    function testConfigureProductSchema() public view {
         string memory schema = IProductHookRegistry(hook).configureProductSchema();
         assertTrue(bytes(schema).length > 0);
     }
