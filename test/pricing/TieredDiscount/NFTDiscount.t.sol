@@ -80,12 +80,7 @@ contract NFTDiscountTest is RegistryProductPriceTest {
     }
 
     function testConfigureProductType_AccessControl() public {
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                SliceContext.NotAuthorized.selector,
-                bytes32(uint256(1 << 1 | 1 << 3))
-            )
-        );
+        vm.expectRevert(abi.encodeWithSelector(SliceContext.NotAuthorized.selector, bytes32(uint256(1 << 1 | 1 << 3))));
 
         erc721GatedDiscount.configureProductType(slicerId, productTypeId, "");
     }
@@ -179,8 +174,7 @@ contract NFTDiscountTest is RegistryProductPriceTest {
 
         uint256 basePrice = PRODUCTS_MODULE.basePrice(slicerId, productId, variantId, ETH, quantity);
 
-        uint256 price =
-            erc721GatedDiscount.slicerProductPrice(slicerId, ETH, basePrice, quantity, buyer, "");
+        uint256 price = erc721GatedDiscount.slicerProductPrice(slicerId, ETH, basePrice, quantity, buyer, "");
 
         assertEq(price, (basePrice - (basePrice * percentDiscountOne) / 1e4));
 
@@ -193,12 +187,7 @@ contract NFTDiscountTest is RegistryProductPriceTest {
     }
 
     function testConfigureSlicer_AccessControl() public {
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                SliceContext.NotAuthorized.selector,
-                bytes32(uint256(1 << 1 | 1 << 3))
-            )
-        );
+        vm.expectRevert(abi.encodeWithSelector(SliceContext.NotAuthorized.selector, bytes32(uint256(1 << 1 | 1 << 3))));
 
         erc721GatedDiscount.configureSlicer(slicerId, "");
     }

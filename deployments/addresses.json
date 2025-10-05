@@ -2,78 +2,132 @@
   "actions": {
     "Allowlisted": [
       {
-        "address": "0x57c6Ae75B3903755ADb1E1140d80b91FE12394D6",
-        "blockNumber": 36415274,
+        "address": "0x87f726ac5D1023919840bebde2Da2efb5Da816ad",
+        "blockNumber": 36441333,
         "configureProductSchema": "bytes32 merkleRoot",
-        "transactionHash": "0xe1c603de0844e496a13bfb4996f6436b198a788aedfd384d227b1f85b09c6b4a"
+        "configureProductTypeSchema": "not-supported",
+        "configureSlicerSchema": "not-supported",
+        "onProductPurchaseSchema": "not-supported",
+        "productPriceSchema": "not-supported",
+        "productTypePriceSchema": "not-supported",
+        "slicerProductPriceSchema": "not-supported",
+        "transactionHash": "0x57419dee52082559db1d966b1b139bb79ac59c4533de43153dd11fda30b765c1"
       }
     ],
     "ERC20Gated": [
       {
-        "address": "0x26A1C86B555013995Fc72864D261fDe984752E7c",
-        "blockNumber": 33558792,
+        "address": "0x247ebf608A0028DE933f1F90eE3920864D3fC621",
+        "blockNumber": 36440973,
         "configureProductSchema": "(address erc20,uint256 amount)[] erc20Gates",
-        "transactionHash": "0x3a7c01ede05a34280073479d5cdf1f35e41d9f08c36a71f358b9c503ccc54526"
+        "configureProductTypeSchema": "not-supported",
+        "configureSlicerSchema": "not-supported",
+        "onProductPurchaseSchema": "not-supported",
+        "productPriceSchema": "not-supported",
+        "productTypePriceSchema": "not-supported",
+        "slicerProductPriceSchema": "not-supported",
+        "transactionHash": "0xac40db0f5c63ec520e671db10b018018900a332d563c99bc9828a6cc20b48863"
       }
     ],
     "ERC20Mint": [
       {
-        "address": "0x67f9799FaC1D53C63217BEE47f553150F5BB0836",
-        "blockNumber": 33520592,
+        "address": "0x8B03B4dE7F6FD7A7BDD60Cb00aa49E144e45cdd0",
+        "blockNumber": 36441450,
         "configureProductSchema": "string name,string symbol,uint256 premintAmount,address premintReceiver,bool revertOnMaxSupplyReached,uint256 maxSupply,uint256 tokensPerUnit",
-        "transactionHash": "0xfcd7e8fe47aa509afa0acdef86b741656c2602626f3258f8a83b359c665d6b04"
+        "configureProductTypeSchema": "not-supported",
+        "configureSlicerSchema": "not-supported",
+        "onProductPurchaseSchema": "not-supported",
+        "productPriceSchema": "not-supported",
+        "productTypePriceSchema": "not-supported",
+        "slicerProductPriceSchema": "not-supported",
+        "transactionHash": "0xfd77332c2aba9e05a71419b87ddb0a136f85675f7d0f13cf7c46c3e65c99f44c"
       }
     ],
     "ERC721Mint": [
       {
-        "address": "0x2b6488115FAa50142E140172CbCd60e6370675F7",
-        "blockNumber": 33511082,
+        "address": "0x48eAf12a1dC2a6dfACcb4C03F381B07ad5D5961C",
+        "blockNumber": 36441490,
         "configureProductSchema": "string name,string symbol,address royaltyReceiver,uint256 royaltyFraction,string baseURI,string tokenURI,bool revertOnMaxSupplyReached,uint256 maxSupply",
-        "transactionHash": "0x4981b3b67c0b8abe6a942b3ca86643f2b1dfdbcce59d6c819ad20a82814956e0"
+        "configureProductTypeSchema": "not-supported",
+        "configureSlicerSchema": "not-supported",
+        "onProductPurchaseSchema": "not-supported",
+        "productPriceSchema": "not-supported",
+        "productTypePriceSchema": "not-supported",
+        "slicerProductPriceSchema": "not-supported",
+        "transactionHash": "0x4851d2daedfa5de5a6a60a44fb9709e8c865039660c373d6d96f06c4ec2369f5"
       }
     ],
     "NFTGated": [
       {
-        "address": "0xD4eF7A46bF4c58036eaCA886119F5230e5a2C25d",
-        "blockNumber": 33563508,
+        "address": "0x560463f7bF3DFDB4Cff4f96c3399313d610Dd349",
+        "blockNumber": 36441510,
         "configureProductSchema": "(address nft,uint8 nftType,uint80 id,uint8 minQuantity)[] gates,uint256 minOwned",
-        "transactionHash": "0x9dd101a6155b432849cb33f65c5d4b9f6875e6b1e7bf806005a8a6b0d070f634"
+        "configureProductTypeSchema": "not-supported",
+        "configureSlicerSchema": "not-supported",
+        "onProductPurchaseSchema": "",
+        "productPriceSchema": "not-supported",
+        "productTypePriceSchema": "not-supported",
+        "slicerProductPriceSchema": "not-supported",
+        "transactionHash": "0x3bef5e07d303ab1028a7928f9ef1ffb1613b957aff4bfe481ae79a6fd1029e2d"
       }
     ]
   },
   "pricing": {
     "LinearVRGDAPrices": [
       {
-        "address": "0xEC68E30182F4298b7032400B7ce809da613e4449",
-        "blockNumber": 33511188,
+        "address": "0x67AEdfe386a078DF350D4b1E033AB735c1fCD0C9",
+        "blockNumber": 36441538,
         "configureProductSchema": "int184 priceDecayPercent,uint16 min,int256 perTimeUnit",
-        "transactionHash": "0xf2667ce20d07561e59c8d3e3de135bbd895c5b08bb57fe487c6c8197c91a0d73"
+        "configureProductTypeSchema": "not-supported",
+        "configureSlicerSchema": "not-supported",
+        "onProductPurchaseSchema": "not-supported",
+        "productPriceSchema": "not-supported",
+        "productTypePriceSchema": "not-supported",
+        "slicerProductPriceSchema": "not-supported",
+        "transactionHash": "0xd5ad41a2f994e0151edaf566e8114b703fa1843c4bbd4a8ed79b4312e22a4843"
       }
     ],
     "LogisticVRGDAPrices": [
       {
-        "address": "0x2b02cC8528EF18abf8185543CEC29A94F0542c8F",
-        "blockNumber": 33511209,
+        "address": "0x12b56C70fd76D45b578C50aD2eDB582b44d75cC1",
+        "blockNumber": 36441564,
         "configureProductSchema": "int184 priceDecayPercent,uint16 min,int256 timescale",
-        "transactionHash": "0x2b27380661a38b54dbccf634305622296034ddfccf5865a07fbfb7810ea41025"
+        "configureProductTypeSchema": "not-supported",
+        "configureSlicerSchema": "not-supported",
+        "onProductPurchaseSchema": "not-supported",
+        "productPriceSchema": "",
+        "productTypePriceSchema": "not-supported",
+        "slicerProductPriceSchema": "not-supported",
+        "transactionHash": "0x72fbbdd585b2fd5a2c5be0431e14c0ddee9a266f0c2c6d259dfc9b76a938122a"
       }
     ],
     "NFTDiscount": [
       {
-        "address": "0xba7D3668EeE9324f406243032B2786bA7Edb0a35",
-        "blockNumber": 36415352,
+        "address": "0xD92820f4836b23DCe9f7696b12a5C877ec667128",
+        "blockNumber": 36441359,
         "configureProductSchema": "(address nft,uint80 discount,uint8 minQuantity,uint8 nftType,uint256 tokenId)[] discounts",
-        "transactionHash": "0x14176f01e39dae7eeab1ec3704085ff102ff355df34a2e631888f4f2b47c2b92"
+        "configureProductTypeSchema": "(address nft,uint80 discount,uint8 minQuantity,uint8 nftType,uint256 tokenId)[] discounts",
+        "configureSlicerSchema": "(address nft,uint80 discount,uint8 minQuantity,uint8 nftType,uint256 tokenId)[] discounts",
+        "onProductPurchaseSchema": "not-supported",
+        "productPriceSchema": "not-supported",
+        "productTypePriceSchema": "not-supported",
+        "slicerProductPriceSchema": "",
+        "transactionHash": "0xaf7bb92631cfa26e513b23bd48d60535244a9161e497d25d55ba139890414e3c"
       }
     ]
   },
   "pricingActions": {
     "FirstForFree": [
       {
-        "address": "0xecC477959f1901a4B5f5C9Ab2B694F701F74819c",
-        "blockNumber": 36415374,
+        "address": "0x718308153116e90393804ae7a58a8e7d5BDb6482",
+        "blockNumber": 36441582,
         "configureProductSchema": "(address tokenAddress,uint8 tokenType,uint80 tokenId,uint8 minQuantity)[] eligibleTokens,address mintToken,uint88 mintTokenId,uint8 freeUnits",
-        "transactionHash": "0xfd91db10b4e70513a7d2ac682ac8a4095f713f4971d41929e8581bdacc90b340"
+        "configureProductTypeSchema": "not-supported",
+        "configureSlicerSchema": "not-supported",
+        "onProductPurchaseSchema": "",
+        "productPriceSchema": "",
+        "productTypePriceSchema": "not-supported",
+        "slicerProductPriceSchema": "not-supported",
+        "transactionHash": "0x59033c01e7228c3f28d25ce233bb729e595515923078498e726d052f038a87aa"
       }
     ]
   }
