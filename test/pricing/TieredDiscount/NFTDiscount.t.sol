@@ -4,10 +4,12 @@ pragma solidity ^0.8.30;
 import {RegistryProductPriceTest} from "@test/utils/RegistryProductPriceTest.sol";
 import {
     IProductsModule,
+    HookRegistry,
     NFTDiscount,
     DiscountParams,
     NFTType
 } from "@/hooks/pricing/TieredDiscount/NFTDiscount/NFTDiscount.sol";
+import {SliceContext} from "slice/utils/SliceContext.sol";
 import {MockERC721} from "@test/utils/mocks/MockERC721.sol";
 import {MockERC1155} from "@test/utils/mocks/MockERC1155.sol";
 
@@ -15,6 +17,7 @@ address constant USDC = address(1);
 uint256 constant slicerId = 0;
 uint256 constant productId = 1;
 uint256 constant variantId = 0;
+uint256 constant productTypeId = 2;
 uint80 constant percentDiscountOne = 1000; // 10%
 uint80 constant percentDiscountTwo = 2000; // 20%
 
@@ -33,6 +36,229 @@ contract NFTDiscountTest is RegistryProductPriceTest {
         _setHook(address(erc721GatedDiscount));
 
         nftOne.mint(buyer);
+    }
+
+    function testConfigureProductType() public {
+        DiscountParams[] memory discountParams = new DiscountParams[](2);
+
+        discountParams[0] = DiscountParams({
+            nft: address(nftTwo),
+            discount: percentDiscountTwo,
+            minQuantity: minNftQuantity,
+            nftType: NFTType.ERC721,
+            tokenId: 0
+        });
+        discountParams[1] = DiscountParams({
+            nft: address(nftOne),
+            discount: percentDiscountOne,
+            minQuantity: minNftQuantity,
+            nftType: NFTType.ERC721,
+            tokenId: 0
+        });
+
+        bytes memory params = abi.encode(discountParams);
+
+        vm.expectEmit(true, true, true, true, address(erc721GatedDiscount));
+        emit HookRegistry.ProductTypeConfigured(slicerId, productTypeId, params);
+
+        vm.prank(productOwner);
+        erc721GatedDiscount.configureProductType(slicerId, productTypeId, params);
+
+        uint256 basePrice = PRODUCTS_MODULE.basePrice(slicerId, productId, variantId, ETH, quantity);
+
+        uint256 price =
+            erc721GatedDiscount.productTypePrice(slicerId, productTypeId, ETH, basePrice, quantity, buyer, "");
+
+        assertEq(price, (basePrice - (basePrice * percentDiscountOne) / 1e4));
+
+        nftTwo.mint(buyer);
+
+        uint256 priceWithHigherDiscount =
+            erc721GatedDiscount.productTypePrice(slicerId, productTypeId, ETH, basePrice, quantity, buyer, "");
+
+        assertEq(priceWithHigherDiscount, (basePrice - (basePrice * percentDiscountTwo) / 1e4));
+    }
+
+    function testConfigureProductType_AccessControl() public {
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                SliceContext.NotAuthorized.selector,
+                bytes32(uint256(1 << 1 | 1 << 3))
+            )
+        );
+
+        erc721GatedDiscount.configureProductType(slicerId, productTypeId, "");
+    }
+
+    function testConfigureProductTypeSchema() public view {
+        string memory schema = erc721GatedDiscount.configureProductTypeSchema();
+
+        assertEq(schema, erc721GatedDiscount.configureProductSchema());
+        assertTrue(bytes(schema).length > 0);
+    }
+
+    function testProductTypePriceSchema() public view {
+        string memory schema = erc721GatedDiscount.productTypePriceSchema();
+
+        assertEq(schema, erc721GatedDiscount.productPriceSchema());
+    }
+
+    function testProductTypePrice_NoDiscount() public {
+        vm.prank(productOwner);
+        erc721GatedDiscount.configureProductType(slicerId, productTypeId, abi.encode(new DiscountParams[](0)));
+
+        uint256 basePrice = PRODUCTS_MODULE.basePrice(slicerId, productId, variantId, ETH, quantity);
+        uint256 price =
+            erc721GatedDiscount.productTypePrice(slicerId, productTypeId, ETH, basePrice, quantity, buyer2, "");
+
+        assertEq(price, basePrice);
+    }
+
+    function testConfigureProductType__Edit_Remove() public {
+        DiscountParams[] memory discountParams = new DiscountParams[](2);
+
+        discountParams[0] = DiscountParams({
+            nft: address(nftTwo),
+            discount: percentDiscountTwo,
+            minQuantity: minNftQuantity,
+            nftType: NFTType.ERC721,
+            tokenId: 0
+        });
+        discountParams[1] = DiscountParams({
+            nft: address(nftOne),
+            discount: percentDiscountOne,
+            minQuantity: minNftQuantity,
+            nftType: NFTType.ERC721,
+            tokenId: 0
+        });
+
+        vm.prank(productOwner);
+        erc721GatedDiscount.configureProductType(slicerId, productTypeId, abi.encode(discountParams));
+
+        uint256 basePrice = PRODUCTS_MODULE.basePrice(slicerId, productId, variantId, ETH, quantity);
+
+        uint256 price =
+            erc721GatedDiscount.productTypePrice(slicerId, productTypeId, ETH, basePrice, quantity, buyer, "");
+
+        assertEq(price, (basePrice - (basePrice * percentDiscountOne) / 1e4));
+
+        vm.prank(productOwner);
+        erc721GatedDiscount.configureProductType(slicerId, productTypeId, abi.encode(new DiscountParams[](0)));
+
+        uint256 resetPrice =
+            erc721GatedDiscount.productTypePrice(slicerId, productTypeId, ETH, basePrice, quantity, buyer, "");
+
+        assertEq(resetPrice, basePrice);
+    }
+
+    function testConfigureSlicer() public {
+        DiscountParams[] memory discountParams = new DiscountParams[](2);
+
+        discountParams[0] = DiscountParams({
+            nft: address(nftTwo),
+            discount: percentDiscountTwo,
+            minQuantity: minNftQuantity,
+            nftType: NFTType.ERC721,
+            tokenId: 0
+        });
+        discountParams[1] = DiscountParams({
+            nft: address(nftOne),
+            discount: percentDiscountOne,
+            minQuantity: minNftQuantity,
+            nftType: NFTType.ERC721,
+            tokenId: 0
+        });
+
+        bytes memory params = abi.encode(discountParams);
+
+        vm.expectEmit(true, true, true, true, address(erc721GatedDiscount));
+        emit HookRegistry.SlicerConfigured(slicerId, params);
+
+        vm.prank(productOwner);
+        erc721GatedDiscount.configureSlicer(slicerId, params);
+
+        uint256 basePrice = PRODUCTS_MODULE.basePrice(slicerId, productId, variantId, ETH, quantity);
+
+        uint256 price =
+            erc721GatedDiscount.slicerProductPrice(slicerId, ETH, basePrice, quantity, buyer, "");
+
+        assertEq(price, (basePrice - (basePrice * percentDiscountOne) / 1e4));
+
+        nftTwo.mint(buyer);
+
+        uint256 priceWithHigherDiscount =
+            erc721GatedDiscount.slicerProductPrice(slicerId, ETH, basePrice, quantity, buyer, "");
+
+        assertEq(priceWithHigherDiscount, (basePrice - (basePrice * percentDiscountTwo) / 1e4));
+    }
+
+    function testConfigureSlicer_AccessControl() public {
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                SliceContext.NotAuthorized.selector,
+                bytes32(uint256(1 << 1 | 1 << 3))
+            )
+        );
+
+        erc721GatedDiscount.configureSlicer(slicerId, "");
+    }
+
+    function testConfigureSlicerSchema() public view {
+        string memory schema = erc721GatedDiscount.configureSlicerSchema();
+
+        assertEq(schema, erc721GatedDiscount.configureProductSchema());
+        assertTrue(bytes(schema).length > 0);
+    }
+
+    function testSlicerProductPriceSchema() public view {
+        string memory schema = erc721GatedDiscount.slicerProductPriceSchema();
+
+        assertEq(schema, erc721GatedDiscount.productPriceSchema());
+    }
+
+    function testSlicerProductPrice_NoDiscount() public {
+        vm.prank(productOwner);
+        erc721GatedDiscount.configureSlicer(slicerId, abi.encode(new DiscountParams[](0)));
+
+        uint256 basePrice = PRODUCTS_MODULE.basePrice(slicerId, productId, variantId, ETH, quantity);
+        uint256 price = erc721GatedDiscount.slicerProductPrice(slicerId, ETH, basePrice, quantity, buyer3, "");
+
+        assertEq(price, basePrice);
+    }
+
+    function testConfigureSlicer__Edit_Remove() public {
+        DiscountParams[] memory discountParams = new DiscountParams[](2);
+
+        discountParams[0] = DiscountParams({
+            nft: address(nftTwo),
+            discount: percentDiscountTwo,
+            minQuantity: minNftQuantity,
+            nftType: NFTType.ERC721,
+            tokenId: 0
+        });
+        discountParams[1] = DiscountParams({
+            nft: address(nftOne),
+            discount: percentDiscountOne,
+            minQuantity: minNftQuantity,
+            nftType: NFTType.ERC721,
+            tokenId: 0
+        });
+
+        vm.prank(productOwner);
+        erc721GatedDiscount.configureSlicer(slicerId, abi.encode(discountParams));
+
+        uint256 basePrice = PRODUCTS_MODULE.basePrice(slicerId, productId, variantId, ETH, quantity);
+
+        uint256 price = erc721GatedDiscount.slicerProductPrice(slicerId, ETH, basePrice, quantity, buyer, "");
+
+        assertEq(price, (basePrice - (basePrice * percentDiscountOne) / 1e4));
+
+        vm.prank(productOwner);
+        erc721GatedDiscount.configureSlicer(slicerId, abi.encode(new DiscountParams[](0)));
+
+        uint256 resetPrice = erc721GatedDiscount.slicerProductPrice(slicerId, ETH, basePrice, quantity, buyer, "");
+
+        assertEq(resetPrice, basePrice);
     }
 
     function testConfigureProduct__ETH() public {
