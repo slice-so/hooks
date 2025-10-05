@@ -29,9 +29,15 @@ The script will create your contract file with the proper template and add it to
 
 ### Registry Integration
 
-Strategies inheriting from `RegistryProductPrice` automatically support frontend integration through:
-- **Product configuration** via `configureProduct()`
-- **Parameter validation** via `configureProductSchema()`
+Strategies can inherit from two base contracts:
+
+**`RegistryProductPrice`** - Product-level configuration:
+- Configure via `configureProduct(slicerId, productId, variantId, params)`
+- Schema via `configureProductSchema()`
+
+**`RegistryPrice`** - Multi-level configuration (Product, ProductType, or Slicer):
+- Configure at product, product type, or slicer level
+- Same hooks can be reused across different configuration scopes
 
 ### Testing
 
