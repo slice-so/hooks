@@ -77,7 +77,9 @@ contract AllowlistedTest is RegistryProductActionTest {
         assertTrue(allowlisted.isPurchaseAllowed(slicerId, productId, variantId, buyer, 0, abi.encode(productProof)));
 
         // Product-level allowlist should not apply to variant configuration
-        assertFalse(allowlisted.isPurchaseAllowed(slicerId, productId, variantIdAlt, buyer, 0, abi.encode(productProof)));
+        assertFalse(
+            allowlisted.isPurchaseAllowed(slicerId, productId, variantIdAlt, buyer, 0, abi.encode(productProof))
+        );
 
         bytes32[] memory variantLeavesForProof = new bytes32[](variantLeaves.length);
         for (uint256 i; i < variantLeaves.length; ++i) {
