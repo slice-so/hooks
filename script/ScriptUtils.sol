@@ -97,10 +97,10 @@ abstract contract SetUpContractsList is Script {
         string configureProductSchema;
         string configureProductTypeSchema;
         string configureSlicerSchema;
+        string onProductPurchaseSchema;
         string productPriceSchema;
         string productTypePriceSchema;
         string slicerProductPriceSchema;
-        string onProductPurchaseSchema;
         bytes32 transactionHash;
     }
 
@@ -216,40 +216,13 @@ abstract contract SetUpContractsList is Script {
         vm.serializeUint(idx, "blockNumber", existingData.blockNumber);
         vm.serializeString(idx, "configureProductSchema", existingData.configureProductSchema);
 
-        vm.serializeString(
-            idx,
-            "productPriceSchema",
-            _isProductPrice(existingData.contractAddress) ? existingData.productPriceSchema : "not-supported"
-        );
-        vm.serializeString(
-            idx,
-            "onProductPurchaseSchema",
-            _isProductAction(existingData.contractAddress) ? existingData.onProductPurchaseSchema : "not-supported"
-        );
-        vm.serializeString(
-            idx,
-            "configureProductTypeSchema",
-            _isProductTypeHookRegistry(existingData.contractAddress)
-                ? existingData.configureProductTypeSchema
-                : "not-supported"
-        );
-        vm.serializeString(
-            idx,
-            "configureSlicerSchema",
-            _isSlicerHookRegistry(existingData.contractAddress) ? existingData.configureSlicerSchema : "not-supported"
-        );
-        vm.serializeString(
-            idx,
-            "productTypePriceSchema",
-            _isProductTypePrice(existingData.contractAddress) ? existingData.productTypePriceSchema : "not-supported"
-        );
-        vm.serializeString(
-            idx,
-            "slicerProductPriceSchema",
-            _isSlicerProductPrice(existingData.contractAddress)
-                ? existingData.slicerProductPriceSchema
-                : "not-supported"
-        );
+        // Keep the previously stored schema values to avoid overwriting valid data when reserializing
+        vm.serializeString(idx, "configureProductTypeSchema", existingData.configureProductTypeSchema);
+        vm.serializeString(idx, "configureSlicerSchema", existingData.configureSlicerSchema);
+        vm.serializeString(idx, "onProductPurchaseSchema", existingData.onProductPurchaseSchema);
+        vm.serializeString(idx, "productPriceSchema", existingData.productPriceSchema);
+        vm.serializeString(idx, "productTypePriceSchema", existingData.productTypePriceSchema);
+        vm.serializeString(idx, "slicerProductPriceSchema", existingData.slicerProductPriceSchema);
     }
 
     function _isProductTypeHookRegistry(address contractAddress) internal view returns (bool) {
@@ -288,9 +261,17 @@ abstract contract SetUpContractsList is Script {
 
         vm.serializeString(
             "0",
-            "productPriceSchema",
-            _isProductPrice(transaction.contractAddress)
-                ? IProductPrice(transaction.contractAddress).productPriceSchema()
+            "configureProductTypeSchema",
+            _isProductTypeHookRegistry(transaction.contractAddress)
+                ? IProductTypeHookRegistry(transaction.contractAddress).configureProductTypeSchema()
+                : "not-supported"
+        );
+
+        vm.serializeString(
+            "0",
+            "configureSlicerSchema",
+            _isSlicerHookRegistry(transaction.contractAddress)
+                ? ISlicerHookRegistry(transaction.contractAddress).configureSlicerSchema()
                 : "not-supported"
         );
 
@@ -304,17 +285,9 @@ abstract contract SetUpContractsList is Script {
 
         vm.serializeString(
             "0",
-            "configureProductTypeSchema",
-            _isProductTypeHookRegistry(transaction.contractAddress)
-                ? IProductTypeHookRegistry(transaction.contractAddress).configureProductTypeSchema()
-                : "not-supported"
-        );
-
-        vm.serializeString(
-            "0",
-            "configureSlicerSchema",
-            _isSlicerHookRegistry(transaction.contractAddress)
-                ? ISlicerHookRegistry(transaction.contractAddress).configureSlicerSchema()
+            "productPriceSchema",
+            _isProductPrice(transaction.contractAddress)
+                ? IProductPrice(transaction.contractAddress).productPriceSchema()
                 : "not-supported"
         );
 
