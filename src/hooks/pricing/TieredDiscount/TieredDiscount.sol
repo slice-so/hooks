@@ -2,7 +2,13 @@
 pragma solidity ^0.8.30;
 
 import {IProductsModule} from "slice/interfaces/IProductsModule.sol";
-import {RegistryPrice, IProductPrice, IProductTypePrice, ISlicerProductPrice} from "@/utils/RegistryPrice.sol";
+import {
+    RegistryPrice,
+    IProductPrice,
+    IProductTypePrice,
+    ISlicerProductPrice,
+    ProductLineItem
+} from "@/utils/RegistryPrice.sol";
 import {DiscountParams} from "./types/DiscountParams.sol";
 
 /**
@@ -77,15 +83,22 @@ abstract contract TieredDiscount is RegistryPrice {
     /**
      * @inheritdoc ISlicerProductPrice
      */
-    function slicerProductPrice(uint256 slicerId, address, uint256 basePrice, uint256, address buyer, bytes memory)
-        public
-        view
-        override
-        returns (uint256)
-    {
+    function slicerProductPrice(
+        uint256 slicerId,
+        address,
+        address buyer,
+        ProductLineItem[] memory productLineItems,
+        uint256[] memory basePrices
+    ) public view override returns (uint256[] memory updatedBasePrices) {
         DiscountParams[] memory discountParams = slicerDiscounts[slicerId];
+        updatedBasePrices = new uint256[](basePrices.length);
 
-        return _productPrice(buyer, basePrice, discountParams);
+        for (uint256 i; i < productLineItems.length;) {
+            updatedBasePrices[i] = _productPrice(buyer, basePrices[i], discountParams);
+            unchecked {
+                ++i;
+            }
+        }
     }
 
     /*//////////////////////////////////////////////////////////////
