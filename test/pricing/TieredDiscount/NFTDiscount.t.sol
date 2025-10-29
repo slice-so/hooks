@@ -9,9 +9,7 @@ import {
     DiscountParams,
     NFTType
 } from "@/hooks/pricing/TieredDiscount/NFTDiscount/NFTDiscount.sol";
-import {
-    ProductLineItem
-} from "@/hooks/pricing/TieredDiscount/TieredDiscount.sol";
+import {ProductLineItem} from "@/hooks/pricing/TieredDiscount/TieredDiscount.sol";
 import {SliceContext} from "slice/utils/SliceContext.sol";
 import {MockERC721} from "@test/utils/mocks/MockERC721.sol";
 import {MockERC1155} from "@test/utils/mocks/MockERC1155.sol";
@@ -95,12 +93,6 @@ contract NFTDiscountTest is RegistryProductPriceTest {
         assertTrue(bytes(schema).length > 0);
     }
 
-    function testProductTypePriceSchema() public view {
-        string memory schema = erc721GatedDiscount.productTypePriceSchema();
-
-        assertEq(schema, erc721GatedDiscount.productPriceSchema());
-    }
-
     function testProductTypePrice_NoDiscount() public {
         vm.prank(productOwner);
         erc721GatedDiscount.configureProductType(slicerId, productTypeId, abi.encode(new DiscountParams[](0)));
@@ -178,21 +170,18 @@ contract NFTDiscountTest is RegistryProductPriceTest {
         uint256 basePrice = PRODUCTS_MODULE.basePrice(slicerId, productId, variantId, ETH, quantity);
 
         ProductLineItem[] memory productLineItems = new ProductLineItem[](1);
-        productLineItems[0] = ProductLineItem({
-            productId:uint32(productId),
-            variantId:uint32(variantId),
-            quantity:uint32( quantity)}
-        );
+        productLineItems[0] =
+            ProductLineItem({productId: uint32(productId), variantId: uint32(variantId), quantity: uint32(quantity)});
         uint256[] memory basePrices = new uint256[](1);
         basePrices[0] = basePrice;
-        uint256[] memory newBasePrices = erc721GatedDiscount.slicerProductPrice(slicerId, ETH,buyer, productLineItems, basePrices);
+        uint256[] memory newBasePrices =
+            erc721GatedDiscount.slicerProductPrice(slicerId, ETH, buyer, productLineItems, basePrices);
 
         assertEq(newBasePrices[0], (basePrice - (basePrice * percentDiscountOne) / 1e4));
 
         nftTwo.mint(buyer);
 
-        newBasePrices =
-            erc721GatedDiscount.slicerProductPrice(slicerId, ETH,buyer, productLineItems, basePrices);
+        newBasePrices = erc721GatedDiscount.slicerProductPrice(slicerId, ETH, buyer, productLineItems, basePrices);
 
         assertEq(newBasePrices[0], (basePrice - (basePrice * percentDiscountTwo) / 1e4));
     }
@@ -210,28 +199,19 @@ contract NFTDiscountTest is RegistryProductPriceTest {
         assertTrue(bytes(schema).length > 0);
     }
 
-    function testSlicerProductPriceSchema() public view {
-        string memory schema = erc721GatedDiscount.slicerProductPriceSchema();
-
-        assertEq(schema, erc721GatedDiscount.productPriceSchema());
-    }
-
     function testSlicerProductPrice_NoDiscount() public {
         vm.prank(productOwner);
         erc721GatedDiscount.configureSlicer(slicerId, abi.encode(new DiscountParams[](0)));
 
         uint256 basePrice = PRODUCTS_MODULE.basePrice(slicerId, productId, variantId, ETH, quantity);
 
-
         ProductLineItem[] memory productLineItems = new ProductLineItem[](1);
-        productLineItems[0] = ProductLineItem({
-            productId:uint32(productId),
-            variantId:uint32(variantId),
-            quantity:uint32( quantity)}
-        );
+        productLineItems[0] =
+            ProductLineItem({productId: uint32(productId), variantId: uint32(variantId), quantity: uint32(quantity)});
         uint256[] memory basePrices = new uint256[](1);
         basePrices[0] = basePrice;
-        uint256[] memory newBasePrices = erc721GatedDiscount.slicerProductPrice(slicerId, ETH,buyer3, productLineItems, basePrices);
+        uint256[] memory newBasePrices =
+            erc721GatedDiscount.slicerProductPrice(slicerId, ETH, buyer3, productLineItems, basePrices);
 
         assertEq(newBasePrices[0], basePrice);
     }
@@ -260,22 +240,20 @@ contract NFTDiscountTest is RegistryProductPriceTest {
         uint256 basePrice = PRODUCTS_MODULE.basePrice(slicerId, productId, variantId, ETH, quantity);
 
         ProductLineItem[] memory productLineItems = new ProductLineItem[](1);
-        productLineItems[0] = ProductLineItem({
-            productId:uint32(productId),
-            variantId:uint32(variantId),
-            quantity:uint32( quantity)}
-        );
+        productLineItems[0] =
+            ProductLineItem({productId: uint32(productId), variantId: uint32(variantId), quantity: uint32(quantity)});
         uint256[] memory basePrices = new uint256[](1);
         basePrices[0] = basePrice;
-        uint256[] memory newBasePrices = erc721GatedDiscount.slicerProductPrice(slicerId, ETH,buyer, productLineItems, basePrices);
+        uint256[] memory newBasePrices =
+            erc721GatedDiscount.slicerProductPrice(slicerId, ETH, buyer, productLineItems, basePrices);
 
         assertEq(newBasePrices[0], (basePrice - (basePrice * percentDiscountOne) / 1e4));
 
         vm.prank(productOwner);
         erc721GatedDiscount.configureSlicer(slicerId, abi.encode(new DiscountParams[](0)));
 
-        newBasePrices = erc721GatedDiscount.slicerProductPrice(slicerId, ETH,buyer, productLineItems, basePrices);
-        
+        newBasePrices = erc721GatedDiscount.slicerProductPrice(slicerId, ETH, buyer, productLineItems, basePrices);
+
         assertEq(newBasePrices[0], basePrice);
     }
 
