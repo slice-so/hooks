@@ -9,6 +9,9 @@ import {
     DiscountParams,
     NFTType
 } from "@/hooks/pricing/TieredDiscount/NFTDiscount/NFTDiscount.sol";
+import {
+    ProductLineItem
+} from "@/hooks/pricing/TieredDiscount/TieredDiscount.sol";
 import {SliceContext} from "slice/utils/SliceContext.sol";
 import {MockERC721} from "@test/utils/mocks/MockERC721.sol";
 import {MockERC1155} from "@test/utils/mocks/MockERC1155.sol";
@@ -174,16 +177,24 @@ contract NFTDiscountTest is RegistryProductPriceTest {
 
         uint256 basePrice = PRODUCTS_MODULE.basePrice(slicerId, productId, variantId, ETH, quantity);
 
-        uint256 price = erc721GatedDiscount.slicerProductPrice(slicerId, ETH, basePrice, quantity, buyer, "");
+        ProductLineItem[] memory productLineItems = new ProductLineItem[](1);
+        productLineItems[0] = ProductLineItem({
+            productId:uint32(productId),
+            variantId:uint32(variantId),
+            quantity:uint32( quantity)}
+        );
+        uint256[] memory basePrices = new uint256[](1);
+        basePrices[0] = basePrice;
+        uint256[] memory newBasePrices = erc721GatedDiscount.slicerProductPrice(slicerId, ETH,buyer, productLineItems, basePrices);
 
-        assertEq(price, (basePrice - (basePrice * percentDiscountOne) / 1e4));
+        assertEq(newBasePrices[0], (basePrice - (basePrice * percentDiscountOne) / 1e4));
 
         nftTwo.mint(buyer);
 
-        uint256 priceWithHigherDiscount =
-            erc721GatedDiscount.slicerProductPrice(slicerId, ETH, basePrice, quantity, buyer, "");
+        newBasePrices =
+            erc721GatedDiscount.slicerProductPrice(slicerId, ETH,buyer, productLineItems, basePrices);
 
-        assertEq(priceWithHigherDiscount, (basePrice - (basePrice * percentDiscountTwo) / 1e4));
+        assertEq(newBasePrices[0], (basePrice - (basePrice * percentDiscountTwo) / 1e4));
     }
 
     function testConfigureSlicer_AccessControl() public {
@@ -210,9 +221,19 @@ contract NFTDiscountTest is RegistryProductPriceTest {
         erc721GatedDiscount.configureSlicer(slicerId, abi.encode(new DiscountParams[](0)));
 
         uint256 basePrice = PRODUCTS_MODULE.basePrice(slicerId, productId, variantId, ETH, quantity);
-        uint256 price = erc721GatedDiscount.slicerProductPrice(slicerId, ETH, basePrice, quantity, buyer3, "");
 
-        assertEq(price, basePrice);
+
+        ProductLineItem[] memory productLineItems = new ProductLineItem[](1);
+        productLineItems[0] = ProductLineItem({
+            productId:uint32(productId),
+            variantId:uint32(variantId),
+            quantity:uint32( quantity)}
+        );
+        uint256[] memory basePrices = new uint256[](1);
+        basePrices[0] = basePrice;
+        uint256[] memory newBasePrices = erc721GatedDiscount.slicerProductPrice(slicerId, ETH,buyer3, productLineItems, basePrices);
+
+        assertEq(newBasePrices[0], basePrice);
     }
 
     function testConfigureSlicer__Edit_Remove() public {
@@ -238,16 +259,24 @@ contract NFTDiscountTest is RegistryProductPriceTest {
 
         uint256 basePrice = PRODUCTS_MODULE.basePrice(slicerId, productId, variantId, ETH, quantity);
 
-        uint256 price = erc721GatedDiscount.slicerProductPrice(slicerId, ETH, basePrice, quantity, buyer, "");
+        ProductLineItem[] memory productLineItems = new ProductLineItem[](1);
+        productLineItems[0] = ProductLineItem({
+            productId:uint32(productId),
+            variantId:uint32(variantId),
+            quantity:uint32( quantity)}
+        );
+        uint256[] memory basePrices = new uint256[](1);
+        basePrices[0] = basePrice;
+        uint256[] memory newBasePrices = erc721GatedDiscount.slicerProductPrice(slicerId, ETH,buyer, productLineItems, basePrices);
 
-        assertEq(price, (basePrice - (basePrice * percentDiscountOne) / 1e4));
+        assertEq(newBasePrices[0], (basePrice - (basePrice * percentDiscountOne) / 1e4));
 
         vm.prank(productOwner);
         erc721GatedDiscount.configureSlicer(slicerId, abi.encode(new DiscountParams[](0)));
 
-        uint256 resetPrice = erc721GatedDiscount.slicerProductPrice(slicerId, ETH, basePrice, quantity, buyer, "");
-
-        assertEq(resetPrice, basePrice);
+        newBasePrices = erc721GatedDiscount.slicerProductPrice(slicerId, ETH,buyer, productLineItems, basePrices);
+        
+        assertEq(newBasePrices[0], basePrice);
     }
 
     function testConfigureProduct__ETH() public {
