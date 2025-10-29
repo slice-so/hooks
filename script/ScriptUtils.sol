@@ -99,8 +99,6 @@ abstract contract SetUpContractsList is Script {
         string configureSlicerSchema;
         string onProductPurchaseSchema;
         string productPriceSchema;
-        string productTypePriceSchema;
-        string slicerProductPriceSchema;
         bytes32 transactionHash;
     }
 
@@ -221,8 +219,6 @@ abstract contract SetUpContractsList is Script {
         vm.serializeString(idx, "configureSlicerSchema", existingData.configureSlicerSchema);
         vm.serializeString(idx, "onProductPurchaseSchema", existingData.onProductPurchaseSchema);
         vm.serializeString(idx, "productPriceSchema", existingData.productPriceSchema);
-        vm.serializeString(idx, "productTypePriceSchema", existingData.productTypePriceSchema);
-        vm.serializeString(idx, "slicerProductPriceSchema", existingData.slicerProductPriceSchema);
     }
 
     function _isProductTypeHookRegistry(address contractAddress) internal view returns (bool) {
@@ -288,22 +284,6 @@ abstract contract SetUpContractsList is Script {
             "productPriceSchema",
             _isProductPrice(transaction.contractAddress)
                 ? IProductPrice(transaction.contractAddress).productPriceSchema()
-                : "not-supported"
-        );
-
-        vm.serializeString(
-            "0",
-            "productTypePriceSchema",
-            _isProductTypePrice(transaction.contractAddress)
-                ? IProductTypePrice(transaction.contractAddress).productTypePriceSchema()
-                : "not-supported"
-        );
-
-        vm.serializeString(
-            "0",
-            "slicerProductPriceSchema",
-            _isSlicerProductPrice(transaction.contractAddress)
-                ? ISlicerProductPrice(transaction.contractAddress).slicerProductPriceSchema()
                 : "not-supported"
         );
 
