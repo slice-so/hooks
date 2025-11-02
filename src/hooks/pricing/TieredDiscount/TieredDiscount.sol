@@ -72,8 +72,7 @@ abstract contract TieredDiscount is RegistryPrice {
         address,
         uint256 basePrice,
         uint256,
-        address buyer,
-        bytes memory
+        address buyer
     ) public view override returns (uint256) {
         DiscountParams[] memory discountParams = productTypeDiscounts[slicerId][productTypeId];
 
