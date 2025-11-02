@@ -67,15 +67,14 @@ contract NFTDiscountTest is RegistryProductPriceTest {
 
         uint256 basePrice = PRODUCTS_MODULE.basePrice(slicerId, productId, variantId, ETH, quantity);
 
-        uint256 price =
-            erc721GatedDiscount.productTypePrice(slicerId, productTypeId, ETH, basePrice, quantity, buyer, "");
+        uint256 price = erc721GatedDiscount.productTypePrice(slicerId, productTypeId, ETH, basePrice, quantity, buyer);
 
         assertEq(price, (basePrice - (basePrice * percentDiscountOne) / 1e4));
 
         nftTwo.mint(buyer);
 
         uint256 priceWithHigherDiscount =
-            erc721GatedDiscount.productTypePrice(slicerId, productTypeId, ETH, basePrice, quantity, buyer, "");
+            erc721GatedDiscount.productTypePrice(slicerId, productTypeId, ETH, basePrice, quantity, buyer);
 
         assertEq(priceWithHigherDiscount, (basePrice - (basePrice * percentDiscountTwo) / 1e4));
     }
@@ -98,8 +97,7 @@ contract NFTDiscountTest is RegistryProductPriceTest {
         erc721GatedDiscount.configureProductType(slicerId, productTypeId, abi.encode(new DiscountParams[](0)));
 
         uint256 basePrice = PRODUCTS_MODULE.basePrice(slicerId, productId, variantId, ETH, quantity);
-        uint256 price =
-            erc721GatedDiscount.productTypePrice(slicerId, productTypeId, ETH, basePrice, quantity, buyer2, "");
+        uint256 price = erc721GatedDiscount.productTypePrice(slicerId, productTypeId, ETH, basePrice, quantity, buyer2);
 
         assertEq(price, basePrice);
     }
@@ -127,8 +125,7 @@ contract NFTDiscountTest is RegistryProductPriceTest {
 
         uint256 basePrice = PRODUCTS_MODULE.basePrice(slicerId, productId, variantId, ETH, quantity);
 
-        uint256 price =
-            erc721GatedDiscount.productTypePrice(slicerId, productTypeId, ETH, basePrice, quantity, buyer, "");
+        uint256 price = erc721GatedDiscount.productTypePrice(slicerId, productTypeId, ETH, basePrice, quantity, buyer);
 
         assertEq(price, (basePrice - (basePrice * percentDiscountOne) / 1e4));
 
@@ -136,7 +133,7 @@ contract NFTDiscountTest is RegistryProductPriceTest {
         erc721GatedDiscount.configureProductType(slicerId, productTypeId, abi.encode(new DiscountParams[](0)));
 
         uint256 resetPrice =
-            erc721GatedDiscount.productTypePrice(slicerId, productTypeId, ETH, basePrice, quantity, buyer, "");
+            erc721GatedDiscount.productTypePrice(slicerId, productTypeId, ETH, basePrice, quantity, buyer);
 
         assertEq(resetPrice, basePrice);
     }
