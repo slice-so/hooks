@@ -1,12 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
-import {
-    IProductsModule,
-    RegistryProductAction,
-    ProductHookRegistry,
-    IProductHookRegistry
-} from "@/utils/RegistryProductAction.sol";
+import {HookRegistry, IProductsModule, RegistryAction, ProductLineItem} from "@/utils/RegistryAction.sol";
+import {ProductHookRegistry, IProductHookRegistry} from "@/utils/RegistryProductAction.sol";
 import {MAX_ROYALTY, ERC721Mint_BaseToken} from "./utils/ERC721Mint_BaseToken.sol";
 import {ERC721Data} from "./types/ERC721Data.sol";
 
@@ -16,7 +12,7 @@ import {ERC721Data} from "./types/ERC721Data.sol";
  * @dev     If `revertOnMaxSupplyReached` is set to true, reverts when max supply is exceeded.
  * @author  Slice <jacopo.eth>
  */
-contract ERC721Mint is RegistryProductAction {
+contract ERC721Mint is RegistryAction {
     /*//////////////////////////////////////////////////////////////
         ERRORS
     //////////////////////////////////////////////////////////////*/
@@ -30,19 +26,21 @@ contract ERC721Mint is RegistryProductAction {
 
     mapping(uint256 slicerId => mapping(uint256 productId => mapping(uint256 variantId => ERC721Data tokenData))) public
         tokenData;
+    mapping(uint256 slicerId => mapping(uint256 productTypeId => ERC721Data tokenData)) public productTypeTokenData;
+    mapping(uint256 slicerId => ERC721Data tokenData) public slicerTokenData;
 
     /*//////////////////////////////////////////////////////////////
         CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(IProductsModule productsModuleAddress) RegistryProductAction(productsModuleAddress) {}
+    constructor(IProductsModule productsModuleAddress) RegistryAction(productsModuleAddress) {}
 
     /*//////////////////////////////////////////////////////////////
         CONFIGURATION
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @inheritdoc RegistryProductAction
+     * @inheritdoc RegistryAction
      * @notice Mint tokens to the buyer.
      * @dev If `revertOnMaxSupplyReached` is set to true, reverts when max supply is exceeded.
      */
@@ -56,12 +54,43 @@ contract ERC721Mint is RegistryProductAction {
     ) internal override {
         ERC721Data memory tokenData_ = tokenData[slicerId][productId][variantId];
 
-        (bool success,) =
-            address(tokenData_.token).call(abi.encodeWithSelector(tokenData_.token.mint.selector, buyer, quantity));
+        handleOnProductPurchase(tokenData_, buyer, quantity, false);
+    }
 
-        if (tokenData_.revertOnMaxSupplyReached) {
-            if (!success) revert MaxSupplyExceeded();
+    /**
+     * @inheritdoc RegistryAction
+     * @notice Mint tokens to the buyer.
+     * @dev If `revertOnMaxSupplyReached` is set to true, reverts when max supply is exceeded.
+     */
+    function _onProductTypePurchase(uint256 slicerId, uint256 productTypeId, address buyer, uint256 quantity)
+        internal
+        override
+    {
+        ERC721Data memory tokenData_ = productTypeTokenData[slicerId][productTypeId];
+        handleOnProductPurchase(tokenData_, buyer, quantity, false);
+    }
+
+    /**
+     * @inheritdoc RegistryAction
+     * @notice Mint tokens to the buyer.
+     * @dev If `revertOnMaxSupplyReached` is set to true, reverts when max supply is exceeded.
+     */
+    function _onSlicerPurchase(uint256 slicerId, address buyer, ProductLineItem[] memory productLineItems)
+        internal
+        override
+    {
+        ERC721Data memory tokenData_ = slicerTokenData[slicerId];
+
+        uint256 quantity;
+        for (uint256 i = 0; i < productLineItems.length;) {
+            quantity += productLineItems[i].quantity;
+
+            unchecked {
+                ++i;
+            }
         }
+
+        handleOnProductPurchase(tokenData_, buyer, quantity, true);
     }
 
     /**
@@ -72,6 +101,37 @@ contract ERC721Mint is RegistryProductAction {
         internal
         override
     {
+        handleConfigure(tokenData[slicerId][productId][variantId], params);
+    }
+
+    /**
+     * @inheritdoc HookRegistry
+     * @dev Set the ERC721 data for a product type.
+     */
+    function _configureProductType(uint256 slicerId, uint256 productTypeId, bytes memory params) internal override {
+        handleConfigure(productTypeTokenData[slicerId][productTypeId], params);
+    }
+
+    /**
+     * @inheritdoc HookRegistry
+     * @dev Set the ERC721 data for a slicer.
+     */
+    function _configureSlicer(uint256 slicerId, bytes memory params) internal override {
+        handleConfigure(slicerTokenData[slicerId], params);
+    }
+
+    /**
+     * @inheritdoc IProductHookRegistry
+     */
+    function configureProductSchema() public pure override returns (string memory) {
+        return
+        "string name,string symbol,address royaltyReceiver,uint256 royaltyFraction,string baseURI,string tokenURI,bool revertOnMaxSupplyReached,uint256 maxSupply";
+    }
+
+    /*//////////////////////////////////////////////////////////////
+        INTERNAL
+    //////////////////////////////////////////////////////////////*/
+    function handleConfigure(ERC721Data storage tokenDataStorage, bytes memory params) internal {
         (
             string memory name_,
             string memory symbol_,
@@ -85,7 +145,7 @@ contract ERC721Mint is RegistryProductAction {
 
         if (royaltyFraction_ > MAX_ROYALTY) revert InvalidRoyaltyFraction();
 
-        ERC721Mint_BaseToken token = tokenData[slicerId][productId][variantId].token;
+        ERC721Mint_BaseToken token = tokenDataStorage.token;
 
         if (address(token) == address(0)) {
             token = new ERC721Mint_BaseToken(
@@ -95,14 +155,18 @@ contract ERC721Mint is RegistryProductAction {
             token.setParams(maxSupply, royaltyReceiver_, royaltyFraction_, baseURI__, tokenURI__);
         }
 
-        tokenData[slicerId][productId][variantId] = ERC721Data(token, revertOnMaxSupplyReached);
+        tokenDataStorage.token = token;
+        tokenDataStorage.revertOnMaxSupplyReached = revertOnMaxSupplyReached;
     }
 
-    /**
-     * @inheritdoc IProductHookRegistry
-     */
-    function configureProductSchema() public pure override returns (string memory) {
-        return
-        "string name,string symbol,address royaltyReceiver,uint256 royaltyFraction,string baseURI,string tokenURI,bool revertOnMaxSupplyReached,uint256 maxSupply";
+    function handleOnProductPurchase(ERC721Data memory tokenData_, address buyer, uint256 quantity, bool isSlicerAction)
+        internal
+    {
+        (bool success,) =
+            address(tokenData_.token).call(abi.encodeWithSelector(tokenData_.token.mint.selector, buyer, quantity));
+
+        if (!isSlicerAction && tokenData_.revertOnMaxSupplyReached) {
+            if (!success) revert MaxSupplyExceeded();
+        }
     }
 }
