@@ -5,10 +5,13 @@ import {RegistryProductAction, RegistryProductActionTest} from "@test/utils/Regi
 import {ERC20Mint} from "@/hooks/actions/ERC20Mint/ERC20Mint.sol";
 import {ERC20Data} from "@/hooks/actions/ERC20Mint/types/ERC20Data.sol";
 import {ERC20Mint_BaseToken} from "@/hooks/actions/ERC20Mint/utils/ERC20Mint_BaseToken.sol";
+import {HookRegistry, ProductLineItem} from "@/utils/RegistryAction.sol";
+import {SliceContext} from "@/utils/RegistryProductAction.sol";
 
 uint256 constant slicerId = 0;
 uint256 constant variantId = 0;
 uint256 constant variantIdAlt = 1;
+uint256 constant productTypeId = 2;
 
 contract ERC20MintTest is RegistryProductActionTest {
     ERC20Mint erc20Mint;
@@ -418,5 +421,246 @@ contract ERC20MintTest is RegistryProductActionTest {
         assertEq(productToken.balanceOf(buyer), 20);
         assertEq(variantToken.balanceOf(buyer2), 15);
         assertEq(variantToken.balanceOf(buyer), 0);
+    }
+
+    /*//////////////////////////////////////////////////////////////
+        PRODUCT TYPE TESTS
+    //////////////////////////////////////////////////////////////*/
+
+    function testConfigureProductType() public {
+        bytes memory params = abi.encode(
+            "ProductType Token", // name
+            "PTT", // symbol
+            1000, // premintAmount
+            productOwner, // premintReceiver
+            true, // revertOnMaxSupplyReached
+            10000, // maxSupply
+            100 // tokensPerUnit
+        );
+
+        vm.expectEmit(true, true, true, true, address(erc20Mint));
+        emit HookRegistry.ProductTypeConfigured(slicerId, productTypeId, params);
+
+        vm.prank(productOwner);
+        erc20Mint.configureProductType(slicerId, productTypeId, params);
+
+        (ERC20Mint_BaseToken token, bool revertOnMaxSupply, uint256 tokensPerUnit) =
+            erc20Mint.productTypeTokenData(slicerId, productTypeId);
+        assertEq(revertOnMaxSupply, true);
+        assertEq(tokensPerUnit, 100);
+        assertEq(token.name(), "ProductType Token");
+        assertEq(token.symbol(), "PTT");
+        assertEq(token.maxSupply(), 10000);
+        assertEq(token.totalSupply(), 1000); // premint amount
+        assertEq(token.balanceOf(productOwner), 1000);
+    }
+
+    function testConfigureProductType_AccessControl() public {
+        vm.expectRevert(abi.encodeWithSelector(SliceContext.NotAuthorized.selector, bytes32(uint256(1 << 1 | 1 << 3))));
+
+        erc20Mint.configureProductType(slicerId, productTypeId, "");
+    }
+
+    function testConfigureProductTypeSchema() public view {
+        string memory schema = erc20Mint.configureProductTypeSchema();
+
+        assertEq(schema, erc20Mint.configureProductSchema());
+        assertTrue(bytes(schema).length > 0);
+    }
+
+    function testIsProductTypePurchaseAllowed() public {
+        vm.prank(productOwner);
+        erc20Mint.configureProductType(
+            slicerId,
+            productTypeId,
+            abi.encode(
+                "Test Token", // name
+                "TT", // symbol
+                800, // premintAmount
+                productOwner, // premintReceiver
+                true, // revertOnMaxSupplyReached
+                1000, // maxSupply
+                10 // tokensPerUnit
+            )
+        );
+
+        // Current supply: 800, max supply: 1000
+        // Available: 200 tokens, with 10 tokens per unit = 20 units max
+        assertTrue(erc20Mint.isProductTypePurchaseAllowed(slicerId, productTypeId, buyer, 1)); // 10 tokens needed
+        assertTrue(erc20Mint.isProductTypePurchaseAllowed(slicerId, productTypeId, buyer, 20)); // 200 tokens needed (exactly at limit)
+        assertFalse(erc20Mint.isProductTypePurchaseAllowed(slicerId, productTypeId, buyer, 21)); // 210 tokens needed (exceeds limit)
+    }
+
+    function testOnProductTypePurchase() public {
+        vm.prank(productOwner);
+        erc20Mint.configureProductType(
+            slicerId,
+            productTypeId,
+            abi.encode(
+                "Test Token", // name
+                "TT", // symbol
+                0, // premintAmount
+                address(0), // premintReceiver
+                true, // revertOnMaxSupplyReached
+                1000, // maxSupply
+                100 // tokensPerUnit
+            )
+        );
+
+        (ERC20Mint_BaseToken token,,) = erc20Mint.productTypeTokenData(slicerId, productTypeId);
+        uint256 initialBalance = token.balanceOf(buyer);
+        uint256 initialSupply = token.totalSupply();
+
+        vm.prank(address(PRODUCTS_MODULE));
+        erc20Mint.onProductTypePurchase(slicerId, productTypeId, buyer, 3);
+
+        assertEq(token.balanceOf(buyer), initialBalance + 300); // 3 * 100
+        assertEq(token.totalSupply(), initialSupply + 300);
+    }
+
+    function testRevert_OnProductTypePurchase_NotPurchase() public {
+        vm.prank(productOwner);
+        erc20Mint.configureProductType(
+            slicerId,
+            productTypeId,
+            abi.encode(
+                "Test Token", // name
+                "TT", // symbol
+                0, // premintAmount
+                address(0), // premintReceiver
+                true, // revertOnMaxSupplyReached
+                1000, // maxSupply
+                100 // tokensPerUnit
+            )
+        );
+
+        vm.expectRevert();
+        erc20Mint.onProductTypePurchase(slicerId, productTypeId, buyer, 1);
+    }
+
+    /*//////////////////////////////////////////////////////////////
+        SLICER TESTS
+    //////////////////////////////////////////////////////////////*/
+
+    function testConfigureSlicer() public {
+        bytes memory params = abi.encode(
+            "Slicer Token", // name
+            "ST", // symbol
+            500, // premintAmount
+            buyer, // premintReceiver
+            false, // revertOnMaxSupplyReached
+            0, // maxSupply (unlimited)
+            50 // tokensPerUnit
+        );
+
+        vm.expectEmit(true, true, true, true, address(erc20Mint));
+        emit HookRegistry.SlicerConfigured(slicerId, params);
+
+        vm.prank(productOwner);
+        erc20Mint.configureSlicer(slicerId, params);
+
+        (ERC20Mint_BaseToken token, bool revertOnMaxSupply, uint256 tokensPerUnit) = erc20Mint.slicerTokenData(slicerId);
+        assertEq(revertOnMaxSupply, false);
+        assertEq(tokensPerUnit, 50);
+        assertEq(token.name(), "Slicer Token");
+        assertEq(token.symbol(), "ST");
+        assertEq(token.maxSupply(), type(uint256).max);
+        assertEq(token.totalSupply(), 500); // premint amount
+        assertEq(token.balanceOf(buyer), 500);
+    }
+
+    function testConfigureSlicer_AccessControl() public {
+        vm.expectRevert(abi.encodeWithSelector(SliceContext.NotAuthorized.selector, bytes32(uint256(1 << 1 | 1 << 3))));
+
+        erc20Mint.configureSlicer(slicerId, "");
+    }
+
+    function testConfigureSlicerSchema() public view {
+        string memory schema = erc20Mint.configureSlicerSchema();
+
+        assertEq(schema, erc20Mint.configureProductSchema());
+        assertTrue(bytes(schema).length > 0);
+    }
+
+    function testIsSlicerPurchaseAllowed() public {
+        vm.prank(productOwner);
+        erc20Mint.configureSlicer(
+            slicerId,
+            abi.encode(
+                "Test Token", // name
+                "TT", // symbol
+                0, // premintAmount
+                address(0), // premintReceiver
+                false, // revertOnMaxSupplyReached
+                0, // maxSupply (unlimited)
+                50 // tokensPerUnit
+            )
+        );
+
+        ProductLineItem[] memory productLineItems = new ProductLineItem[](2);
+        productLineItems[0] =
+            ProductLineItem({productId: uint32(productIds[0]), variantId: uint32(variantId), quantity: uint32(5)});
+        productLineItems[1] =
+            ProductLineItem({productId: uint32(productIds[1]), variantId: uint32(variantId), quantity: uint32(3)});
+        // Total quantity: 8, tokens needed: 8 * 50 = 400
+
+        // Unlimited supply, so should always return true
+        assertTrue(erc20Mint.isSlicerPurchaseAllowed(slicerId, buyer, productLineItems));
+    }
+
+    function testOnSlicerPurchase() public {
+        vm.prank(productOwner);
+        erc20Mint.configureSlicer(
+            slicerId,
+            abi.encode(
+                "Test Token", // name
+                "TT", // symbol
+                0, // premintAmount
+                address(0), // premintReceiver
+                false, // revertOnMaxSupplyReached
+                0, // maxSupply (unlimited)
+                50 // tokensPerUnit
+            )
+        );
+
+        ProductLineItem[] memory productLineItems = new ProductLineItem[](2);
+        productLineItems[0] =
+            ProductLineItem({productId: uint32(productIds[0]), variantId: uint32(variantId), quantity: uint32(2)});
+        productLineItems[1] =
+            ProductLineItem({productId: uint32(productIds[1]), variantId: uint32(variantId), quantity: uint32(3)});
+        // Total quantity: 5, tokens to mint: 5 * 50 = 250
+
+        (ERC20Mint_BaseToken token,,) = erc20Mint.slicerTokenData(slicerId);
+        uint256 initialBalance = token.balanceOf(buyer);
+        uint256 initialSupply = token.totalSupply();
+
+        vm.prank(address(PRODUCTS_MODULE));
+        erc20Mint.onSlicerPurchase(slicerId, buyer, productLineItems);
+
+        assertEq(token.balanceOf(buyer), initialBalance + 250); // 5 * 50
+        assertEq(token.totalSupply(), initialSupply + 250);
+    }
+
+    function testRevert_OnSlicerPurchase_NotPurchase() public {
+        vm.prank(productOwner);
+        erc20Mint.configureSlicer(
+            slicerId,
+            abi.encode(
+                "Test Token", // name
+                "TT", // symbol
+                0, // premintAmount
+                address(0), // premintReceiver
+                false, // revertOnMaxSupplyReached
+                0, // maxSupply (unlimited)
+                50 // tokensPerUnit
+            )
+        );
+
+        ProductLineItem[] memory productLineItems = new ProductLineItem[](1);
+        productLineItems[0] =
+            ProductLineItem({productId: uint32(productIds[0]), variantId: uint32(variantId), quantity: uint32(5)});
+
+        vm.expectRevert();
+        erc20Mint.onSlicerPurchase(slicerId, buyer, productLineItems);
     }
 }

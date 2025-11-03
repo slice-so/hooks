@@ -141,6 +141,11 @@ contract NFTGated is RegistryAction {
     }
 
     function handleIsPurchaseAllowed(NFTGates memory nftGates_, address buyer) internal view returns (bool) {
+        // If no gates, allow purchase
+        if (nftGates_.gates.length == 0) {
+            return true;
+        }
+
         uint256 totalOwned;
         unchecked {
             for (uint256 i; i < nftGates_.gates.length;) {
