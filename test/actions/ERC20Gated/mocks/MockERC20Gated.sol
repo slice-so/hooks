@@ -9,4 +9,12 @@ contract MockERC20Gated is ERC20Gated {
     function gates(uint256 slicerId, uint256 productId, uint256 variantId) public view returns (ERC20Gate[] memory) {
         return tokenGates[slicerId][productId][variantId];
     }
+
+    function productTypeGates(uint256 slicerId, uint256 productTypeId) public view returns (ERC20Gate[] memory) {
+        return productTypeTokenGates[slicerId][productTypeId];
+    }
+
+    function slicerGates(uint256 slicerId) public view returns (ERC20Gate[] memory) {
+        return slicerTokenGates[slicerId];
+    }
 }

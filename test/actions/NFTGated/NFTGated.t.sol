@@ -8,10 +8,13 @@ import {NFTGate, NftType} from "@/hooks/actions/NFTGated/NFTGated.sol";
 import {NFTGates} from "@/hooks/actions/NFTGated/types/NFTGate.sol";
 import {MockERC721} from "@test/utils/mocks/MockERC721.sol";
 import {MockERC1155} from "@test/utils/mocks/MockERC1155.sol";
+import {HookRegistry, ProductLineItem} from "@/utils/RegistryAction.sol";
+import {SliceContext} from "@/utils/RegistryProductAction.sol";
 
 uint256 constant slicerId = 0;
 uint256 constant variantId = 0;
 uint256 constant variantIdAlt = 1;
+uint256 constant productTypeId = 2;
 
 contract NFTGatedTest is RegistryProductActionTest {
     MockNFTGated nftGated;
@@ -124,6 +127,250 @@ contract NFTGatedTest is RegistryProductActionTest {
 
         vm.expectRevert(NFTGated.InvalidNFT.selector);
         nftGated.configureProduct(slicerId, productIds[0], variantId, encodeNFTGates(nftGates[0]));
+
+        vm.stopPrank();
+    }
+
+    /*//////////////////////////////////////////////////////////////
+        PRODUCT TYPE TESTS
+    //////////////////////////////////////////////////////////////*/
+
+    function testConfigureProductType() public {
+        NFTGates[] memory nftGates = generateNFTGates();
+
+        bytes memory params = encodeNFTGates(nftGates[2]);
+
+        vm.expectEmit(true, true, true, true, address(nftGated));
+        emit HookRegistry.ProductTypeConfigured(slicerId, productTypeId, params);
+
+        vm.prank(productOwner);
+        nftGated.configureProductType(slicerId, productTypeId, params);
+
+        assertEq(nftGated.productTypeMinOwned(slicerId, productTypeId), 1);
+        assertEq(nftGated.productTypeGates(slicerId, productTypeId)[0].nft, address(nft721));
+        assertEq(nftGated.productTypeGates(slicerId, productTypeId)[1].nft, address(nft1155));
+        assertEq(nftGated.productTypeGates(slicerId, productTypeId).length, 2);
+
+        // Buyer doesn't have NFTs yet
+        assertFalse(nftGated.isProductTypePurchaseAllowed(slicerId, productTypeId, buyer, 0));
+
+        // Buyer has only ERC721
+        nft721.mint(buyer);
+        assertTrue(nftGated.isProductTypePurchaseAllowed(slicerId, productTypeId, buyer, 0));
+
+        // Buyer2 has only ERC1155
+        nft1155.mint(buyer2);
+        assertTrue(nftGated.isProductTypePurchaseAllowed(slicerId, productTypeId, buyer2, 0));
+    }
+
+    function testConfigureProductType_AccessControl() public {
+        vm.expectRevert(abi.encodeWithSelector(SliceContext.NotAuthorized.selector, bytes32(uint256(1 << 1 | 1 << 3))));
+
+        nftGated.configureProductType(slicerId, productTypeId, "");
+    }
+
+    function testConfigureProductTypeSchema() public view {
+        string memory schema = nftGated.configureProductTypeSchema();
+
+        assertEq(schema, nftGated.configureProductSchema());
+        assertTrue(bytes(schema).length > 0);
+    }
+
+    function testIsProductTypePurchaseAllowed_NoGates() public {
+        vm.prank(productOwner);
+        NFTGates memory emptyGates = NFTGates(new NFTGate[](0), 0);
+        nftGated.configureProductType(slicerId, productTypeId, encodeNFTGates(emptyGates));
+
+        assertTrue(nftGated.isProductTypePurchaseAllowed(slicerId, productTypeId, buyer2, 0));
+    }
+
+    function testConfigureProductType__Edit_Remove() public {
+        NFTGates[] memory nftGates = generateNFTGates();
+
+        vm.prank(productOwner);
+        nftGated.configureProductType(slicerId, productTypeId, encodeNFTGates(nftGates[2]));
+
+        nft721.mint(buyer);
+        assertTrue(nftGated.isProductTypePurchaseAllowed(slicerId, productTypeId, buyer, 0));
+
+        // Remove gates
+        vm.prank(productOwner);
+        NFTGates memory emptyGates = NFTGates(new NFTGate[](0), 0);
+        nftGated.configureProductType(slicerId, productTypeId, encodeNFTGates(emptyGates));
+
+        assertTrue(nftGated.isProductTypePurchaseAllowed(slicerId, productTypeId, buyer, 0));
+        assertEq(nftGated.productTypeGates(slicerId, productTypeId).length, 0);
+    }
+
+    function testOnProductTypePurchase() public {
+        NFTGates[] memory nftGates = generateNFTGates();
+
+        vm.prank(productOwner);
+        nftGated.configureProductType(slicerId, productTypeId, encodeNFTGates(nftGates[0]));
+
+        // Buyer doesn't have NFT - should revert
+        vm.expectRevert();
+        vm.prank(address(PRODUCTS_MODULE));
+        nftGated.onProductTypePurchase(slicerId, productTypeId, buyer, 1);
+
+        // Buyer has NFT - should succeed
+        nft721.mint(buyer);
+        vm.prank(address(PRODUCTS_MODULE));
+        nftGated.onProductTypePurchase(slicerId, productTypeId, buyer, 1);
+    }
+
+    function testRevert_OnProductTypePurchase_NotPurchase() public {
+        NFTGates[] memory nftGates = generateNFTGates();
+
+        vm.prank(productOwner);
+        nftGated.configureProductType(slicerId, productTypeId, encodeNFTGates(nftGates[0]));
+
+        nft721.mint(buyer);
+
+        vm.expectRevert();
+        nftGated.onProductTypePurchase(slicerId, productTypeId, buyer, 1);
+    }
+
+    function testRevert_ConfigureProductType_InvalidNFT() public {
+        NFTGate[] memory gates1 = new NFTGate[](1);
+        gates1[0] = NFTGate(address(new TestERC20()), NftType.ERC721, 1, 1);
+        NFTGates memory nftGates = NFTGates(gates1, 1);
+
+        vm.startPrank(productOwner);
+
+        vm.expectRevert(NFTGated.InvalidNFT.selector);
+        nftGated.configureProductType(slicerId, productTypeId, encodeNFTGates(nftGates));
+
+        vm.stopPrank();
+    }
+
+    /*//////////////////////////////////////////////////////////////
+        SLICER TESTS
+    //////////////////////////////////////////////////////////////*/
+
+    function testConfigureSlicer() public {
+        NFTGates[] memory nftGates = generateNFTGates();
+
+        bytes memory params = encodeNFTGates(nftGates[2]);
+
+        vm.expectEmit(true, true, true, true, address(nftGated));
+        emit HookRegistry.SlicerConfigured(slicerId, params);
+
+        vm.prank(productOwner);
+        nftGated.configureSlicer(slicerId, params);
+
+        assertEq(nftGated.slicerMinOwned(slicerId), 1);
+        assertEq(nftGated.slicerGates(slicerId)[0].nft, address(nft721));
+        assertEq(nftGated.slicerGates(slicerId)[1].nft, address(nft1155));
+        assertEq(nftGated.slicerGates(slicerId).length, 2);
+
+        // Buyer doesn't have NFTs yet
+        ProductLineItem[] memory productLineItems = new ProductLineItem[](1);
+        productLineItems[0] =
+            ProductLineItem({productId: uint32(productIds[0]), variantId: uint32(variantId), quantity: uint32(5)});
+        assertFalse(nftGated.isSlicerPurchaseAllowed(slicerId, buyer, productLineItems));
+
+        // Buyer has only ERC721
+        nft721.mint(buyer);
+        assertTrue(nftGated.isSlicerPurchaseAllowed(slicerId, buyer, productLineItems));
+
+        // Buyer2 has only ERC1155
+        nft1155.mint(buyer2);
+        assertTrue(nftGated.isSlicerPurchaseAllowed(slicerId, buyer2, productLineItems));
+    }
+
+    function testConfigureSlicer_AccessControl() public {
+        vm.expectRevert(abi.encodeWithSelector(SliceContext.NotAuthorized.selector, bytes32(uint256(1 << 1 | 1 << 3))));
+
+        nftGated.configureSlicer(slicerId, "");
+    }
+
+    function testConfigureSlicerSchema() public view {
+        string memory schema = nftGated.configureSlicerSchema();
+
+        assertEq(schema, nftGated.configureProductSchema());
+        assertTrue(bytes(schema).length > 0);
+    }
+
+    function testIsSlicerPurchaseAllowed_NoGates() public {
+        vm.prank(productOwner);
+        NFTGates memory emptyGates = NFTGates(new NFTGate[](0), 0);
+        nftGated.configureSlicer(slicerId, encodeNFTGates(emptyGates));
+
+        ProductLineItem[] memory productLineItems = new ProductLineItem[](1);
+        productLineItems[0] =
+            ProductLineItem({productId: uint32(productIds[0]), variantId: uint32(variantId), quantity: uint32(5)});
+        assertTrue(nftGated.isSlicerPurchaseAllowed(slicerId, buyer3, productLineItems));
+    }
+
+    function testConfigureSlicer__Edit_Remove() public {
+        NFTGates[] memory nftGates = generateNFTGates();
+
+        vm.prank(productOwner);
+        nftGated.configureSlicer(slicerId, encodeNFTGates(nftGates[2]));
+
+        nft721.mint(buyer);
+
+        ProductLineItem[] memory productLineItems = new ProductLineItem[](1);
+        productLineItems[0] =
+            ProductLineItem({productId: uint32(productIds[0]), variantId: uint32(variantId), quantity: uint32(5)});
+        assertTrue(nftGated.isSlicerPurchaseAllowed(slicerId, buyer, productLineItems));
+
+        // Remove gates
+        vm.prank(productOwner);
+        NFTGates memory emptyGates = NFTGates(new NFTGate[](0), 0);
+        nftGated.configureSlicer(slicerId, encodeNFTGates(emptyGates));
+
+        assertTrue(nftGated.isSlicerPurchaseAllowed(slicerId, buyer, productLineItems));
+        assertEq(nftGated.slicerGates(slicerId).length, 0);
+    }
+
+    function testOnSlicerPurchase() public {
+        NFTGates[] memory nftGates = generateNFTGates();
+
+        vm.prank(productOwner);
+        nftGated.configureSlicer(slicerId, encodeNFTGates(nftGates[0]));
+
+        ProductLineItem[] memory productLineItems = new ProductLineItem[](1);
+        productLineItems[0] =
+            ProductLineItem({productId: uint32(productIds[0]), variantId: uint32(variantId), quantity: uint32(5)});
+
+        // Buyer doesn't have NFT - should revert
+        vm.expectRevert();
+        vm.prank(address(PRODUCTS_MODULE));
+        nftGated.onSlicerPurchase(slicerId, buyer, productLineItems);
+
+        // Buyer has NFT - should succeed
+        nft721.mint(buyer);
+        vm.prank(address(PRODUCTS_MODULE));
+        nftGated.onSlicerPurchase(slicerId, buyer, productLineItems);
+    }
+
+    function testRevert_OnSlicerPurchase_NotPurchase() public {
+        NFTGates[] memory nftGates = generateNFTGates();
+
+        vm.prank(productOwner);
+        nftGated.configureSlicer(slicerId, encodeNFTGates(nftGates[0]));
+
+        nft721.mint(buyer);
+
+        ProductLineItem[] memory productLineItems = new ProductLineItem[](1);
+        productLineItems[0] =
+            ProductLineItem({productId: uint32(productIds[0]), variantId: uint32(variantId), quantity: uint32(5)});
+
+        vm.expectRevert();
+        nftGated.onSlicerPurchase(slicerId, buyer, productLineItems);
+    }
+
+    function testRevert_ConfigureSlicer_InvalidNFT() public {
+        NFTGate[] memory gates1 = new NFTGate[](1);
+        gates1[0] = NFTGate(address(new TestERC20()), NftType.ERC721, 1, 1);
+        NFTGates memory nftGates = NFTGates(gates1, 1);
+
+        vm.startPrank(productOwner);
+
+        vm.expectRevert(NFTGated.InvalidNFT.selector);
+        nftGated.configureSlicer(slicerId, encodeNFTGates(nftGates));
 
         vm.stopPrank();
     }
