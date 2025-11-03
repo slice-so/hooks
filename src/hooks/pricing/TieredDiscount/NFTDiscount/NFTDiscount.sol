@@ -24,7 +24,51 @@ contract NFTDiscount is TieredDiscount {
         CONFIGURATION
     //////////////////////////////////////////////////////////////*/
 
-    function setProductDiscounts(DiscountParams[] storage storageDiscounts, bytes memory params) internal {
+    /**
+     * @inheritdoc ProductHookRegistry
+     * @notice Set base price and NFT discounts for a product.
+     * @dev Discounts must be sorted in descending order and expressed as a percentage of the base price as a 4 decimal fixed point number.
+     */
+    function _configureProduct(uint256 slicerId, uint256 productId, uint256 variantId, bytes memory params)
+        internal
+        override
+    {
+        delete discounts[slicerId][productId][variantId];
+        handleConfigure(discounts[slicerId][productId][variantId], params);
+    }
+
+    /**
+     * @inheritdoc HookRegistry
+     * @notice Set base price and NFT discounts for a product type.
+     * @dev Discounts must be sorted in descending order and expressed as a percentage of the base price as a 4 decimal fixed point number.
+     */
+    function _configureProductType(uint256 slicerId, uint256 productTypeId, bytes memory params) internal override {
+        delete productTypeDiscounts[slicerId][productTypeId];
+        handleConfigure(productTypeDiscounts[slicerId][productTypeId], params);
+    }
+
+    /**
+     * @inheritdoc HookRegistry
+     * @notice Set base price and NFT discounts for a slicer.
+     * @dev Discounts must be sorted in descending order and expressed as a percentage of the base price as a 4 decimal fixed point number.
+     */
+    function _configureSlicer(uint256 slicerId, bytes memory params) internal override {
+        delete slicerDiscounts[slicerId];
+        handleConfigure(slicerDiscounts[slicerId], params);
+    }
+
+    /**
+     * @inheritdoc IProductHookRegistry
+     */
+    function configureProductSchema() public pure override returns (string memory) {
+        return "(address nft,uint80 discount,uint8 minQuantity,uint8 nftType,uint256 tokenId)[] discounts";
+    }
+
+    /*//////////////////////////////////////////////////////////////
+        INTERNAL
+    //////////////////////////////////////////////////////////////*/
+
+    function handleConfigure(DiscountParams[] storage storageDiscounts, bytes memory params) internal {
         (DiscountParams[] memory newDiscounts) = abi.decode(params, (DiscountParams[]));
 
         uint256 prevDiscountValue;
@@ -56,50 +100,6 @@ contract NFTDiscount is TieredDiscount {
             }
         }
     }
-
-    /**
-     * @inheritdoc ProductHookRegistry
-     * @notice Set base price and NFT discounts for a product.
-     * @dev Discounts must be sorted in descending order and expressed as a percentage of the base price as a 4 decimal fixed point number.
-     */
-    function _configureProduct(uint256 slicerId, uint256 productId, uint256 variantId, bytes memory params)
-        internal
-        override
-    {
-        delete discounts[slicerId][productId][variantId];
-        setProductDiscounts(discounts[slicerId][productId][variantId], params);
-    }
-
-    /**
-     * @inheritdoc HookRegistry
-     * @notice Set base price and NFT discounts for a product type.
-     * @dev Discounts must be sorted in descending order and expressed as a percentage of the base price as a 4 decimal fixed point number.
-     */
-    function _configureProductType(uint256 slicerId, uint256 productTypeId, bytes memory params) internal override {
-        delete productTypeDiscounts[slicerId][productTypeId];
-        setProductDiscounts(productTypeDiscounts[slicerId][productTypeId], params);
-    }
-
-    /**
-     * @inheritdoc HookRegistry
-     * @notice Set base price and NFT discounts for a slicer.
-     * @dev Discounts must be sorted in descending order and expressed as a percentage of the base price as a 4 decimal fixed point number.
-     */
-    function _configureSlicer(uint256 slicerId, bytes memory params) internal override {
-        delete slicerDiscounts[slicerId];
-        setProductDiscounts(slicerDiscounts[slicerId], params);
-    }
-
-    /**
-     * @inheritdoc IProductHookRegistry
-     */
-    function configureProductSchema() public pure override returns (string memory) {
-        return "(address nft,uint80 discount,uint8 minQuantity,uint8 nftType,uint256 tokenId)[] discounts";
-    }
-
-    /*//////////////////////////////////////////////////////////////
-        INTERNAL
-    //////////////////////////////////////////////////////////////*/
 
     /**
      * @inheritdoc TieredDiscount
