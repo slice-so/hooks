@@ -7,8 +7,8 @@ import {VmSafe} from "forge-std/Vm.sol";
 import {ISliceCore} from "slice/interfaces/ISliceCore.sol";
 import {IProductsModule} from "slice/interfaces/IProductsModule.sol";
 import {IFundsModule} from "slice/interfaces/IFundsModule.sol";
-import {IProductHookRegistry} from "slice/interfaces/hooks/IHookRegistry/IProductHookRegistry.sol";
 import {
+    IProductHookRegistry,
     IProductTypeHookRegistry,
     ISlicerHookRegistry,
     IProductPrice,
