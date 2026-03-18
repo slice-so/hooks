@@ -2,7 +2,10 @@
 pragma solidity ^0.8.30;
 
 import {
-    ProductHookRegistry, IProductPrice, IProductHookRegistry, IProductsModule
+    ProductHookRegistry,
+    IProductPrice,
+    IProductHookRegistry,
+    IProductsModule
 } from "@/utils/RegistryProductPrice.sol";
 import {
     wadMul,
@@ -55,7 +58,7 @@ contract LogisticVRGDAPrices is VRGDAPrices {
         require(decayConstant >= type(int184).min, "MIN_DECAY_CONSTANT_EXCEEDED");
 
         // Get product availability and isInfinite
-        (uint256 stockUnits_, bool isInfinite) = getStockUnits(slicerId, productId, 0);
+        (uint32 stockUnits_, bool isInfinite) = getStockUnits(slicerId, productId, 0);
 
         // Product must not have infinite availability
         require(!isInfinite, "NON_FINITE_AVAILABILITY");
@@ -63,8 +66,8 @@ contract LogisticVRGDAPrices is VRGDAPrices {
         // Set product params
         _productParams[slicerId][productId][variantId] = LogisticProduct({
             startTime: uint40(block.timestamp),
-            startUnits: uint32(stockUnits_),
-            decayConstant: int184(decayConstant),
+            startUnits: stockUnits_,
+            decayConstant: int184(decayConstant), // forge-lint: disable-line(unsafe-typecast)
             min: min,
             timeScale: timescale
         });
@@ -91,11 +94,13 @@ contract LogisticVRGDAPrices is VRGDAPrices {
         (uint256 stockUnits_,) = getStockUnits(slicerId, productId, variantId);
         uint256 basePrice_ = getBasePrice(slicerId, productId, variantId, currency, 1);
 
+        if (basePrice_ > uint256(type(int256).max)) revert("BASE_PRICE_TOO_HIGH");
+
         // Calculate sold units from stockUnits
         uint256 soldUnits = productParams.startUnits - stockUnits_;
 
         price = getAdjustedVRGDALogisticPrice(
-            int256(basePrice_),
+            int256(basePrice_), // forge-lint: disable-line(unsafe-typecast)
             productParams.decayConstant,
             toDaysWadUnsafe(block.timestamp - productParams.startTime),
             toWadUnsafe(productParams.startUnits + 1),
