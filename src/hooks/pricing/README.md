@@ -5,7 +5,7 @@ Calculate dynamic prices for products on Slice. Pricing strategies implement the
 ## How Pricing Works
 
 The `productPrice` function is called before purchase to determine:
-- **ETH price** - Price in native currency
+- **ETH price** - Price in ETH
 - **Currency price** - Price in ERC20 tokens (if applicable)
 
 ## Creating Custom Pricing
