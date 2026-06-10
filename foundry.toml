@@ -5,6 +5,7 @@ optimizer_runs = 1000000
 no_match_test = "FFI"
 dynamic_test_linking = true
 libs = ["dependencies", "../core/src", "../core/dependencies"]
+ignored_warnings_from = ["dependencies", "../core/dependencies"]
 fs_permissions = [
   { access = "read", path = "./src" },
   { access = "read", path = "./broadcast/Deploy.s.sol/8453/run-latest.json" },
@@ -60,6 +61,7 @@ solady = "0.1.26"
 [lint]
 ignore = [
   "dependencies/**/*.sol",
+  "../core/dependencies/**/*.sol",
   "test/**/*.sol",
   "script/**/*.sol",
   "src/interfaces/*.sol",
