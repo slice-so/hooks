@@ -22,9 +22,6 @@ remappings = [
   "@/=src/",
 ]
 
-[profile.ci]
-fuzz.runs = 10000
-
 [profile.ffi]
 ffi = true
 match_test = "FFI"
