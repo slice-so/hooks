@@ -22,6 +22,9 @@ remappings = [
   "@/=src/",
 ]
 
+[profile.ci]
+fuzz.runs = 10000
+
 [profile.ffi]
 ffi = true
 match_test = "FFI"
@@ -56,6 +59,7 @@ solady = "0.1.26"
 
 [lint]
 ignore = [
+  "dependencies/**/*.sol",
   "test/**/*.sol",
   "script/**/*.sol",
   "src/interfaces/*.sol",
