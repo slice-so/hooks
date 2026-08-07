@@ -72,6 +72,7 @@ ignore = [
   "src/utils/math/SignedWadMath.sol",
 ]
 exclude_lints = [
+  "block-timestamp",
   "mixed-case-function",
   "mixed-case-variable",
   "pascal-case-struct",
