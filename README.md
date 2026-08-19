@@ -159,3 +159,7 @@ src/
 - [Pricing Strategies Guide](./src/hooks/pricing/README.md)
 - [Pricing + Actions Guide](./src/hooks/pricingActions/README.md)
 - [Custom Implementations](./src/custom/README.md)
+
+## License
+
+This repository is available under the [MIT License](./LICENSE).
