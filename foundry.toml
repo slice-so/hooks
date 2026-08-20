@@ -34,10 +34,9 @@ fuzz.runs = 1000
 
 
 [rpc_endpoints]
-mainnet = "${RPC_URL_MAINNET}"
-op = "${RPC_URL_OPTIMISM}"
-base = "${RPC_URL_BASE}"
-base-goerli = "${RPC_URL_BASE_GOERLI}"
+mainnet = "https://eth-mainnet.g.alchemy.com/v2/${SLICEGLOBAL_INTERNAL_ALCHEMY_ID}"
+op = "https://opt-mainnet.g.alchemy.com/v2/${SLICEGLOBAL_INTERNAL_ALCHEMY_ID}"
+base = "https://base-mainnet.g.alchemy.com/v2/${SLICEGLOBAL_INTERNAL_ALCHEMY_ID}"
 
 [etherscan]
 mainnet = { key = "${ETHERSCAN_KEY}", chain = 1 }
