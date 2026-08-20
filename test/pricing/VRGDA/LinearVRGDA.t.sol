@@ -13,26 +13,29 @@ uint256 constant MAX_SELLABLE = 6392;
 
 uint256 constant slicerId = 0;
 uint256 constant productId = 1;
-int128 constant targetPriceConstant = 69.42e18;
-uint128 constant min = 1e18;
-int256 constant priceDecayPercent = 0.31e18;
+uint256 constant variantId = 0;
+uint16 constant min = 1e4;
+int184 constant priceDecayPercent = 0.31e18;
 int256 constant perTimeUnit = 2e18;
 
 contract LinearVRGDATest is RegistryProductPriceTest {
     MockLinearVRGDAPrices vrgda;
+    int128 targetPriceConstant =
+        int128(int256(PRODUCTS_MODULE.basePrice(slicerId, productId, variantId, address(0), 1)));
+    int128 targetPriceConstant_Erc20 =
+        int128(int256(PRODUCTS_MODULE.basePrice(slicerId, productId, variantId, address(20), 1)));
+
+    uint256 minAmount = uint256(int256(targetPriceConstant)) * min / 1e5;
+    uint256 minAmount_Erc20 = uint256(int256(targetPriceConstant_Erc20)) * min / 1e5;
 
     function setUp() public {
         vrgda = new MockLinearVRGDAPrices(PRODUCTS_MODULE);
         _setHook(address(vrgda));
 
-        LinearVRGDAParams[] memory linearParams = new LinearVRGDAParams[](2);
-        linearParams[0] = LinearVRGDAParams(address(0), targetPriceConstant, min, perTimeUnit);
-        linearParams[1] = LinearVRGDAParams(address(20), targetPriceConstant, min, perTimeUnit);
-
-        bytes memory params = abi.encode(linearParams, priceDecayPercent);
+        bytes memory params = abi.encode(priceDecayPercent, min, perTimeUnit);
 
         vm.startPrank(productOwner);
-        vrgda.configureProduct(slicerId, productId, params);
+        vrgda.configureProduct(slicerId, productId, variantId, params);
         vm.stopPrank();
     }
 
@@ -42,7 +45,7 @@ contract LinearVRGDATest is RegistryProductPriceTest {
 
         int256 decayConstant = wadLn(1e18 - priceDecayPercent);
         uint256 cost = vrgda.getVRGDAPrice(
-            targetPriceConstant, decayConstant, toDaysWadUnsafe(block.timestamp), 0, perTimeUnit, min
+            targetPriceConstant, decayConstant, toDaysWadUnsafe(block.timestamp), 0, perTimeUnit, minAmount
         );
         assertApproxEqAbs(cost, uint256(uint128(targetPriceConstant)), 5e14);
     }
@@ -56,7 +59,7 @@ contract LinearVRGDATest is RegistryProductPriceTest {
 
         int256 decayConstant = wadLn(1e18 - priceDecayPercent);
         uint256 cost = vrgda.getVRGDAPrice(
-            targetPriceConstant, decayConstant, toDaysWadUnsafe(block.timestamp), numMint, perTimeUnit, min
+            targetPriceConstant, decayConstant, toDaysWadUnsafe(block.timestamp), numMint, perTimeUnit, minAmount
         );
         assertApproxEqAbs(cost, uint256(uint128(targetPriceConstant)), 5e14);
     }
@@ -71,9 +74,9 @@ contract LinearVRGDATest is RegistryProductPriceTest {
         int256 decayConstant = wadLn(1e18 - priceDecayPercent);
 
         uint256 cost = vrgda.getVRGDAPrice(
-            targetPriceConstant, decayConstant, toDaysWadUnsafe(block.timestamp), numMint, perTimeUnit, min
+            targetPriceConstant, decayConstant, toDaysWadUnsafe(block.timestamp), numMint, perTimeUnit, minAmount
         );
-        assertEq(cost, min);
+        assertEq(cost, minAmount);
     }
 
     function testPricingAdjustedByQuantity() public {
@@ -86,16 +89,16 @@ contract LinearVRGDATest is RegistryProductPriceTest {
         int256 decayConstant = wadLn(1e18 - priceDecayPercent);
 
         uint256 costProduct1 = vrgda.getAdjustedVRGDAPrice(
-            targetPriceConstant, decayConstant, toDaysWadUnsafe(block.timestamp), numMint, perTimeUnit, min, 1
+            targetPriceConstant, decayConstant, toDaysWadUnsafe(block.timestamp), numMint, perTimeUnit, minAmount, 1
         );
         uint256 costProduct2 = vrgda.getAdjustedVRGDAPrice(
-            targetPriceConstant, decayConstant, toDaysWadUnsafe(block.timestamp), numMint + 1, perTimeUnit, min, 1
+            targetPriceConstant, decayConstant, toDaysWadUnsafe(block.timestamp), numMint + 1, perTimeUnit, minAmount, 1
         );
         uint256 costProduct3 = vrgda.getAdjustedVRGDAPrice(
-            targetPriceConstant, decayConstant, toDaysWadUnsafe(block.timestamp), numMint + 2, perTimeUnit, min, 1
+            targetPriceConstant, decayConstant, toDaysWadUnsafe(block.timestamp), numMint + 2, perTimeUnit, minAmount, 1
         );
         uint256 costMultiple = vrgda.getAdjustedVRGDAPrice(
-            targetPriceConstant, decayConstant, toDaysWadUnsafe(block.timestamp), numMint, perTimeUnit, min, 3
+            targetPriceConstant, decayConstant, toDaysWadUnsafe(block.timestamp), numMint, perTimeUnit, minAmount, 3
         );
 
         assertApproxEqAbs(costMultiple, uint256(costProduct1 + costProduct2 + costProduct3), 0.00001e18);
@@ -112,7 +115,7 @@ contract LinearVRGDATest is RegistryProductPriceTest {
                 vrgda.getTargetSaleTime(toWadUnsafe(sold + 1), perTimeUnit),
                 sold,
                 perTimeUnit,
-                min
+                minAmount
             ),
             uint256(uint128(targetPriceConstant)),
             0.00001e18
@@ -121,14 +124,11 @@ contract LinearVRGDATest is RegistryProductPriceTest {
 
     function testSetMultiplePrices() public {
         uint256 productId_ = 2;
-        LinearVRGDAParams[] memory linearParams = new LinearVRGDAParams[](2);
-        linearParams[0] = LinearVRGDAParams(address(0), targetPriceConstant, min, perTimeUnit);
-        linearParams[1] = LinearVRGDAParams(address(20), targetPriceConstant, min, perTimeUnit);
 
-        bytes memory params = abi.encode(linearParams, priceDecayPercent);
+        bytes memory params = abi.encode(priceDecayPercent, min, perTimeUnit);
 
         vm.startPrank(productOwner);
-        vrgda.configureProduct(slicerId, productId_, params);
+        vrgda.configureProduct(slicerId, productId_, variantId, params);
         vm.stopPrank();
 
         // Our VRGDA targets this number of mints at given time.
@@ -136,17 +136,13 @@ contract LinearVRGDATest is RegistryProductPriceTest {
 
         vm.warp(block.timestamp + timeDelta);
 
-        (uint256 ethPrice, uint256 currencyPrice) =
-            vrgda.productPrice(slicerId, productId_, address(0), 1, address(0), "");
+        uint256 price = vrgda.productPrice(slicerId, productId_, variantId, address(0), 0, 1, address(0), "");
 
-        assertApproxEqAbs(uint256(uint128(targetPriceConstant)), ethPrice, 0.00001e18);
-        assertEq(currencyPrice, 0);
+        assertApproxEqAbs(uint256(uint128(targetPriceConstant)), price, 0.00001e18);
 
-        (uint256 ethPrice2, uint256 currencyPrice2) =
-            vrgda.productPrice(slicerId, productId_, address(20), 1, address(0), "");
+        price = vrgda.productPrice(slicerId, productId_, variantId, address(20), 0, 1, address(0), "");
 
-        assertEq(ethPrice2, 0);
-        assertApproxEqAbs(uint256(uint128(targetPriceConstant)), currencyPrice2, 0.00001e18);
+        assertApproxEqAbs(uint256(uint128(targetPriceConstant_Erc20)), price, 0.00001e18);
     }
 
     function testProductPriceEth() public {
@@ -160,14 +156,12 @@ contract LinearVRGDATest is RegistryProductPriceTest {
         int256 decayConstant = wadLn(1e18 - priceDecayPercent);
 
         uint256 cost = vrgda.getAdjustedVRGDAPrice(
-            targetPriceConstant, decayConstant, toDaysWadUnsafe(block.timestamp), 0, perTimeUnit, min, 1
+            targetPriceConstant, decayConstant, toDaysWadUnsafe(block.timestamp), 0, perTimeUnit, minAmount, 1
         );
 
-        (uint256 ethPrice, uint256 currencyPrice) =
-            vrgda.productPrice(slicerId, productId, ethCurrency, 1, address(0), "");
+        uint256 price = vrgda.productPrice(slicerId, productId, variantId, ethCurrency, 0, 1, address(0), "");
 
-        assertApproxEqAbs(cost, ethPrice, 0.00001e18);
-        assertEq(currencyPrice, 0);
+        assertApproxEqAbs(cost, price, 0.00001e18);
     }
 
     function testProductPriceErc20() public {
@@ -181,14 +175,18 @@ contract LinearVRGDATest is RegistryProductPriceTest {
         int256 decayConstant = wadLn(1e18 - priceDecayPercent);
 
         uint256 cost = vrgda.getAdjustedVRGDAPrice(
-            targetPriceConstant, decayConstant, toDaysWadUnsafe(block.timestamp), 0, perTimeUnit, min, 1
+            targetPriceConstant_Erc20,
+            decayConstant,
+            toDaysWadUnsafe(block.timestamp),
+            0,
+            perTimeUnit,
+            minAmount_Erc20,
+            1
         );
 
-        (uint256 ethPrice, uint256 currencyPrice) =
-            vrgda.productPrice(slicerId, productId, erc20Currency, 1, address(0), "");
+        uint256 price = vrgda.productPrice(slicerId, productId, variantId, erc20Currency, 0, 1, address(0), "");
 
-        assertApproxEqAbs(cost, currencyPrice, 0.00001e18);
-        assertEq(ethPrice, 0);
+        assertApproxEqAbs(cost, price, 0.00001e18);
     }
 
     function testProductPriceMultiple() public {
@@ -202,10 +200,10 @@ contract LinearVRGDATest is RegistryProductPriceTest {
         int256 decayConstant = wadLn(1e18 - priceDecayPercent);
 
         uint256 costMultiple = vrgda.getAdjustedVRGDAPrice(
-            targetPriceConstant, decayConstant, toDaysWadUnsafe(block.timestamp), 0, perTimeUnit, min, 3
+            targetPriceConstant, decayConstant, toDaysWadUnsafe(block.timestamp), 0, perTimeUnit, minAmount, 3
         );
-        (uint256 ethPrice,) = vrgda.productPrice(slicerId, productId, ethCurrency, 3, address(0), "");
+        uint256 price = vrgda.productPrice(slicerId, productId, variantId, ethCurrency, 0, 3, address(0), "");
 
-        assertApproxEqAbs(costMultiple, ethPrice, 5e14);
+        assertApproxEqAbs(costMultiple, price, 5e14);
     }
 }

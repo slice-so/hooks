@@ -18,7 +18,7 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}   # gh picks this up automatically
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with: {fetch-depth: 0}                # full history, just in case
 
       - name: Ensure PR exists

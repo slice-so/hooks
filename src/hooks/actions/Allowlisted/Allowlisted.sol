@@ -3,11 +3,11 @@ pragma solidity ^0.8.30;
 
 import {MerkleProof} from "@openzeppelin-4.8.0/utils/cryptography/MerkleProof.sol";
 import {
-    IProductsModule,
     RegistryProductAction,
-    HookRegistry,
+    ProductHookRegistry,
+    IProductsModule,
     IProductAction,
-    IHookRegistry
+    IProductHookRegistry
 } from "@/utils/RegistryProductAction.sol";
 
 /**
@@ -20,7 +20,8 @@ contract Allowlisted is RegistryProductAction {
         MUTABLE STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    mapping(uint256 slicerId => mapping(uint256 productId => bytes32 merkleRoot)) public merkleRoots;
+    mapping(uint256 slicerId => mapping(uint256 productId => mapping(uint256 variantId => bytes32 merkleRoot))) public
+        merkleRoots;
 
     /*//////////////////////////////////////////////////////////////
         CONSTRUCTOR
@@ -39,13 +40,13 @@ contract Allowlisted is RegistryProductAction {
     function isPurchaseAllowed(
         uint256 slicerId,
         uint256 productId,
+        uint256 variantId,
         address buyer,
         uint256,
-        bytes memory,
-        bytes memory buyerCustomData
+        bytes memory data
     ) public view override returns (bool isAllowed) {
-        // Get Merkle proof from buyerCustomData
-        bytes32[] memory proof = abi.decode(buyerCustomData, (bytes32[]));
+        // Get Merkle proof from data
+        bytes32[] memory proof = abi.decode(data, (bytes32[]));
 
         uint256 leafValue = uint256(uint160(buyer));
 
@@ -57,25 +58,28 @@ contract Allowlisted is RegistryProductAction {
             leaf := keccak256(0x00, 0x20)
         }
 
-        bytes32 root = merkleRoots[slicerId][productId];
+        bytes32 root = merkleRoots[slicerId][productId][variantId];
 
         // Check if Merkle proof is valid
         isAllowed = MerkleProof.verify(proof, root, leaf);
     }
 
     /**
-     * @inheritdoc HookRegistry
+     * @inheritdoc ProductHookRegistry
      * @dev Sets the Merkle root for the allowlist.
      */
-    function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) internal override {
+    function _configureProduct(uint256 slicerId, uint256 productId, uint256 variantId, bytes memory params)
+        internal
+        override
+    {
         (bytes32 merkleRoot) = abi.decode(params, (bytes32));
-        merkleRoots[slicerId][productId] = merkleRoot;
+        merkleRoots[slicerId][productId][variantId] = merkleRoot;
     }
 
     /**
-     * @inheritdoc IHookRegistry
+     * @inheritdoc IProductHookRegistry
      */
-    function paramsSchema() external pure override returns (string memory) {
+    function configureProductSchema() public pure override returns (string memory) {
         return "bytes32 merkleRoot";
     }
 }

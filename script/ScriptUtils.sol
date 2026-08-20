@@ -7,7 +7,15 @@ import {VmSafe} from "forge-std/Vm.sol";
 import {ISliceCore} from "slice/interfaces/ISliceCore.sol";
 import {IProductsModule} from "slice/interfaces/IProductsModule.sol";
 import {IFundsModule} from "slice/interfaces/IFundsModule.sol";
-import {IHookRegistry} from "slice/interfaces/hooks/IHookRegistry.sol";
+import {
+    IProductHookRegistry,
+    IProductTypeHookRegistry,
+    ISlicerHookRegistry,
+    IProductPrice,
+    IProductTypePrice,
+    ISlicerProductPrice,
+    IProductAction
+} from "slice/interfaces.sol";
 
 /**
  * Helper contract to enforce correct chain selection in scripts
@@ -85,7 +93,12 @@ abstract contract SetUpContractsList is Script {
     struct ContractDeploymentData {
         address contractAddress;
         uint256 blockNumber;
-        string paramsSchema;
+        // TODO: Add other params to the json? such as configure[ProductType/Slicer]Schema and [product/productType/slicer]PriceSchema
+        string configureProductSchema;
+        string configureProductTypeSchema;
+        string configureSlicerSchema;
+        string onProductPurchaseSchema;
+        string productPriceSchema;
         bytes32 transactionHash;
     }
 
@@ -134,9 +147,7 @@ abstract contract SetUpContractsList is Script {
                             string[] memory arrStrings = new string[](existingData.length);
                             for (uint256 j = 0; j < existingData.length; j++) {
                                 string memory idx = vm.toString(j);
-                                vm.serializeAddress(idx, "address", existingData[j].contractAddress);
-                                vm.serializeUint(idx, "blockNumber", existingData[j].blockNumber);
-                                vm.serializeString(idx, "paramsSchema", existingData[j].paramsSchema);
+                                _setFields(idx, existingData[j]);
                                 arrStrings[j] =
                                     vm.serializeBytes32(idx, "transactionHash", existingData[j].transactionHash);
                             }
@@ -198,6 +209,89 @@ abstract contract SetUpContractsList is Script {
         vm.writeJson(vm.serializeString("addresses", firstFolder, updatedGroupJson), ADDRESSES_PATH);
     }
 
+    function _setFields(string memory idx, ContractDeploymentData memory existingData) internal {
+        vm.serializeAddress(idx, "address", existingData.contractAddress);
+        vm.serializeUint(idx, "blockNumber", existingData.blockNumber);
+        vm.serializeString(idx, "configureProductSchema", existingData.configureProductSchema);
+
+        // Keep the previously stored schema values to avoid overwriting valid data when reserializing
+        vm.serializeString(idx, "configureProductTypeSchema", existingData.configureProductTypeSchema);
+        vm.serializeString(idx, "configureSlicerSchema", existingData.configureSlicerSchema);
+        vm.serializeString(idx, "onProductPurchaseSchema", existingData.onProductPurchaseSchema);
+        vm.serializeString(idx, "productPriceSchema", existingData.productPriceSchema);
+    }
+
+    function _isProductTypeHookRegistry(address contractAddress) internal view returns (bool) {
+        return IProductTypeHookRegistry(contractAddress).supportsInterface(type(IProductTypeHookRegistry).interfaceId);
+    }
+
+    function _isSlicerHookRegistry(address contractAddress) internal view returns (bool) {
+        return ISlicerHookRegistry(contractAddress).supportsInterface(type(ISlicerHookRegistry).interfaceId);
+    }
+
+    function _isProductPrice(address contractAddress) internal view returns (bool) {
+        return IProductPrice(contractAddress).supportsInterface(type(IProductPrice).interfaceId);
+    }
+
+    function _isProductTypePrice(address contractAddress) internal view returns (bool) {
+        return IProductTypePrice(contractAddress).supportsInterface(type(IProductTypePrice).interfaceId);
+    }
+
+    function _isSlicerProductPrice(address contractAddress) internal view returns (bool) {
+        return ISlicerProductPrice(contractAddress).supportsInterface(type(ISlicerProductPrice).interfaceId);
+    }
+
+    function _isProductAction(address contractAddress) internal view returns (bool) {
+        return IProductAction(contractAddress).supportsInterface(type(IProductAction).interfaceId);
+    }
+
+    function _serializeObject(string[] memory json, Tx1559 memory transaction, Receipt memory receipt)
+        internal
+        returns (string[] memory)
+    {
+        vm.serializeAddress("0", "address", transaction.contractAddress);
+        vm.serializeUint("0", "blockNumber", receipt.blockNumber);
+        vm.serializeString(
+            "0", "configureProductSchema", IProductHookRegistry(transaction.contractAddress).configureProductSchema()
+        );
+
+        vm.serializeString(
+            "0",
+            "configureProductTypeSchema",
+            _isProductTypeHookRegistry(transaction.contractAddress)
+                ? IProductTypeHookRegistry(transaction.contractAddress).configureProductTypeSchema()
+                : "not-supported"
+        );
+
+        vm.serializeString(
+            "0",
+            "configureSlicerSchema",
+            _isSlicerHookRegistry(transaction.contractAddress)
+                ? ISlicerHookRegistry(transaction.contractAddress).configureSlicerSchema()
+                : "not-supported"
+        );
+
+        vm.serializeString(
+            "0",
+            "onProductPurchaseSchema",
+            _isProductAction(transaction.contractAddress)
+                ? IProductAction(transaction.contractAddress).onProductPurchaseSchema()
+                : "not-supported"
+        );
+
+        vm.serializeString(
+            "0",
+            "productPriceSchema",
+            _isProductPrice(transaction.contractAddress)
+                ? IProductPrice(transaction.contractAddress).productPriceSchema()
+                : "not-supported"
+        );
+
+        json[0] = vm.serializeBytes32("0", "transactionHash", transaction.hash);
+
+        return json;
+    }
+
     function _buildJsonArray(
         string memory existingAddresses,
         string memory key,
@@ -210,27 +304,17 @@ abstract contract SetUpContractsList is Script {
             ContractDeploymentData[] memory existingContractAddresses =
                 abi.decode(contractAddressesJson, (ContractDeploymentData[]));
 
-            json = new string[](existingContractAddresses.length + 1);
-            vm.serializeAddress("0", "address", transaction.contractAddress);
-            vm.serializeUint("0", "blockNumber", receipt.blockNumber);
-            vm.serializeString("0", "paramsSchema", IHookRegistry(transaction.contractAddress).paramsSchema());
-            json[0] = vm.serializeBytes32("0", "transactionHash", transaction.hash);
+            json = _serializeObject(new string[](existingContractAddresses.length + 1), transaction, receipt);
 
             for (uint256 i = 0; i < existingContractAddresses.length; i++) {
                 ContractDeploymentData memory existingContractAddress = existingContractAddresses[i];
                 string memory index = vm.toString(i + 1);
 
-                vm.serializeAddress(index, "address", existingContractAddress.contractAddress);
-                vm.serializeUint(index, "blockNumber", existingContractAddress.blockNumber);
-                vm.serializeString(index, "paramsSchema", existingContractAddress.paramsSchema);
+                _setFields(index, existingContractAddress);
                 json[i + 1] = vm.serializeBytes32(index, "transactionHash", existingContractAddress.transactionHash);
             }
         } else {
-            json = new string[](1);
-            vm.serializeAddress("0", "address", transaction.contractAddress);
-            vm.serializeUint("0", "blockNumber", receipt.blockNumber);
-            vm.serializeString("0", "paramsSchema", IHookRegistry(transaction.contractAddress).paramsSchema());
-            json[0] = vm.serializeBytes32("0", "transactionHash", transaction.hash);
+            json = _serializeObject(new string[](1), transaction, receipt);
         }
     }
 

@@ -5,10 +5,13 @@ import {RegistryProductActionTest} from "@test/utils/RegistryProductActionTest.s
 import {ERC721Mint} from "@/hooks/actions/ERC721Mint/ERC721Mint.sol";
 import {ERC721Data} from "@/hooks/actions/ERC721Mint/types/ERC721Data.sol";
 import {ERC721Mint_BaseToken, MAX_ROYALTY} from "@/hooks/actions/ERC721Mint/utils/ERC721Mint_BaseToken.sol";
-
-import {console2} from "forge-std/console2.sol";
+import {HookRegistry, ProductLineItem} from "@/utils/RegistryAction.sol";
+import {SliceContext} from "@/utils/RegistryProductAction.sol";
 
 uint256 constant slicerId = 0;
+uint256 constant variantId = 0;
+uint256 constant variantIdAlt = 1;
+uint256 constant productTypeId = 2;
 
 contract ERC721MintTest is RegistryProductActionTest {
     ERC721Mint erc721Mint;
@@ -27,6 +30,7 @@ contract ERC721MintTest is RegistryProductActionTest {
         erc721Mint.configureProduct(
             slicerId,
             productIds[0],
+            variantId,
             abi.encode(
                 "Test NFT 1", // name
                 "TNT1", // symbol
@@ -43,6 +47,7 @@ contract ERC721MintTest is RegistryProductActionTest {
         erc721Mint.configureProduct(
             slicerId,
             productIds[1],
+            variantId,
             abi.encode(
                 "Test NFT 2", // name
                 "TNT2", // symbol
@@ -59,6 +64,7 @@ contract ERC721MintTest is RegistryProductActionTest {
         erc721Mint.configureProduct(
             slicerId,
             productIds[2],
+            variantId,
             abi.encode(
                 "Test NFT 3", // name
                 "TNT3", // symbol
@@ -74,7 +80,8 @@ contract ERC721MintTest is RegistryProductActionTest {
         vm.stopPrank();
 
         // Verify tokenData is set correctly
-        (ERC721Mint_BaseToken token1, bool revertOnMaxSupply1) = erc721Mint.tokenData(slicerId, productIds[0]);
+        (ERC721Mint_BaseToken token1, bool revertOnMaxSupply1) =
+            erc721Mint.tokenData(slicerId, productIds[0], variantId);
         assertEq(revertOnMaxSupply1, true);
         assertEq(token1.name(), "Test NFT 1");
         assertEq(token1.symbol(), "TNT1");
@@ -85,7 +92,8 @@ contract ERC721MintTest is RegistryProductActionTest {
         assertEq(token1.baseURI_(), "https://api.example.com/metadata/");
         assertEq(token1.tokenURI_(), "https://api.example.com/fallback.json");
 
-        (ERC721Mint_BaseToken token2, bool revertOnMaxSupply2) = erc721Mint.tokenData(slicerId, productIds[1]);
+        (ERC721Mint_BaseToken token2, bool revertOnMaxSupply2) =
+            erc721Mint.tokenData(slicerId, productIds[1], variantId);
         assertEq(revertOnMaxSupply2, false);
         assertEq(token2.name(), "Test NFT 2");
         assertEq(token2.symbol(), "TNT2");
@@ -96,7 +104,8 @@ contract ERC721MintTest is RegistryProductActionTest {
         assertEq(token2.baseURI_(), "");
         assertEq(token2.tokenURI_(), "https://api.example.com/single.json");
 
-        (ERC721Mint_BaseToken token3, bool revertOnMaxSupply3) = erc721Mint.tokenData(slicerId, productIds[2]);
+        (ERC721Mint_BaseToken token3, bool revertOnMaxSupply3) =
+            erc721Mint.tokenData(slicerId, productIds[2], variantId);
         assertEq(revertOnMaxSupply3, true);
         assertEq(token3.maxSupply(), 100);
         assertEq(token3.royaltyReceiver(), buyer);
@@ -112,6 +121,7 @@ contract ERC721MintTest is RegistryProductActionTest {
         erc721Mint.configureProduct(
             slicerId,
             productIds[0],
+            variantId,
             abi.encode(
                 "Test NFT", // name
                 "TNT", // symbol
@@ -124,13 +134,14 @@ contract ERC721MintTest is RegistryProductActionTest {
             )
         );
 
-        (ERC721Mint_BaseToken token1,) = erc721Mint.tokenData(slicerId, productIds[0]);
+        (ERC721Mint_BaseToken token1,) = erc721Mint.tokenData(slicerId, productIds[0], variantId);
         address tokenAddress = address(token1);
 
         // Second configuration - should update existing token
         erc721Mint.configureProduct(
             slicerId,
             productIds[0],
+            variantId,
             abi.encode(
                 "Updated NFT", // name (ignored for existing token)
                 "UNT", // symbol (ignored for existing token)
@@ -143,7 +154,8 @@ contract ERC721MintTest is RegistryProductActionTest {
             )
         );
 
-        (ERC721Mint_BaseToken token2, bool revertOnMaxSupply2) = erc721Mint.tokenData(slicerId, productIds[0]);
+        (ERC721Mint_BaseToken token2, bool revertOnMaxSupply2) =
+            erc721Mint.tokenData(slicerId, productIds[0], variantId);
 
         // Token address should be the same
         assertEq(address(token2), tokenAddress);
@@ -167,6 +179,7 @@ contract ERC721MintTest is RegistryProductActionTest {
         erc721Mint.configureProduct(
             slicerId,
             productIds[0],
+            variantId,
             abi.encode(
                 "Test NFT", // name
                 "TNT", // symbol
@@ -187,6 +200,7 @@ contract ERC721MintTest is RegistryProductActionTest {
         erc721Mint.configureProduct(
             slicerId,
             productIds[0],
+            variantId,
             abi.encode(
                 "Test NFT 1", // name
                 "TNT1", // symbol
@@ -202,6 +216,7 @@ contract ERC721MintTest is RegistryProductActionTest {
         erc721Mint.configureProduct(
             slicerId,
             productIds[1],
+            variantId,
             abi.encode(
                 "Test NFT 2", // name
                 "TNT2", // symbol
@@ -216,15 +231,15 @@ contract ERC721MintTest is RegistryProductActionTest {
 
         vm.stopPrank();
 
-        (ERC721Mint_BaseToken token1,) = erc721Mint.tokenData(slicerId, productIds[0]);
-        (ERC721Mint_BaseToken token2,) = erc721Mint.tokenData(slicerId, productIds[1]);
+        (ERC721Mint_BaseToken token1,) = erc721Mint.tokenData(slicerId, productIds[0], variantId);
+        (ERC721Mint_BaseToken token2,) = erc721Mint.tokenData(slicerId, productIds[1], variantId);
 
         // Test minting for product 1
         uint256 initialBalance1 = token1.balanceOf(buyer);
         uint256 initialSupply1 = token1.totalSupply();
 
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[0], buyer, 3, "", "");
+        erc721Mint.onProductPurchase(slicerId, productIds[0], variantId, buyer, 3, "");
 
         assertEq(token1.balanceOf(buyer), initialBalance1 + 3);
         assertEq(token1.totalSupply(), initialSupply1 + 3);
@@ -234,14 +249,14 @@ contract ERC721MintTest is RegistryProductActionTest {
         uint256 initialSupply2 = token2.totalSupply();
 
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[1], buyer2, 5, "", "");
+        erc721Mint.onProductPurchase(slicerId, productIds[1], variantId, buyer2, 5, "");
 
         assertEq(token2.balanceOf(buyer2), initialBalance2 + 5);
         assertEq(token2.totalSupply(), initialSupply2 + 5);
 
         // Test multiple purchases
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[0], buyer3, 2, "", "");
+        erc721Mint.onProductPurchase(slicerId, productIds[0], variantId, buyer3, 2, "");
         assertEq(token1.balanceOf(buyer3), 2);
         assertEq(token1.totalSupply(), initialSupply1 + 5); // 3 + 2
     }
@@ -253,6 +268,7 @@ contract ERC721MintTest is RegistryProductActionTest {
         erc721Mint.configureProduct(
             slicerId,
             productIds[0],
+            variantId,
             abi.encode(
                 "Test NFT", // name
                 "TNT", // symbol
@@ -265,16 +281,16 @@ contract ERC721MintTest is RegistryProductActionTest {
             )
         );
 
-        (ERC721Mint_BaseToken token,) = erc721Mint.tokenData(slicerId, productIds[0]);
+        (ERC721Mint_BaseToken token,) = erc721Mint.tokenData(slicerId, productIds[0], variantId);
 
         // First purchase - should succeed
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[0], buyer, 3, "", "");
+        erc721Mint.onProductPurchase(slicerId, productIds[0], variantId, buyer, 3, "");
         assertEq(token.totalSupply(), 3);
 
         // Second purchase - should succeed
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[0], buyer2, 2, "", "");
+        erc721Mint.onProductPurchase(slicerId, productIds[0], variantId, buyer2, 2, "");
         assertEq(token.totalSupply(), 5);
 
         // Third purchase - exceeds max supply but should not revert (mint will fail silently)
@@ -282,7 +298,7 @@ contract ERC721MintTest is RegistryProductActionTest {
         uint256 supplyBefore = token.totalSupply();
 
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[0], buyer3, 2, "", "");
+        erc721Mint.onProductPurchase(slicerId, productIds[0], variantId, buyer3, 2, "");
 
         // Balance and supply should remain unchanged (mint failed silently)
         assertEq(token.balanceOf(buyer3), balanceBefore);
@@ -296,6 +312,7 @@ contract ERC721MintTest is RegistryProductActionTest {
         erc721Mint.configureProduct(
             slicerId,
             productIds[0],
+            variantId,
             abi.encode(
                 "Test NFT", // name
                 "TNT", // symbol
@@ -310,20 +327,20 @@ contract ERC721MintTest is RegistryProductActionTest {
 
         // First purchase - should succeed
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[0], buyer, 3, "", "");
+        erc721Mint.onProductPurchase(slicerId, productIds[0], 0, buyer, 3, "");
 
-        (ERC721Mint_BaseToken token,) = erc721Mint.tokenData(slicerId, productIds[0]);
+        (ERC721Mint_BaseToken token,) = erc721Mint.tokenData(slicerId, productIds[0], variantId);
         assertEq(token.totalSupply(), 3);
 
         // Second purchase - should succeed (exactly at max supply)
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[0], buyer2, 2, "", "");
+        erc721Mint.onProductPurchase(slicerId, productIds[0], variantId, buyer2, 2, "");
         assertEq(token.totalSupply(), 5);
 
         // Third purchase - should revert (exceeds max supply)
         vm.expectRevert(ERC721Mint.MaxSupplyExceeded.selector);
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[0], buyer3, 1, "", "");
+        erc721Mint.onProductPurchase(slicerId, productIds[0], variantId, buyer3, 1, "");
     }
 
     function testTokenURI() public {
@@ -333,6 +350,7 @@ contract ERC721MintTest is RegistryProductActionTest {
         erc721Mint.configureProduct(
             slicerId,
             productIds[0],
+            variantId,
             abi.encode(
                 "Test NFT", // name
                 "TNT", // symbol
@@ -349,6 +367,7 @@ contract ERC721MintTest is RegistryProductActionTest {
         erc721Mint.configureProduct(
             slicerId,
             productIds[1],
+            variantId,
             abi.encode(
                 "Test NFT 2", // name
                 "TNT2", // symbol
@@ -363,15 +382,15 @@ contract ERC721MintTest is RegistryProductActionTest {
 
         vm.stopPrank();
 
-        (ERC721Mint_BaseToken token1,) = erc721Mint.tokenData(slicerId, productIds[0]);
-        (ERC721Mint_BaseToken token2,) = erc721Mint.tokenData(slicerId, productIds[1]);
+        (ERC721Mint_BaseToken token1,) = erc721Mint.tokenData(slicerId, productIds[0], variantId);
+        (ERC721Mint_BaseToken token2,) = erc721Mint.tokenData(slicerId, productIds[1], variantId);
 
         // Mint some tokens
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[0], buyer, 2, "", "");
+        erc721Mint.onProductPurchase(slicerId, productIds[0], variantId, buyer, 2, "");
 
         vm.prank(address(PRODUCTS_MODULE));
-        erc721Mint.onProductPurchase(slicerId, productIds[1], buyer, 1, "", "");
+        erc721Mint.onProductPurchase(slicerId, productIds[1], variantId, buyer, 1, "");
 
         // Test token URIs for product 1 (with baseURI)
         assertEq(token1.tokenURI(0), "https://api.example.com/metadata/0");
@@ -381,11 +400,69 @@ contract ERC721MintTest is RegistryProductActionTest {
         assertEq(token2.tokenURI(0), "https://single-token.json");
     }
 
+    function testVariantSpecificTokenConfiguration() public {
+        vm.startPrank(productOwner);
+
+        erc721Mint.configureProduct(
+            slicerId,
+            productIds[0],
+            variantId,
+            abi.encode(
+                "Variant Zero", // name
+                "V0", // symbol
+                productOwner, // royaltyReceiver
+                500, // royaltyFraction (5%)
+                "ipfs://base0/", // baseURI
+                "", // tokenURI
+                true, // revertOnMaxSupplyReached
+                100 // maxSupply
+            )
+        );
+
+        erc721Mint.configureProduct(
+            slicerId,
+            productIds[0],
+            variantIdAlt,
+            abi.encode(
+                "Variant One", // name
+                "V1", // symbol
+                buyer, // royaltyReceiver
+                0, // royaltyFraction (0%)
+                "", // baseURI
+                "https://static.example/token.json", // tokenURI
+                false, // revertOnMaxSupplyReached
+                0 // maxSupply (unlimited)
+            )
+        );
+
+        vm.stopPrank();
+
+        (ERC721Mint_BaseToken productToken, bool revertProduct) =
+            erc721Mint.tokenData(slicerId, productIds[0], variantId);
+        (ERC721Mint_BaseToken variantToken, bool revertVariant) =
+            erc721Mint.tokenData(slicerId, productIds[0], variantIdAlt);
+
+        assertTrue(address(productToken) != address(variantToken));
+        assertTrue(revertProduct);
+        assertFalse(revertVariant);
+        assertEq(productToken.royaltyReceiver(), productOwner);
+        assertEq(variantToken.royaltyReceiver(), buyer);
+        assertEq(productToken.baseURI_(), "ipfs://base0/");
+        assertEq(variantToken.tokenURI_(), "https://static.example/token.json");
+
+        vm.prank(address(PRODUCTS_MODULE));
+        erc721Mint.onProductPurchase(slicerId, productIds[0], variantIdAlt, buyer2, 2, "");
+
+        assertEq(variantToken.balanceOf(buyer2), 2);
+        assertEq(productToken.balanceOf(buyer2), 0);
+    }
+
     function testRoyaltyInfo() public {
         vm.prank(productOwner);
         erc721Mint.configureProduct(
             slicerId,
             productIds[0],
+            variantId,
             abi.encode(
                 "Test NFT", // name
                 "TNT", // symbol
@@ -398,7 +475,7 @@ contract ERC721MintTest is RegistryProductActionTest {
             )
         );
 
-        (ERC721Mint_BaseToken token,) = erc721Mint.tokenData(slicerId, productIds[0]);
+        (ERC721Mint_BaseToken token,) = erc721Mint.tokenData(slicerId, productIds[0], variantId);
 
         // Test royalty calculation
         (address receiver, uint256 royaltyAmount) = token.royaltyInfo(0, 1000);
@@ -408,5 +485,293 @@ contract ERC721MintTest is RegistryProductActionTest {
         (receiver, royaltyAmount) = token.royaltyInfo(0, 2000);
         assertEq(receiver, productOwner);
         assertEq(royaltyAmount, 100); // 5% of 2000
+    }
+
+    /*//////////////////////////////////////////////////////////////
+        PRODUCT TYPE TESTS
+    //////////////////////////////////////////////////////////////*/
+
+    function testConfigureProductType() public {
+        bytes memory params = abi.encode(
+            "ProductType NFT", // name
+            "PTN", // symbol
+            productOwner, // royaltyReceiver
+            500, // royaltyFraction (5%)
+            "https://api.example.com/metadata/", // baseURI
+            "https://api.example.com/fallback.json", // tokenURI
+            true, // revertOnMaxSupplyReached
+            1000 // maxSupply
+        );
+
+        vm.expectEmit(true, true, true, true, address(erc721Mint));
+        emit HookRegistry.ProductTypeConfigured(slicerId, productTypeId, params);
+
+        vm.prank(productOwner);
+        erc721Mint.configureProductType(slicerId, productTypeId, params);
+
+        (ERC721Mint_BaseToken token, bool revertOnMaxSupply) = erc721Mint.productTypeTokenData(slicerId, productTypeId);
+        assertEq(revertOnMaxSupply, true);
+        assertEq(token.name(), "ProductType NFT");
+        assertEq(token.symbol(), "PTN");
+        assertEq(token.maxSupply(), 1000);
+        assertEq(token.totalSupply(), 0);
+        assertEq(token.royaltyReceiver(), productOwner);
+        assertEq(token.royaltyFraction(), 500);
+        assertEq(token.baseURI_(), "https://api.example.com/metadata/");
+        assertEq(token.tokenURI_(), "https://api.example.com/fallback.json");
+    }
+
+    function testConfigureProductType_AccessControl() public {
+        vm.expectRevert(abi.encodeWithSelector(SliceContext.NotAuthorized.selector, bytes32(uint256(1 << 1 | 1 << 3))));
+
+        erc721Mint.configureProductType(slicerId, productTypeId, "");
+    }
+
+    function testConfigureProductTypeSchema() public view {
+        string memory schema = erc721Mint.configureProductTypeSchema();
+
+        assertEq(schema, erc721Mint.configureProductSchema());
+        assertTrue(bytes(schema).length > 0);
+    }
+
+    function testOnProductTypePurchase() public {
+        vm.prank(productOwner);
+        erc721Mint.configureProductType(
+            slicerId,
+            productTypeId,
+            abi.encode(
+                "Test NFT", // name
+                "TNT", // symbol
+                productOwner, // royaltyReceiver
+                500, // royaltyFraction
+                "https://api.example.com/", // baseURI
+                "", // tokenURI
+                true, // revertOnMaxSupplyReached
+                1000 // maxSupply
+            )
+        );
+
+        (ERC721Mint_BaseToken token,) = erc721Mint.productTypeTokenData(slicerId, productTypeId);
+        uint256 initialBalance = token.balanceOf(buyer);
+        uint256 initialSupply = token.totalSupply();
+
+        vm.prank(address(PRODUCTS_MODULE));
+        erc721Mint.onProductTypePurchase(slicerId, productTypeId, buyer, 3);
+
+        assertEq(token.balanceOf(buyer), initialBalance + 3);
+        assertEq(token.totalSupply(), initialSupply + 3);
+    }
+
+    function testRevert_OnProductTypePurchase_NotPurchase() public {
+        vm.prank(productOwner);
+        erc721Mint.configureProductType(
+            slicerId,
+            productTypeId,
+            abi.encode(
+                "Test NFT", // name
+                "TNT", // symbol
+                productOwner, // royaltyReceiver
+                500, // royaltyFraction
+                "https://api.example.com/", // baseURI
+                "", // tokenURI
+                true, // revertOnMaxSupplyReached
+                1000 // maxSupply
+            )
+        );
+
+        vm.expectRevert();
+        erc721Mint.onProductTypePurchase(slicerId, productTypeId, buyer, 1);
+    }
+
+    function testRevert_OnProductTypePurchase_MaxSupplyReached() public {
+        vm.prank(productOwner);
+        erc721Mint.configureProductType(
+            slicerId,
+            productTypeId,
+            abi.encode(
+                "Test NFT", // name
+                "TNT", // symbol
+                productOwner, // royaltyReceiver
+                0, // royaltyFraction
+                "", // baseURI
+                "", // tokenURI
+                true, // revertOnMaxSupplyReached
+                5 // maxSupply
+            )
+        );
+
+        // First purchase - should succeed
+        vm.prank(address(PRODUCTS_MODULE));
+        erc721Mint.onProductTypePurchase(slicerId, productTypeId, buyer, 3);
+
+        (ERC721Mint_BaseToken token,) = erc721Mint.productTypeTokenData(slicerId, productTypeId);
+        assertEq(token.totalSupply(), 3);
+
+        // Second purchase - should succeed (exactly at max supply)
+        vm.prank(address(PRODUCTS_MODULE));
+        erc721Mint.onProductTypePurchase(slicerId, productTypeId, buyer2, 2);
+        assertEq(token.totalSupply(), 5);
+
+        // Third purchase - should revert (exceeds max supply)
+        vm.expectRevert(ERC721Mint.MaxSupplyExceeded.selector);
+        vm.prank(address(PRODUCTS_MODULE));
+        erc721Mint.onProductTypePurchase(slicerId, productTypeId, buyer3, 1);
+    }
+
+    /*//////////////////////////////////////////////////////////////
+        SLICER TESTS
+    //////////////////////////////////////////////////////////////*/
+
+    function testConfigureSlicer() public {
+        bytes memory params = abi.encode(
+            "Slicer NFT", // name
+            "SN", // symbol
+            buyer, // royaltyReceiver
+            0, // royaltyFraction
+            "", // baseURI
+            "https://slicer.json", // tokenURI
+            false, // revertOnMaxSupplyReached
+            0 // maxSupply (unlimited)
+        );
+
+        vm.expectEmit(true, true, true, true, address(erc721Mint));
+        emit HookRegistry.SlicerConfigured(slicerId, params);
+
+        vm.prank(productOwner);
+        erc721Mint.configureSlicer(slicerId, params);
+
+        (ERC721Mint_BaseToken token, bool revertOnMaxSupply) = erc721Mint.slicerTokenData(slicerId);
+        assertEq(revertOnMaxSupply, false);
+        assertEq(token.name(), "Slicer NFT");
+        assertEq(token.symbol(), "SN");
+        assertEq(token.maxSupply(), type(uint256).max);
+        assertEq(token.totalSupply(), 0);
+        assertEq(token.royaltyReceiver(), buyer);
+        assertEq(token.royaltyFraction(), 0);
+        assertEq(token.baseURI_(), "");
+        assertEq(token.tokenURI_(), "https://slicer.json");
+    }
+
+    function testConfigureSlicer_AccessControl() public {
+        vm.expectRevert(abi.encodeWithSelector(SliceContext.NotAuthorized.selector, bytes32(uint256(1 << 1 | 1 << 3))));
+
+        erc721Mint.configureSlicer(slicerId, "");
+    }
+
+    function testConfigureSlicerSchema() public view {
+        string memory schema = erc721Mint.configureSlicerSchema();
+
+        assertEq(schema, erc721Mint.configureProductSchema());
+        assertTrue(bytes(schema).length > 0);
+    }
+
+    function testOnSlicerPurchase() public {
+        vm.prank(productOwner);
+        erc721Mint.configureSlicer(
+            slicerId,
+            abi.encode(
+                "Test NFT", // name
+                "TNT", // symbol
+                productOwner, // royaltyReceiver
+                500, // royaltyFraction
+                "https://api.example.com/", // baseURI
+                "", // tokenURI
+                false, // revertOnMaxSupplyReached
+                0 // maxSupply (unlimited)
+            )
+        );
+
+        ProductLineItem[] memory productLineItems = new ProductLineItem[](2);
+        productLineItems[0] =
+            ProductLineItem({productId: uint32(productIds[0]), variantId: uint32(variantId), quantity: uint32(2)});
+        productLineItems[1] =
+            ProductLineItem({productId: uint32(productIds[1]), variantId: uint32(variantId), quantity: uint32(3)});
+        // Total quantity: 5
+
+        (ERC721Mint_BaseToken token,) = erc721Mint.slicerTokenData(slicerId);
+        uint256 initialBalance = token.balanceOf(buyer);
+        uint256 initialSupply = token.totalSupply();
+
+        vm.prank(address(PRODUCTS_MODULE));
+        erc721Mint.onSlicerPurchase(slicerId, buyer, productLineItems);
+
+        assertEq(token.balanceOf(buyer), initialBalance + 5); // 2 + 3
+        assertEq(token.totalSupply(), initialSupply + 5);
+    }
+
+    function testRevert_OnSlicerPurchase_NotPurchase() public {
+        vm.prank(productOwner);
+        erc721Mint.configureSlicer(
+            slicerId,
+            abi.encode(
+                "Test NFT", // name
+                "TNT", // symbol
+                productOwner, // royaltyReceiver
+                500, // royaltyFraction
+                "https://api.example.com/", // baseURI
+                "", // tokenURI
+                false, // revertOnMaxSupplyReached
+                0 // maxSupply (unlimited)
+            )
+        );
+
+        ProductLineItem[] memory productLineItems = new ProductLineItem[](1);
+        productLineItems[0] =
+            ProductLineItem({productId: uint32(productIds[0]), variantId: uint32(variantId), quantity: uint32(5)});
+
+        vm.expectRevert();
+        erc721Mint.onSlicerPurchase(slicerId, buyer, productLineItems);
+    }
+
+    function testRevert_OnSlicerPurchase_MaxSupplyReached() public {
+        vm.prank(productOwner);
+        erc721Mint.configureSlicer(
+            slicerId,
+            abi.encode(
+                "Test NFT", // name
+                "TNT", // symbol
+                productOwner, // royaltyReceiver
+                0, // royaltyFraction
+                "", // baseURI
+                "", // tokenURI
+                true, // revertOnMaxSupplyReached
+                5 // maxSupply
+            )
+        );
+
+        ProductLineItem[] memory productLineItems1 = new ProductLineItem[](1);
+        productLineItems1[0] =
+            ProductLineItem({productId: uint32(productIds[0]), variantId: uint32(variantId), quantity: uint32(3)});
+
+        // First purchase - should succeed
+        vm.prank(address(PRODUCTS_MODULE));
+        erc721Mint.onSlicerPurchase(slicerId, buyer, productLineItems1);
+
+        (ERC721Mint_BaseToken token,) = erc721Mint.slicerTokenData(slicerId);
+        assertEq(token.totalSupply(), 3);
+
+        ProductLineItem[] memory productLineItems2 = new ProductLineItem[](1);
+        productLineItems2[0] =
+            ProductLineItem({productId: uint32(productIds[0]), variantId: uint32(variantId), quantity: uint32(2)});
+
+        // Second purchase - should succeed (exactly at max supply)
+        vm.prank(address(PRODUCTS_MODULE));
+        erc721Mint.onSlicerPurchase(slicerId, buyer2, productLineItems2);
+        assertEq(token.totalSupply(), 5);
+
+        ProductLineItem[] memory productLineItems3 = new ProductLineItem[](1);
+        productLineItems3[0] =
+            ProductLineItem({productId: uint32(productIds[0]), variantId: uint32(variantId), quantity: uint32(1)});
+
+        // Third purchase - should fail silently (slicer actions don't revert on max supply)
+        uint256 balanceBefore = token.balanceOf(buyer3);
+        uint256 supplyBefore = token.totalSupply();
+
+        vm.prank(address(PRODUCTS_MODULE));
+        erc721Mint.onSlicerPurchase(slicerId, buyer3, productLineItems3);
+
+        // Balance and supply should remain unchanged (mint failed silently)
+        assertEq(token.balanceOf(buyer3), balanceBefore);
+        assertEq(token.totalSupply(), supplyBefore);
     }
 }

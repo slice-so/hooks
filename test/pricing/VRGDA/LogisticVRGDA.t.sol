@@ -3,9 +3,7 @@ pragma solidity ^0.8.30;
 
 import {RegistryProductPriceTest} from "@test/utils/RegistryProductPriceTest.sol";
 import {unsafeDiv, wadLn, toWadUnsafe, toDaysWadUnsafe, fromDaysWadUnsafe} from "@/utils/math/SignedWadMath.sol";
-
 import "./mocks/MockLogisticVRGDAPrices.sol";
-import "forge-std/console2.sol";
 
 uint256 constant ONE_THOUSAND_YEARS = 356 days * 1000;
 
@@ -13,28 +11,31 @@ uint256 constant MAX_SELLABLE = 6392;
 
 uint256 constant slicerId = 0;
 uint256 constant productId = 1;
-int128 constant targetPriceConstant = 69.42e18;
-uint128 constant min = 1e18;
-int256 constant priceDecayPercent = 0.31e18;
+uint256 constant variantId = 0;
+uint16 constant min = 1e4;
+int184 constant priceDecayPercent = 0.31e18;
 int256 constant timeScale = 0.0023e18;
 int256 constant logisticLimitAdjusted = int256((MAX_SELLABLE + 1) * 2e18);
 int256 constant logisticLimitDoubled = int256((MAX_SELLABLE + 1e18) * 2e18);
 
 contract LogisticVRGDATest is RegistryProductPriceTest {
     MockLogisticVRGDAPrices vrgda;
+    int128 targetPriceConstant =
+        int128(int256(PRODUCTS_MODULE.basePrice(slicerId, productId, variantId, address(0), 1)));
+    int128 targetPriceConstant_Erc20 =
+        int128(int256(PRODUCTS_MODULE.basePrice(slicerId, productId, variantId, address(20), 1)));
+
+    uint256 minAmount = uint256(int256(targetPriceConstant)) * min / 1e5;
+    uint256 minAmount_Erc20 = uint256(int256(targetPriceConstant_Erc20)) * min / 1e5;
 
     function setUp() public {
         vrgda = new MockLogisticVRGDAPrices(PRODUCTS_MODULE);
         _setHook(address(vrgda));
 
-        LogisticVRGDAParams[] memory logisticParams = new LogisticVRGDAParams[](2);
-        logisticParams[0] = LogisticVRGDAParams(address(0), targetPriceConstant, min, timeScale);
-        logisticParams[1] = LogisticVRGDAParams(address(20), targetPriceConstant, min, timeScale);
-
-        bytes memory params = abi.encode(logisticParams, priceDecayPercent);
+        bytes memory params = abi.encode(priceDecayPercent, min, timeScale);
 
         vm.startPrank(productOwner);
-        vrgda.configureProduct(slicerId, productId, params);
+        vrgda.configureProduct(slicerId, productId, variantId, params);
         vm.stopPrank();
     }
 
@@ -55,7 +56,7 @@ contract LogisticVRGDATest is RegistryProductPriceTest {
             logisticLimit * 2e18,
             sold,
             timeScale,
-            min
+            minAmount
         );
         assertApproxEqAbs(cost, uint256(uint128(targetPriceConstant)), 1e13);
     }
@@ -77,7 +78,7 @@ contract LogisticVRGDATest is RegistryProductPriceTest {
             logisticLimit * 2e18,
             numMint,
             timeScale,
-            min
+            minAmount
         );
 
         // Equal within 2 percent since num mint is rounded from true decimal amount.
@@ -101,9 +102,9 @@ contract LogisticVRGDATest is RegistryProductPriceTest {
             logisticLimit * 2e18,
             numMint,
             timeScale,
-            min
+            minAmount
         );
-        assertEq(cost, min);
+        assertEq(cost, minAmount);
     }
 
     function testPricingAdjustedByQuantity() public {
@@ -121,7 +122,7 @@ contract LogisticVRGDATest is RegistryProductPriceTest {
             toWadUnsafe(MAX_SELLABLE + 1),
             numMint,
             timeScale,
-            min,
+            minAmount,
             1
         );
         uint256 costProduct2 = vrgda.getAdjustedVRGDALogisticPrice(
@@ -131,7 +132,7 @@ contract LogisticVRGDATest is RegistryProductPriceTest {
             toWadUnsafe(MAX_SELLABLE + 1),
             numMint + 1,
             timeScale,
-            min,
+            minAmount,
             1
         );
         uint256 costProduct3 = vrgda.getAdjustedVRGDALogisticPrice(
@@ -141,7 +142,7 @@ contract LogisticVRGDATest is RegistryProductPriceTest {
             toWadUnsafe(MAX_SELLABLE + 1),
             numMint + 2,
             timeScale,
-            min,
+            minAmount,
             1
         );
         uint256 costMultiple = vrgda.getAdjustedVRGDALogisticPrice(
@@ -151,7 +152,7 @@ contract LogisticVRGDATest is RegistryProductPriceTest {
             toWadUnsafe(MAX_SELLABLE + 1),
             numMint,
             timeScale,
-            min,
+            minAmount,
             3
         );
 
@@ -161,30 +162,23 @@ contract LogisticVRGDATest is RegistryProductPriceTest {
     function testSetMultiplePrices() public {
         // uint256 targetPriceTest = 7.3013e18;
         uint256 productIdTest = 2;
-        LogisticVRGDAParams[] memory logisticParams = new LogisticVRGDAParams[](2);
-        logisticParams[0] = LogisticVRGDAParams(address(0), targetPriceConstant, min, timeScale);
-        logisticParams[1] = LogisticVRGDAParams(address(20), targetPriceConstant, min, timeScale);
 
-        bytes memory params = abi.encode(logisticParams, priceDecayPercent);
+        bytes memory params = abi.encode(priceDecayPercent, min, timeScale);
 
         vm.startPrank(productOwner);
-        vrgda.configureProduct(slicerId, productIdTest, params);
+        vrgda.configureProduct(slicerId, productIdTest, variantId, params);
         vm.stopPrank();
 
         vm.warp(block.timestamp + 10 days);
 
-        (uint256 ethPrice, uint256 currencyPrice) =
-            vrgda.productPrice(slicerId, productIdTest, address(0), 1, address(0), "");
+        uint256 price = vrgda.productPrice(slicerId, productIdTest, variantId, address(0), 0, 1, address(0), "");
 
         // assertApproxEqAbs(uint256(targetPriceTest), ethPrice, 1e18);
-        assertNotEq(ethPrice, 0);
-        assertEq(currencyPrice, 0);
+        assertNotEq(price, 0);
 
-        (uint256 ethPrice2, uint256 currencyPrice2) =
-            vrgda.productPrice(slicerId, productId, address(20), 1, address(0), "");
+        uint256 price2 = vrgda.productPrice(slicerId, productId, variantId, address(20), 0, 1, address(0), "");
 
-        assertEq(ethPrice2, 0);
-        assertNotEq(currencyPrice2, 0);
+        assertNotEq(price2, 0);
     }
 
     function testProductPriceEth() public {
@@ -203,15 +197,13 @@ contract LogisticVRGDATest is RegistryProductPriceTest {
             toWadUnsafe(MAX_SELLABLE + 1),
             0,
             timeScale,
-            min,
+            minAmount,
             1
         );
 
-        (uint256 ethPrice, uint256 currencyPrice) =
-            vrgda.productPrice(slicerId, productId, ethCurrency, 1, address(0), "");
+        uint256 price = vrgda.productPrice(slicerId, productId, variantId, ethCurrency, 0, 1, address(0), "");
 
-        assertApproxEqAbs(cost, ethPrice, 0.00001e18);
-        assertEq(currencyPrice, 0);
+        assertApproxEqAbs(cost, price, 0.00001e18);
     }
 
     function testProductPriceErc20() public {
@@ -224,21 +216,19 @@ contract LogisticVRGDATest is RegistryProductPriceTest {
         vm.warp(block.timestamp + timeDelta);
 
         uint256 cost = vrgda.getAdjustedVRGDALogisticPrice(
-            targetPriceConstant,
+            targetPriceConstant_Erc20,
             decayConstant,
             toDaysWadUnsafe(block.timestamp),
             toWadUnsafe(MAX_SELLABLE + 1),
             0,
             timeScale,
-            min,
+            minAmount_Erc20,
             1
         );
 
-        (uint256 ethPrice, uint256 currencyPrice) =
-            vrgda.productPrice(slicerId, productId, erc20Currency, 1, address(0), "");
+        uint256 price = vrgda.productPrice(slicerId, productId, variantId, erc20Currency, 0, 1, address(0), "");
 
-        assertApproxEqAbs(cost, currencyPrice, 0.00001e18);
-        assertEq(ethPrice, 0);
+        assertApproxEqAbs(cost, price, 0.00001e18);
     }
 
     function testProductPriceMultiple() public {
@@ -257,12 +247,12 @@ contract LogisticVRGDATest is RegistryProductPriceTest {
             toWadUnsafe(MAX_SELLABLE + 1),
             0,
             timeScale,
-            min,
+            minAmount,
             3
         );
-        (uint256 ethPrice,) = vrgda.productPrice(slicerId, productId, ethCurrency, 3, address(0), "");
+        uint256 price = vrgda.productPrice(slicerId, productId, variantId, ethCurrency, 0, 3, address(0), "");
 
-        assertApproxEqAbs(costMultiple, ethPrice, 5e14);
+        assertApproxEqAbs(costMultiple, price, 5e14);
     }
 
     function testGetTargetSaleTimeDoesNotRevertEarly() public view {
@@ -292,7 +282,7 @@ contract LogisticVRGDATest is RegistryProductPriceTest {
             logisticLimit * 2e18,
             bound(sold, 0, 1730),
             timeScale,
-            min
+            minAmount
         );
     }
 
@@ -308,7 +298,7 @@ contract LogisticVRGDATest is RegistryProductPriceTest {
             logisticLimit * 2e18,
             bound(sold, 0, 6391),
             timeScale,
-            min
+            minAmount
         );
     }
 
@@ -325,7 +315,7 @@ contract LogisticVRGDATest is RegistryProductPriceTest {
             logisticLimit * 2e18,
             bound(sold, 6392, type(uint128).max),
             timeScale,
-            min
+            minAmount
         );
     }
 
@@ -344,7 +334,7 @@ contract LogisticVRGDATest is RegistryProductPriceTest {
                 logisticLimit * 2e18,
                 sold,
                 timeScale,
-                min
+                minAmount
             ),
             uint256(uint128(targetPriceConstant)),
             0.00001e18

@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
-import {console} from "forge-std/console.sol";
 import {Vm} from "forge-std/Vm.sol";
 import {RegistryProductPriceTest} from "@test/utils/RegistryProductPriceTest.sol";
 import {wadLn, toWadUnsafe} from "@/utils/math/SignedWadMath.sol";
 import {IProductsModule} from "@/utils/ProductPrice.sol";
-import {MockLinearVRGDAPrices, LinearVRGDAParams} from "../mocks/MockLinearVRGDAPrices.sol";
+import {MockLinearVRGDAPrices} from "../mocks/MockLinearVRGDAPrices.sol";
 
 contract LinearVRGDACorrectnessTest is RegistryProductPriceTest {
     // Sample parameters for differential fuzzing campaign.
@@ -15,9 +14,10 @@ contract LinearVRGDACorrectnessTest is RegistryProductPriceTest {
 
     uint256 constant slicerId = 0;
     uint256 constant productId = 1;
+    uint256 constant variantId = 0;
     int128 constant targetPriceConstant = 69.42e18;
-    uint128 constant min = 1e18;
-    int256 constant priceDecayPercent = 0.31e18;
+    uint16 constant min = 1e3;
+    int184 constant priceDecayPercent = 0.31e18;
     int256 constant perTimeUnit = 2e18;
 
     MockLinearVRGDAPrices vrgda;
@@ -26,12 +26,9 @@ contract LinearVRGDACorrectnessTest is RegistryProductPriceTest {
         vrgda = new MockLinearVRGDAPrices(PRODUCTS_MODULE);
         _setHook(address(vrgda));
 
-        LinearVRGDAParams[] memory linearParams = new LinearVRGDAParams[](1);
-        linearParams[0] = LinearVRGDAParams(address(0), targetPriceConstant, min, perTimeUnit);
-
         vm.prank(productOwner);
-        bytes memory params = abi.encode(linearParams, priceDecayPercent);
-        vrgda.configureProduct(slicerId, productId, params);
+        bytes memory params = abi.encode(priceDecayPercent, min, perTimeUnit);
+        vrgda.configureProduct(slicerId, productId, variantId, params);
     }
 
     function testFFICorrectness() public {
@@ -47,9 +44,6 @@ contract LinearVRGDACorrectnessTest is RegistryProductPriceTest {
 
         uint256 expectedPrice =
             calculatePrice(targetPriceConstant, priceDecayPercent, perTimeUnit, timeSinceStart, numSold);
-
-        console.log("actual price", actualPrice);
-        console.log("expected price", expectedPrice);
 
         // Check approximate equality.
         assertApproxEqAbs(expectedPrice, actualPrice, 0.00001e18);

@@ -3,7 +3,8 @@ pragma solidity ^0.8.30;
 
 import {IERC721} from "@openzeppelin-4.8.0/token/ERC721/IERC721.sol";
 import {IERC1155} from "@openzeppelin-4.8.0/token/ERC1155/IERC1155.sol";
-import {HookRegistry, IHookRegistry, IProductsModule} from "@/utils/RegistryProductPrice.sol";
+import {HookRegistry, IProductsModule} from "@/utils/RegistryPrice.sol";
+import {ProductHookRegistry, IProductHookRegistry} from "@/utils/RegistryProductPrice.sol";
 import {DiscountParams, TieredDiscount} from "../TieredDiscount.sol";
 import {NFTType} from "../types/DiscountParams.sol";
 
@@ -24,16 +25,51 @@ contract NFTDiscount is TieredDiscount {
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @inheritdoc HookRegistry
+     * @inheritdoc ProductHookRegistry
      * @notice Set base price and NFT discounts for a product.
      * @dev Discounts must be sorted in descending order and expressed as a percentage of the base price as a 4 decimal fixed point number.
      */
-    function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) internal override {
+    function _configureProduct(uint256 slicerId, uint256 productId, uint256 variantId, bytes memory params)
+        internal
+        override
+    {
+        delete discounts[slicerId][productId][variantId];
+        handleConfigure(discounts[slicerId][productId][variantId], params);
+    }
+
+    /**
+     * @inheritdoc HookRegistry
+     * @notice Set base price and NFT discounts for a product type.
+     * @dev Discounts must be sorted in descending order and expressed as a percentage of the base price as a 4 decimal fixed point number.
+     */
+    function _configureProductType(uint256 slicerId, uint256 productTypeId, bytes memory params) internal override {
+        delete productTypeDiscounts[slicerId][productTypeId];
+        handleConfigure(productTypeDiscounts[slicerId][productTypeId], params);
+    }
+
+    /**
+     * @inheritdoc HookRegistry
+     * @notice Set base price and NFT discounts for a slicer.
+     * @dev Discounts must be sorted in descending order and expressed as a percentage of the base price as a 4 decimal fixed point number.
+     */
+    function _configureSlicer(uint256 slicerId, bytes memory params) internal override {
+        delete slicerDiscounts[slicerId];
+        handleConfigure(slicerDiscounts[slicerId], params);
+    }
+
+    /**
+     * @inheritdoc IProductHookRegistry
+     */
+    function configureProductSchema() public pure override returns (string memory) {
+        return "(address nft,uint80 discount,uint8 minQuantity,uint8 nftType,uint256 tokenId)[] discounts";
+    }
+
+    /*//////////////////////////////////////////////////////////////
+        INTERNAL
+    //////////////////////////////////////////////////////////////*/
+
+    function handleConfigure(DiscountParams[] storage storageDiscounts, bytes memory params) internal {
         (DiscountParams[] memory newDiscounts) = abi.decode(params, (DiscountParams[]));
-
-        DiscountParams[] storage productDiscount = discounts[slicerId][productId];
-
-        delete discounts[slicerId][productId];
 
         uint256 prevDiscountValue;
         DiscountParams memory discountParam;
@@ -57,7 +93,7 @@ contract NFTDiscount is TieredDiscount {
             }
             prevDiscountValue = discountParam.discount;
 
-            productDiscount.push(discountParam);
+            storageDiscounts.push(discountParam);
 
             unchecked {
                 ++i;
@@ -66,40 +102,20 @@ contract NFTDiscount is TieredDiscount {
     }
 
     /**
-     * @inheritdoc IHookRegistry
-     */
-    function paramsSchema() external pure override returns (string memory) {
-        return "(address nft,uint80 discount,uint8 minQuantity,uint8 nftType,uint256 tokenId)[] discounts";
-    }
-
-    /**
      * @inheritdoc TieredDiscount
      * @notice Base price is returned if user does not have a discount.
      */
-    function _productPrice(
-        uint256,
-        uint256,
-        address currency,
-        uint256 quantity,
-        address buyer,
-        bytes memory,
-        uint256 basePrice,
-        DiscountParams[] memory discountParams
-    ) internal view virtual override returns (uint256 ethPrice, uint256 currencyPrice) {
+    function _productPrice(address buyer, uint256 basePriceAmount, DiscountParams[] memory discountParams)
+        internal
+        view
+        virtual
+        override
+        returns (uint256 price)
+    {
         uint256 discount = _getHighestDiscount(discountParams, buyer);
 
-        uint256 price = discount != 0 ? _getDiscountedPrice(basePrice, discount, quantity) : quantity * basePrice;
-
-        if (currency == address(0)) {
-            ethPrice = price;
-        } else {
-            currencyPrice = price;
-        }
+        price = discount != 0 ? _getDiscountedPrice(basePriceAmount, discount) : basePriceAmount;
     }
-
-    /*//////////////////////////////////////////////////////////////
-        INTERNAL
-    //////////////////////////////////////////////////////////////*/
 
     /**
      * @notice Gets the highest discount available for a user, based on owned NFTs.
@@ -155,13 +171,12 @@ contract NFTDiscount is TieredDiscount {
     /**
      * @notice Calculate price based on `discountType`
      *
-     * @param basePrice Base price of the product
+     * @param basePriceAmount Base price of the product
      * @param discount Discount value based on `discountType`
-     * @param quantity Number of units purchased
      *
      * @return price of product inclusive of discount.
      */
-    function _getDiscountedPrice(uint256 basePrice, uint256 discount, uint256 quantity)
+    function _getDiscountedPrice(uint256 basePriceAmount, uint256 discount)
         internal
         pure
         virtual
@@ -173,6 +188,6 @@ contract NFTDiscount is TieredDiscount {
             k = 1e4 - discount;
         }
 
-        price = (basePrice * k * quantity) / 1e4;
+        price = (basePriceAmount * k) / 1e4;
     }
 }

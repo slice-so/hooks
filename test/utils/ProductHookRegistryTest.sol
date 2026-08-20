@@ -2,22 +2,30 @@
 pragma solidity ^0.8.30;
 
 import {HookTest} from "./HookTest.sol";
-import {IHookRegistry} from "@/utils/RegistryProductPrice.sol";
+import {IProductHookRegistry} from "@/utils/RegistryProductPrice.sol";
 import {MockProductsModule} from "./mocks/MockProductsModule.sol";
 import {SliceContext} from "@/utils/RegistryProductAction.sol";
 
-abstract contract HookRegistryTest is HookTest {
-    function testParamsSchema() public view {
-        string memory schema = IHookRegistry(hook).paramsSchema();
+bytes32 constant PRODUCT_MANAGER_ROLE = bytes32(uint256(0x04));
+
+abstract contract ProductHookRegistryTest is HookTest {
+    function testConfigureProductSchema() public view {
+        string memory schema = IProductHookRegistry(hook).configureProductSchema();
         assertTrue(bytes(schema).length > 0);
     }
 
     function testConfigureProduct_AccessControl() public {
-        vm.expectRevert(abi.encodeWithSelector(SliceContext.NotProductOwner.selector));
-        IHookRegistry(hook).configureProduct(0, 0, "");
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                SliceContext.NotAuthorized.selector,
+                bytes32(uint256(1 << 1 | 1 << 3)) /* Role.ADMIN.getMask() | Role.PRODUCT_MANAGER.getMask() */
+            )
+        );
+
+        IProductHookRegistry(hook).configureProduct(0, 0, 0, "");
     }
 
-    // TODO: verify paramsSchema effectively corresponds to the params
+    // TODO: verify configureProductSchema effectively corresponds to the params
 
     // Blocker: generate bytes params based on a generic string schema
     // function generateParamsFromSchema(string memory schema) public returns (bytes memory) {

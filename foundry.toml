@@ -5,38 +5,44 @@ optimizer_runs = 1000000
 no_match_test = "FFI"
 dynamic_test_linking = true
 libs = ["dependencies", "../core/src", "../core/dependencies"]
-fs_permissions = [{ access = "read", path = "./src"}, { access= "read", path = "./broadcast/Deploy.s.sol/8453/run-latest.json"}, { access = "read-write", path = "./deployments"}, { access = "read", path = "./out"}]
+ignored_warnings_from = ["dependencies", "../core/dependencies"]
+fs_permissions = [
+  { access = "read", path = "./src" },
+  { access = "read", path = "./broadcast/Deploy.s.sol/8453/run-latest.json" },
+  { access = "read-write", path = "./deployments" },
+  { access = "read", path = "./out" },
+]
 remappings = [
   "slice/=dependencies/slice-0.0.9/",
   "@openzeppelin-4.8.0/=dependencies/@openzeppelin-contracts-4.8.0/",
   "@openzeppelin-upgradeable-4.8.0/=dependencies/@openzeppelin-contracts-upgradeable-4.8.0/",
+  "solady-0.1.26/=dependencies/solady-0.1.26/",
   "@erc721a/=dependencies/erc721a-4.3.0/contracts/",
   "forge-std/=dependencies/forge-std-1.9.7/src/",
   "@test/=test/",
-  "@/=src/"
+  "@/=src/",
 ]
 
 [profile.ci]
-fuzz_runs = 10000
+fuzz.runs = 10000
 
 [profile.ffi]
 ffi = true
 match_test = "FFI"
 no_match_test = "a^"
-fuzz_runs = 1000
+fuzz.runs = 1000
 
 
 [rpc_endpoints]
-mainnet = "${RPC_URL_MAINNET}"
-op = "${RPC_URL_OPTIMISM}"
-base = "${RPC_URL_BASE}"
-base-goerli = "${RPC_URL_BASE_GOERLI}"
+mainnet = "https://eth-mainnet.g.alchemy.com/v2/${SLICEGLOBAL_INTERNAL_ALCHEMY_ID}"
+op = "https://opt-mainnet.g.alchemy.com/v2/${SLICEGLOBAL_INTERNAL_ALCHEMY_ID}"
+base = "https://base-mainnet.g.alchemy.com/v2/${SLICEGLOBAL_INTERNAL_ALCHEMY_ID}"
 
 [etherscan]
-mainnet = { key="${ETHERSCAN_KEY}", chain=1 }
-op = { key="${ETHERSCAN_KEY}", chain=10 }
-base = { key="${ETHERSCAN_KEY}", chain=8453, url="https://api.basescan.org/api" }
-base-goerli = {key="${ETHERSCAN_KEY}", chain=84531, url="https://api-goerli.basescan.org/api" }
+mainnet = { key = "${ETHERSCAN_KEY}", chain = 1 }
+op = { key = "${ETHERSCAN_KEY}", chain = 10 }
+base = { key = "${ETHERSCAN_KEY}", chain = 8453, url = "https://api.basescan.org/api" }
+base-goerli = { key = "${ETHERSCAN_KEY}", chain = 84531, url = "https://api-goerli.basescan.org/api" }
 
 [soldeer]
 recursive_deps = true
@@ -49,7 +55,24 @@ forge-std = "1.9.7"
 "@openzeppelin-contracts" = "4.8.0"
 "@openzeppelin-contracts-upgradeable" = "4.8.0"
 erc721a = "4.3.0"
+solady = "0.1.26"
 
 [lint]
-ignore = ["test/**/*.sol","script/**/*.sol", "src/interfaces/*.sol", "src/utils/*.sol", "src/hooks/actions/actions.sol", "src/hooks/pricing/pricing.sol", "src/hooks/pricingActions/pricingActions.sol"]
-exclude_lints=["mixed-case-function", "mixed-case-variable", "pascal-case-struct"]
+ignore = [
+  "dependencies/**/*.sol",
+  "../core/dependencies/**/*.sol",
+  "test/**/*.sol",
+  "script/**/*.sol",
+  "src/interfaces/*.sol",
+  "src/utils/*.sol",
+  "src/hooks/actions/actions.sol",
+  "src/hooks/pricing/pricing.sol",
+  "src/hooks/pricingActions/pricingActions.sol",
+  "src/utils/math/SignedWadMath.sol",
+]
+exclude_lints = [
+  "block-timestamp",
+  "mixed-case-function",
+  "mixed-case-variable",
+  "pascal-case-struct",
+]

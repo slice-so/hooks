@@ -7,10 +7,10 @@ import {
     IProductPrice,
     RegistryProductAction,
     RegistryProductPriceAction,
-    IHookRegistry,
+    IProductHookRegistry,
     IProductsModule
 } from "@/utils/RegistryProductPriceAction.sol";
-import {HookRegistry} from "@/utils/RegistryProductAction.sol";
+import {ProductHookRegistry} from "@/utils/RegistryProductAction.sol";
 import {ProductParams, TokenCondition} from "./types/ProductParams.sol";
 import {TokenType} from "./types/TokenCondition.sol";
 import {ITokenERC1155} from "./utils/ITokenERC1155.sol";
@@ -25,8 +25,8 @@ contract FirstForFree is RegistryProductPriceAction {
         MUTABLE STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    mapping(uint256 slicerId => mapping(uint256 productId => ProductParams price)) public usdcPrices;
-    mapping(address buyer => mapping(uint256 slicerId => uint256 purchases)) public purchases;
+    mapping(uint256 slicerId => mapping(uint256 productId => mapping(uint256 variantId => ProductParams price))) public
+        productParams;
 
     /*//////////////////////////////////////////////////////////////
         CONSTRUCTOR
@@ -42,76 +42,76 @@ contract FirstForFree is RegistryProductPriceAction {
      * @inheritdoc IProductPrice
      * @notice Applies discount only for first N purchases on a slicer.
      */
-    function productPrice(uint256 slicerId, uint256 productId, address, uint256 quantity, address buyer, bytes memory)
-        public
-        view
-        override
-        returns (uint256 ethPrice, uint256 currencyPrice)
-    {
-        ProductParams memory productParams = usdcPrices[slicerId][productId];
+    function productPrice(
+        uint256 slicerId,
+        uint256 productId,
+        uint256 variantId,
+        address,
+        uint256 basePrice,
+        uint256 quantity,
+        address buyer,
+        bytes memory
+    ) public view override returns (uint256) {
+        ProductParams memory params = productParams[slicerId][productId][variantId];
 
-        if (_isEligible(buyer, productParams.eligibleTokens)) {
-            uint256 totalPurchases = purchases[buyer][slicerId];
-            if (totalPurchases < productParams.freeUnits) {
+        if (_isEligible(buyer, params.eligibleTokens)) {
+            uint256 totalPurchases = getPurchases(buyer, slicerId, productId, variantId);
+            if (totalPurchases < params.freeUnits) {
                 unchecked {
-                    uint256 freeUnitsLeft = productParams.freeUnits - totalPurchases;
+                    uint256 freeUnitsLeft = params.freeUnits - totalPurchases;
+
                     if (quantity <= freeUnitsLeft) {
-                        return (0, 0);
+                        return 0;
                     } else {
-                        return (0, usdcPrices[slicerId][productId].usdcPrice * (quantity - freeUnitsLeft));
+                        return getBasePrice(slicerId, productId, variantId, address(0), quantity - freeUnitsLeft);
                     }
                 }
             }
         }
 
-        return (0, usdcPrices[slicerId][productId].usdcPrice * quantity);
+        return basePrice;
     }
 
     /**
      * @inheritdoc RegistryProductAction
-     * @notice Mint `quantity` NFTs to `account` on purchase. Keeps track of total purchases.
+     * @notice Mint `quantity` NFTs to `account` on purchase.
      */
     function _onProductPurchase(
         uint256 slicerId,
         uint256 productId,
+        uint256 variantId,
         address buyer,
         uint256 quantity,
-        bytes memory,
         bytes memory
     ) internal override {
-        purchases[buyer][slicerId] += quantity;
-
-        ProductParams memory productParams = usdcPrices[slicerId][productId];
-        if (productParams.mintToken != address(0)) {
-            ITokenERC1155(productParams.mintToken).mintTo(buyer, productParams.mintTokenId, "", quantity);
+        ProductParams memory params = productParams[slicerId][productId][variantId];
+        if (params.mintToken != address(0)) {
+            ITokenERC1155(params.mintToken).mintTo(buyer, params.mintTokenId, "", quantity);
         }
     }
 
     /**
-     * @inheritdoc HookRegistry
+     * @inheritdoc ProductHookRegistry
      * @notice Sets the product parameters.
      */
-    function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) internal override {
-        (
-            uint256 usdcPrice,
-            TokenCondition[] memory eligibleTokens,
-            address mintToken,
-            uint88 mintTokenId,
-            uint8 freeUnits
-        ) = abi.decode(params, (uint256, TokenCondition[], address, uint88, uint8));
+    function _configureProduct(uint256 slicerId, uint256 productId, uint256 variantId, bytes memory params)
+        internal
+        override
+    {
+        (TokenCondition[] memory eligibleTokens, address mintToken, uint88 mintTokenId, uint8 freeUnits) =
+            abi.decode(params, (TokenCondition[], address, uint88, uint8));
 
-        ProductParams storage productParams = usdcPrices[slicerId][productId];
+        ProductParams storage productParams_ = productParams[slicerId][productId][variantId];
 
-        productParams.usdcPrice = usdcPrice;
-        productParams.mintToken = mintToken;
-        productParams.mintTokenId = mintTokenId;
-        productParams.freeUnits = freeUnits;
+        productParams_.mintToken = mintToken;
+        productParams_.mintTokenId = mintTokenId;
+        productParams_.freeUnits = freeUnits;
 
         // Remove all discount tokens
-        delete productParams.eligibleTokens;
+        delete productParams_.eligibleTokens;
 
         for (uint256 i = 0; i < eligibleTokens.length;) {
-            productParams.eligibleTokens.push(eligibleTokens[i]);
+            productParams_.eligibleTokens.push(eligibleTokens[i]);
 
             unchecked {
                 ++i;
@@ -120,11 +120,11 @@ contract FirstForFree is RegistryProductPriceAction {
     }
 
     /**
-     * @inheritdoc IHookRegistry
+     * @inheritdoc IProductHookRegistry
      */
-    function paramsSchema() external pure override returns (string memory) {
+    function configureProductSchema() public pure override returns (string memory) {
         return
-        "uint256 usdcPrice,(address tokenAddress,uint8 tokenType,uint88 tokenId,uint8 minQuantity)[] eligibleTokens,address mintToken,uint88 mintTokenId,uint8 freeUnits";
+        "(address tokenAddress,uint8 tokenType,uint80 tokenId,uint8 minQuantity)[] eligibleTokens,address mintToken,uint88 mintTokenId,uint8 freeUnits";
     }
 
     /*//////////////////////////////////////////////////////////////

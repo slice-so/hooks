@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
-import {HookRegistry, IProductPrice, IHookRegistry, IProductsModule} from "@/utils/RegistryProductPrice.sol";
+import {
+    ProductHookRegistry,
+    IProductPrice,
+    IProductHookRegistry,
+    IProductsModule
+} from "@/utils/RegistryProductPrice.sol";
 import {
     wadMul,
     toWadUnsafe,
@@ -12,8 +17,7 @@ import {
     wadExp,
     unsafeWadMul
 } from "@/utils/math/SignedWadMath.sol";
-import {LogisticProductParams} from "../types/LogisticProductParams.sol";
-import {LogisticVRGDAParams} from "../types/LogisticVRGDAParams.sol";
+import {LogisticProduct} from "../types/LogisticProduct.sol";
 import {IProductsModule, VRGDAPrices} from "../VRGDAPrices.sol";
 
 /// @title   LogisticVRGDAPrices
@@ -24,8 +28,9 @@ contract LogisticVRGDAPrices is VRGDAPrices {
         STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    // Mapping from slicerId to productId to LogisticProductParams
-    mapping(uint256 => mapping(uint256 => LogisticProductParams)) private _productParams;
+    // Mapping from slicerId to productId to LogisticProduct
+    mapping(uint256 slicerId => mapping(uint256 productId => mapping(uint256 variantId => LogisticProduct))) private
+        _productParams;
 
     /*//////////////////////////////////////////////////////////////
         CONSTRUCTOR
@@ -38,12 +43,14 @@ contract LogisticVRGDAPrices is VRGDAPrices {
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @inheritdoc HookRegistry
+     * @inheritdoc ProductHookRegistry
      * @notice Set LogisticVRGDAParams for a product.
      */
-    function _configureProduct(uint256 slicerId, uint256 productId, bytes memory params) internal override {
-        (LogisticVRGDAParams[] memory logisticParams, int256 priceDecayPercent) =
-            abi.decode(params, (LogisticVRGDAParams[], int256));
+    function _configureProduct(uint256 slicerId, uint256 productId, uint256 variantId, bytes memory params)
+        internal
+        override
+    {
+        (int184 priceDecayPercent, uint16 min, int256 timescale) = abi.decode(params, (int184, uint16, int256));
 
         int256 decayConstant = wadLn(1e18 - priceDecayPercent);
         // The decay constant must be negative for VRGDAs to work.
@@ -51,24 +58,19 @@ contract LogisticVRGDAPrices is VRGDAPrices {
         require(decayConstant >= type(int184).min, "MIN_DECAY_CONSTANT_EXCEEDED");
 
         // Get product availability and isInfinite
-        (uint256 availableUnits, bool isInfinite) = PRODUCTS_MODULE.availableUnits(slicerId, productId);
+        (uint32 stockUnits_, bool isInfinite) = getStockUnits(slicerId, productId, 0);
 
         // Product must not have infinite availability
         require(!isInfinite, "NON_FINITE_AVAILABILITY");
 
         // Set product params
-        _productParams[slicerId][productId].startTime = uint40(block.timestamp);
-        _productParams[slicerId][productId].startUnits = uint32(availableUnits);
-        _productParams[slicerId][productId].decayConstant = int184(decayConstant);
-
-        // Set currency params
-        for (uint256 i; i < logisticParams.length;) {
-            _productParams[slicerId][productId].pricingParams[logisticParams[i].currency] = logisticParams[i];
-
-            unchecked {
-                ++i;
-            }
-        }
+        _productParams[slicerId][productId][variantId] = LogisticProduct({
+            startTime: uint40(block.timestamp),
+            startUnits: stockUnits_,
+            decayConstant: int184(decayConstant), // forge-lint: disable-line(unsafe-typecast)
+            min: min,
+            timeScale: timescale
+        });
     }
 
     /**
@@ -77,52 +79,43 @@ contract LogisticVRGDAPrices is VRGDAPrices {
     function productPrice(
         uint256 slicerId,
         uint256 productId,
+        uint256 variantId,
         address currency,
+        uint256,
         uint256 quantity,
         address,
         bytes memory
-    ) public view override returns (uint256 ethPrice, uint256 currencyPrice) {
-        // Add reference for product and pricing params
-        LogisticProductParams storage productParams = _productParams[slicerId][productId];
-        LogisticVRGDAParams memory pricingParams = productParams.pricingParams[currency];
+    ) public view override returns (uint256 price) {
+        LogisticProduct storage productParams = _productParams[slicerId][productId][variantId];
 
         require(productParams.startTime != 0, "PRODUCT_UNSET");
 
-        // Get available units
-        (uint256 availableUnits,) = PRODUCTS_MODULE.availableUnits(slicerId, productId);
+        // Get available units and base price
+        (uint256 stockUnits_,) = getStockUnits(slicerId, productId, variantId);
+        uint256 basePrice_ = getBasePrice(slicerId, productId, variantId, currency, 1);
 
-        // Set ethPrice or currencyPrice based on chosen currency
-        if (currency == address(0)) {
-            ethPrice = getAdjustedVRGDALogisticPrice(
-                pricingParams.targetPrice,
-                productParams.decayConstant,
-                toDaysWadUnsafe(block.timestamp - productParams.startTime),
-                toWadUnsafe(productParams.startUnits + 1),
-                productParams.startUnits - availableUnits,
-                pricingParams.timeScale,
-                pricingParams.min,
-                quantity
-            );
-        } else {
-            currencyPrice = getAdjustedVRGDALogisticPrice(
-                pricingParams.targetPrice,
-                productParams.decayConstant,
-                toDaysWadUnsafe(block.timestamp - productParams.startTime),
-                toWadUnsafe(productParams.startUnits + 1),
-                productParams.startUnits - availableUnits,
-                pricingParams.timeScale,
-                pricingParams.min,
-                quantity
-            );
-        }
+        if (basePrice_ > uint256(type(int256).max)) revert("BASE_PRICE_TOO_HIGH");
+
+        // Calculate sold units from stockUnits
+        uint256 soldUnits = productParams.startUnits - stockUnits_;
+
+        price = getAdjustedVRGDALogisticPrice(
+            int256(basePrice_), // forge-lint: disable-line(unsafe-typecast)
+            productParams.decayConstant,
+            toDaysWadUnsafe(block.timestamp - productParams.startTime),
+            toWadUnsafe(productParams.startUnits + 1),
+            soldUnits,
+            productParams.timeScale,
+            basePrice_ * productParams.min / 1e5,
+            quantity
+        );
     }
 
     /**
-     * @inheritdoc IHookRegistry
+     * @inheritdoc IProductHookRegistry
      */
-    function paramsSchema() external pure override returns (string memory) {
-        return
-        "(address currency,int128 targetPrice,uint128 min,int256 timeScale)[] logisticParams,int256 priceDecayPercent";
+    function configureProductSchema() public pure override returns (string memory) {
+        return "int184 priceDecayPercent,uint16 min,int256 timescale";
     }
 
     /*//////////////////////////////////////////////////////////////
